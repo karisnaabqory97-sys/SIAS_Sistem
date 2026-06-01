@@ -1,0 +1,29 @@
+{
+  "name": "sais-sistem-informasi-sekolah",
+  "version": "2.0.0",
+  "description": "Sistem Informasi Sekolah (SAIS) - Aplikasi web manajemen sekolah dengan database Neon",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build required for static HTML'",
+    "start": "vercel"
+  },
+  "keywords": [
+    "school-management",
+    "education",
+    "smp",
+    "neon",
+    "vercel"
+  ],
+  "author": "SAIS Team",
+  "license": "MIT",
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

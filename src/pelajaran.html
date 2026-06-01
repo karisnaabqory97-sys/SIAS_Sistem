@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Konfigurasi Database Neon -->
+    <script src="neon-config.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Pelajaran | SAIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-box {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        nav {
+            flex: 1;
+        }
+
+        nav ul {
+            list-style: none;
+        }
+
+        nav li {
+            margin-bottom: 8px;
+        }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: var(--text-dim);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        nav a.active, nav a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        nav a.logout-link:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 40px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 16px 24px;
+            font-size: 13px;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        td {
+            padding: 16px 24px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .subject-badge {
+            padding: 4px 12px;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: white;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-right: 4px;
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-sidebar);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            width: 100%;
+            max-width: 500px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-footer {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">S</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Admin</span>
+        </div>
+                <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="siswa.html">Manajemen Siswa</a></li>
+                <li><a href="guru.html">Manajemen Guru</a></li>
+                <li><a href="kelas.html">Manajemen Kelas</a></li>
+                <li><a href="pelajaran.html" class="active">Manajemen Pelajaran</a></li>
+                <li><a href="jadwal.html">Manajemen Jadwal</a></li>
+                <li><a href="rapot.html">Manajemen Rapot</a></li>
+                <li><a href="kenaikan_kelas.html">Kenaikan Kelas</a></li>
+                <li><a href="informasi.html">Manajemen Informasi</a></li>
+                <li><a href="pengaturan.html">Pengaturan</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1 style="font-size: 24px; font-weight: 600;">Manajemen Mata Pelajaran</h1>
+                <p style="color: var(--text-dim); font-size: 14px;">Total 14 mata pelajaran terdaftar</p>
+            </div>
+            <button class="btn-add">+ Tambah Pelajaran</button>
+        </header>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>KODE</th>
+                        <th>NAMA PELAJARAN</th>
+                        <th>KATEGORI</th>
+                        <th>JUMLAH GURU</th>
+                        <th>AKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="pelajaranTableBody">
+                    <!-- Data akan dirender oleh JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Modal Tambah/Edit Pelajaran -->
+    <div class="modal-overlay" id="modalPelajaran">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Tambah Pelajaran Baru</h2>
+                <button class="btn-close" id="btnCloseModal">&times;</button>
+            </div>
+            <form id="formPelajaran">
+                <div class="form-group">
+                    <label>Kode Pelajaran</label>
+                    <input type="text" class="form-control" id="inputKode" placeholder="Contoh: MTK, IPA" required>
+                </div>
+                <div class="form-group">
+                    <label>Nama Pelajaran</label>
+                    <input type="text" class="form-control" id="inputNama" placeholder="Contoh: Matematika" required>
+                </div>
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select class="form-control" id="inputKategori" style="background: var(--bg-main);">
+                        <option value="Sains & Logika">Sains & Logika</option>
+                        <option value="Bahasa & Sastra">Bahasa & Sastra</option>
+                        <option value="Sains">Sains</option>
+                        <option value="Bahasa">Bahasa</option>
+                        <option value="IPS">IPS</option>
+                        <option value="Seni & Olahraga">Seni & Olahraga</option>
+                        <option value="Teknologi">Teknologi</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Jumlah Guru</label>
+                    <input type="number" class="form-control" id="inputJumlahGuru" placeholder="0" min="0">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" id="btnBatal">Batal</button>
+                    <button type="submit" class="btn-save" id="btnSubmit">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data Default
+        const defaultPelajaranData = [
+            { kode: 'MTK', nama: 'Matematika', kategori: 'Sains & Logika', guru: 4 },
+            { kode: 'BIND', nama: 'Bahasa Indonesia', kategori: 'Bahasa & Sastra', guru: 3 },
+            { kode: 'IPA', nama: 'Ilmu Pengetahuan Alam', kategori: 'Sains', guru: 5 },
+            { kode: 'BING', nama: 'Bahasa Inggris', kategori: 'Bahasa', guru: 2 }
+        ];
+
+        let pelajaranData = [];
+        let currentEditIndex = null;
+
+        // Load data
+        window.addEventListener('DOMContentLoaded', function() {
+            fetchPelajaran();
+            setupEventListeners();
+        });
+
+        async function fetchPelajaran() {
+            try {
+                const data = await window.db.getAllMapel();
+                pelajaranData = data.map(m => ({
+                    id: m.id || m,
+                    nama: m.nama || m,
+                    singkatan: m.singkatan || '',
+                    deskripsi: m.deskripsi || ''
+                }));
+            } catch (e) {
+                console.error("Gagal mengambil data:", e);
+                const stored = localStorage.getItem('sais_pelajaran_data');
+                if (stored) {
+                    pelajaranData = JSON.parse(stored);
+                } else {
+                    pelajaranData = JSON.parse(JSON.stringify(defaultPelajaranData));
+                }
+            }
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('pelajaranTableBody');
+            tbody.innerHTML = '';
+
+            pelajaranData.forEach((pel, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><span class="subject-badge">${pel.kode}</span></td>
+                    <td>${pel.nama}</td>
+                    <td>${pel.kategori}</td>
+                    <td>${pel.guru} Guru</td>
+                    <td>
+                        <button class="action-btn btn-edit" data-index="${index}">Edit</button>
+                        <button class="action-btn btn-hapus" data-index="${index}">Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Update total count
+            document.querySelector('header p').textContent = `Total ${pelajaranData.length} mata pelajaran terdaftar`;
+        }
+
+        function saveAndRender() {
+            try {
+                localStorage.setItem('sais_pelajaran_data', JSON.stringify(pelajaranData));
+            } catch (e) {
+                console.error("Error saving to localStorage", e);
+            }
+            renderTable();
+        }
+
+        function setupEventListeners() {
+            // Tombol Tambah
+            document.querySelector('.btn-add').addEventListener('click', openAddModal);
+
+            // Modal
+            document.getElementById('btnCloseModal').addEventListener('click', closeModal);
+            document.getElementById('btnBatal').addEventListener('click', closeModal);
+            document.getElementById('modalPelajaran').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
+
+            // Form Submit
+            document.getElementById('formPelajaran').addEventListener('submit', handleSubmit);
+
+            // Table Actions
+            document.getElementById('pelajaranTableBody').addEventListener('click', handleTableClick);
+        }
+
+        function openAddModal() {
+            currentEditIndex = null;
+            document.getElementById('modalTitle').textContent = 'Tambah Pelajaran Baru';
+            document.getElementById('formPelajaran').reset();
+            document.getElementById('modalPelajaran').classList.add('active');
+        }
+
+        function openEditModal(index) {
+            currentEditIndex = index;
+            const pel = pelajaranData[index];
+            document.getElementById('modalTitle').textContent = 'Edit Pelajaran';
+            document.getElementById('inputKode').value = pel.kode;
+            document.getElementById('inputNama').value = pel.nama;
+            document.getElementById('inputKategori').value = pel.kategori;
+            document.getElementById('inputJumlahGuru').value = pel.guru;
+            document.getElementById('modalPelajaran').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalPelajaran').classList.remove('active');
+            document.getElementById('formPelajaran').reset();
+            currentEditIndex = null;
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            const newData = {
+                kode: document.getElementById('inputKode').value.toUpperCase(),
+                nama: document.getElementById('inputNama').value,
+                kategori: document.getElementById('inputKategori').value,
+                guru: parseInt(document.getElementById('inputJumlahGuru').value) || 0
+            };
+
+            try {
+                if (currentEditIndex !== null) {
+                    pelajaranData[currentEditIndex] = newData;
+                    alert('Berhasil memperbarui pelajaran!');
+                } else {
+                    pelajaranData.push(newData);
+                    alert('Berhasil menambahkan pelajaran baru!');
+                }
+                saveAndRender();
+                closeModal();
+            } catch (err) {
+                alert('Gagal menyimpan: ' + err.message);
+            }
+        }
+
+        async function handleTableClick(e) {
+            const index = e.target.dataset.index;
+            if (index === undefined) return;
+
+            if (e.target.classList.contains('btn-edit')) {
+                openEditModal(parseInt(index));
+            } else if (e.target.classList.contains('btn-hapus')) {
+                if (confirm(`Apakah Anda yakin ingin menghapus pelajaran "${pelajaranData[index].nama}"?`)) {
+                    pelajaranData.splice(parseInt(index), 1);
+                    saveAndRender();
+                    alert('Berhasil menghapus pelajaran!');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

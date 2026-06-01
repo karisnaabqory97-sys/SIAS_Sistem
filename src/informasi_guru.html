@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <script src="neon-config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informasi Sekolah | SAIS Guru</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body { background: var(--bg-main); color: var(--text-main); display: flex; min-height: 100vh; }
+
+        aside {
+            width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 24px; position: fixed; height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .logo-section { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+
+        .logo-box {
+            width: 32px; height: 32px; background: var(--primary); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;
+        }
+
+        nav { flex: 1; }
+        nav ul { list-style: none; }
+        nav li { margin-bottom: 8px; }
+
+        nav a {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            text-decoration: none; color: var(--text-dim); border-radius: 12px;
+            font-size: 14px; transition: all 0.3s;
+        }
+
+        nav a.active, nav a:hover { background: var(--primary); color: white; }
+        nav a.logout-link:hover { background: #ef4444; color: white; }
+
+        .user-profile {
+            margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .avatar {
+            width: 40px; height: 40px; background: #334155; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 600; color: white;
+        }
+
+        main { flex: 1; margin-left: 260px; padding: 40px; }
+
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+
+        h1 { font-size: 24px; font-weight: 600; }
+
+        .search-bar {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+            padding: 10px 16px; width: 300px; color: white; outline: none;
+        }
+
+        .info-container { display: flex; flex-direction: column; gap: 20px; }
+
+        .info-card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px;
+            padding: 24px; transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .info-card:hover { transform: translateY(-2px); border-color: var(--primary); }
+
+        .info-meta { display: flex; gap: 16px; font-size: 12px; color: var(--text-dim); margin-bottom: 8px; }
+
+        .info-badge {
+            background: rgba(16, 185, 129, 0.1); color: var(--primary);
+            padding: 2px 8px; border-radius: 12px; font-weight: 500;
+        }
+
+        .info-title { font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--text-main); }
+        .info-body { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">S</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Guru</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard_guru.html">Dashboard</a></li>
+                <li><a href="rapot_guru.html">Input Nilai Rapot</a></li>
+                <li><a href="kenaikan_guru.html">Murid Baru</a></li>
+                <li><a href="jadwal_guru.html">Jadwal Mengajar</a></li>
+                <li><a href="jadwal_ujian_guru.html">Jadwal Ujian</a></li>
+                <li><a href="informasi_guru.html" class="active">Informasi</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+        <div class="user-profile">
+            <div class="avatar" id="userAvatar">-</div>
+            <div>
+                <p style="font-size: 14px; font-weight: 600;" id="userNama">Memuat...</p>
+                <p style="font-size: 12px; color: var(--text-dim);" id="userMapel">-</p>
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1>Informasi & Pengumuman Sekolah</h1>
+                <p style="color: var(--text-dim); font-size: 14px;">Pengumuman resmi dari Administrator Sekolah.</p>
+            </div>
+            <input type="text" class="search-bar" id="searchBar" placeholder="Cari informasi...">
+        </header>
+
+        <div class="info-container" id="infoContainer">
+        </div>
+    </main>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // Load user data
+            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            const userNama = currentUser.nama || 'Siti Aminah, S.Pd.';
+            const userMapel = currentUser.mapel || 'Bahasa Indonesia';
+
+            // Update user profile
+            document.getElementById('userAvatar').textContent = userNama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('userNama').textContent = userNama;
+            document.getElementById('userMapel').textContent = 'Guru ' + userMapel;
+
+            // Load info data
+            const defaultInfo = [
+                { tanggal: '2026-05-28', judul: 'Persiapan Ujian Tengah Semester', isi: 'Jadwal UTS telah diperbarui, silakan cek menu jadwal.', sasaran: 'Semua', status: 'Aktif' },
+                { tanggal: '2026-05-25', judul: 'Rapat Komite Sekolah', isi: 'Rapat akan diadakan hari Sabtu pukul 09:00 WIB di aula sekolah.', sasaran: 'Guru', status: 'Aktif' },
+                { tanggal: '2026-05-20', judul: 'Lomba Hari Pendidikan Nasional', isi: 'Berbagai lomba akademik dan olahraga akan diselenggarakan.', sasaran: 'Siswa', status: 'Aktif' }
+            ];
+
+            let infoData = [];
+            try {
+                const stored = localStorage.getItem('sais_dataInformasi');
+                if (stored) {
+                    infoData = JSON.parse(stored);
+                } else {
+                    infoData = defaultInfo;
+                    localStorage.setItem('sais_dataInformasi', JSON.stringify(defaultInfo));
+                }
+            } catch (e) {
+                infoData = defaultInfo;
+            }
+
+            const container = document.getElementById('infoContainer');
+            const searchBar = document.getElementById('searchBar');
+
+            function formatDate(dateStr) {
+                const parts = dateStr.split('-');
+                if (parts.length === 3) {
+                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
+                return dateStr;
+            }
+
+            function renderAnnouncements(filterQuery = '') {
+                container.innerHTML = '';
+                const lowerQuery = filterQuery.toLowerCase();
+
+                const filteredInfo = infoData.filter(info =>
+                    (info.sasaran === 'Semua' || info.sasaran === 'Guru') &&
+                    info.status === 'Aktif' &&
+                    (info.judul.toLowerCase().includes(lowerQuery) || info.isi.toLowerCase().includes(lowerQuery))
+                );
+
+                if (filteredInfo.length === 0) {
+                    container.innerHTML = `
+                        <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 32px; border-radius: 20px; text-align: center;">
+                            <p style="color: var(--text-dim); font-size: 14px;">Tidak ada pengumuman untuk guru saat ini.</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = filteredInfo.map(info => `
+                        <div class="info-card">
+                            <div class="info-meta">
+                                <span>📅 ${formatDate(info.tanggal)}</span>
+                                <span class="info-badge">Untuk: ${info.sasaran === 'Semua' ? 'Semua Warga Sekolah' : 'Khusus Guru'}</span>
+                            </div>
+                            <div class="info-title">${info.judul}</div>
+                            <div class="info-body">${info.isi}</div>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            renderAnnouncements();
+
+            searchBar.addEventListener('input', (e) => {
+                renderAnnouncements(e.target.value);
+            });
+        });
+    </script>
+</body>
+</html>

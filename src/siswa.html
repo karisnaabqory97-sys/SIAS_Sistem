@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Supabase Integration -->
+    <!-- Konfigurasi Database Neon -->
+    <script src="neon-config.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Siswa | SAIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-box {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        nav { flex: 1; }
+        nav ul { list-style: none; }
+        nav li { margin-bottom: 8px; }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: var(--text-dim);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        nav a.active, nav a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        nav a.logout-link:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 40px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 32px;
+            gap: 16px;
+        }
+
+        .search-bar {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 16px;
+            width: 300px;
+            color: white;
+            outline: none;
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px 16px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        .status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .status-aktif { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .status-nonaktif { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+        .action-btn {
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            font-size: 11px;
+            margin-right: 4px;
+        }
+
+        .action-btn:hover { background: var(--primary); border-color: var(--primary); }
+
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .btn-success:hover { background: #059669; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal {
+            background: #1e293b;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header { margin-bottom: 24px; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group { margin-bottom: 16px; }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            color: white;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title {
+            grid-column: 1 / -1;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 8px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .modal-footer {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .required { color: #ef4444; }
+
+        .info-box {
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .info-box strong { color: var(--primary); }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">S</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Admin</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="siswa.html" class="active">Manajemen Siswa</a></li>
+                <li><a href="guru.html">Manajemen Guru</a></li>
+                <li><a href="kelas.html">Manajemen Kelas</a></li>
+                <li><a href="pelajaran.html">Manajemen Pelajaran</a></li>
+                <li><a href="jadwal.html">Manajemen Jadwal</a></li>
+                <li><a href="rapot.html">Manajemen Rapot</a></li>
+                <li><a href="kenaikan_kelas.html">Kenaikan Kelas</a></li>
+                <li><a href="informasi.html">Manajemen Informasi</a></li>
+                <li><a href="pengaturan.html">Pengaturan</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1 style="font-size: 24px; font-weight: 600;">Data Siswa</h1>
+                <p style="color: var(--text-dim); font-size: 14px;">Total 0 siswa terdaftar</p>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                <input type="text" class="search-bar" placeholder="Cari NISN atau Nama...">
+                <button class="btn-secondary" id="btnTemplate">Template</button>
+                <input type="file" id="fileUpload" accept=".csv" style="display: none;">
+                <button class="btn-secondary" id="btnUpload">Upload Massal</button>
+                <button class="btn-success" id="btnSimpan">Simpan</button>
+                <button class="btn-add" id="openAddModal">+ Tambah Siswa</button>
+            </div>
+        </header>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>NISN</th>
+                        <th>NAMA LENGKAP</th>
+                        <th>JK</th>
+                        <th>KELAS</th>
+                        <th>USERNAME</th>
+                        <th>STATUS</th>
+                        <th>AKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="siswaTableBody">
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Modal Tambah/Edit Siswa -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Tambah Siswa Baru</h2>
+                <p style="color: var(--text-dim); font-size: 14px;">Masukkan data lengkap siswa. <span class="required">*</span> wajib diisi.</p>
+            </div>
+
+            <div class="info-box" id="infoBox" style="display: none;">
+                <strong>Info:</strong> Password otomatis: <span id="autoPassword">-</span> (dapat diubah)
+            </div>
+
+            <form id="addSiswaForm">
+                <!-- Data Siswa -->
+                <div class="form-grid">
+                    <div class="section-title">Data Siswa</div>
+
+                    <div class="form-group">
+                        <label>NISN <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="inputNisn" placeholder="Contoh: 0012345678" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nama Lengkap <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="inputNama" placeholder="Nama lengkap siswa" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Jenis Kelamin <span class="required">*</span></label>
+                        <select class="form-control" id="inputJk" required>
+                            <option value="">-- Pilih --</option>
+                            <option value="L">Laki-laki</option>
+                            <option value="P">Perempuan</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Kelas <span class="required">*</span></label>
+                        <select class="form-control" id="inputKelas" required>
+                            <option value="">-- Pilih Kelas --</option>
+                            <option value="VII-A">VII-A</option>
+                            <option value="VII-B">VII-B</option>
+                            <option value="VIII-A">VIII-A</option>
+                            <option value="VIII-B">VIII-B</option>
+                            <option value="IX-A">IX-A</option>
+                            <option value="IX-B">IX-B</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Data Orang Tua/Wali -->
+                <div class="form-grid">
+                    <div class="section-title">Data Orang Tua / Wali</div>
+
+                    <div class="form-group">
+                        <label>Nama Ayah</label>
+                        <input type="text" class="form-control" id="inputAyah" placeholder="Nama ayah">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pekerjaan Ayah</label>
+                        <input type="text" class="form-control" id="inputPekerjaanAyah" placeholder="Pekerjaan ayah">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nama Ibu</label>
+                        <input type="text" class="form-control" id="inputIbu" placeholder="Nama ibu">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pekerjaan Ibu</label>
+                        <input type="text" class="form-control" id="inputPekerjaanIbu" placeholder="Pekerjaan ibu">
+                    </div>
+                </div>
+
+                <!-- Akun Login -->
+                <div class="form-grid">
+                    <div class="section-title">Akun Login Siswa</div>
+
+                    <div class="form-group">
+                        <label>Username <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="inputUsername" placeholder="Username untuk login" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="inputPassword" placeholder="Password login" required>
+                    </div>
+                </div>
+
+                <!-- Status (hanya untuk edit) -->
+                <div class="form-grid" id="statusGroup" style="display: none;">
+                    <div class="section-title">Status</div>
+                    <div class="form-group">
+                        <label>Status Akun</label>
+                        <select class="form-control" id="inputStatus">
+                            <option value="Aktif">Aktif</option>
+                            <option value="Nonaktif">Nonaktif</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" id="closeAddModal">Batal</button>
+                    <button type="submit" class="btn-save">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Detail Siswa -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Detail Siswa</h2>
+            </div>
+            <div id="detailContent" style="display: flex; flex-direction: column; gap: 12px;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" id="closeDetailModal">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data State Management
+        const defaultSiswaData = [
+            {
+                nisn: '0012345678', nama: 'Ahmad Fauzi', jk: 'L', kelas: 'VII-A',
+                ayah: 'Budi Santoso', pekerjaanAyah: 'PNS', ibu: 'Siti Aminah', pekerjaanIbu: 'Guru',
+                username: 'ahmad.fauzi', password: 'siswa2024', status: 'Aktif'
+            },
+            {
+                nisn: '0023456789', nama: 'Citra Lestari', jk: 'P', kelas: 'VIII-A',
+                ayah: 'Dedi Wijaya', pekerjaanAyah: 'Wiraswasta', ibu: 'Rina Hartati', pekerjaanIbu: 'Ibu Rumah Tangga',
+                username: 'citra.lestari', password: 'siswa2024', status: 'Aktif'
+            },
+            {
+                nisn: '0034567890', nama: 'Dewi Rahayu', jk: 'P', kelas: 'IX-B',
+                ayah: 'Hendra Kusuma', pekerjaanAyah: 'Petani', ibu: 'Sri Wahyuni', pekerjaanIbu: 'Pedagang',
+                username: 'dewi.rahayu', password: 'siswa2024', status: 'Aktif'
+            }
+        ];
+
+        let siswaData = [];
+        const tableBody = document.getElementById('siswaTableBody');
+        const searchBar = document.querySelector('.search-bar');
+        const headerDesc = document.querySelector('header p');
+
+        // Database Adaptor
+        async function fetchSiswa() {
+            try {
+                const data = await window.db.getAllSiswa();
+                siswaData = data;
+            } catch (e) {
+                console.error("Gagal mengambil data:", e);
+                // Fallback ke localStorage
+                try {
+                    const stored = localStorage.getItem('sais_siswa_data');
+                    if (stored) {
+                        siswaData = JSON.parse(stored);
+                    } else {
+                        siswaData = JSON.parse(JSON.stringify(defaultSiswaData));
+                    }
+                } catch (e2) {
+                    siswaData = JSON.parse(JSON.stringify(defaultSiswaData));
+                }
+            }
+            renderTable(searchBar.value);
+        }
+
+        function saveAndRender() {
+            try {
+                localStorage.setItem('sais_siswa_data', JSON.stringify(siswaData));
+            } catch (e) { console.error("Error saving to localStorage", e); }
+            renderTable(searchBar.value);
+        }
+
+        function renderTable(filterQuery = '') {
+            tableBody.innerHTML = '';
+            let visibleCount = 0;
+            const lowerQuery = filterQuery.toLowerCase();
+
+            siswaData.forEach((siswa, index) => {
+                const rowText = `${siswa.nisn} ${siswa.nama} ${siswa.kelas} ${siswa.username || ''}`.toLowerCase();
+                if (filterQuery && !rowText.includes(lowerQuery)) return;
+
+                visibleCount++;
+                const tr = document.createElement('tr');
+                tr.dataset.index = index;
+                tr.innerHTML = `
+                    <td>${siswa.nisn}</td>
+                    <td>${siswa.nama}</td>
+                    <td>${siswa.jk}</td>
+                    <td>${siswa.kelas}</td>
+                    <td><span style="color: var(--text-dim);">${siswa.username || '-'}</span></td>
+                    <td><span class="status status-${siswa.status.toLowerCase()}">${siswa.status}</span></td>
+                    <td>
+                        <button class="action-btn btn-edit">Edit</button>
+                        <button class="action-btn btn-detail">Detail</button>
+                        <button class="action-btn btn-delete" style="color: #ef4444;">Hapus</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            headerDesc.innerText = filterQuery
+                ? `Menampilkan ${visibleCount} siswa`
+                : `Total ${siswaData.length} siswa terdaftar`;
+        }
+
+        fetchSiswa();
+
+        // Template & Upload Logic
+        document.getElementById('btnTemplate').addEventListener('click', () => {
+            const csv = 'NISN,Nama,Jenis Kelamin,Kelas,Nama Ayah,Pekerjaan Ayah,Nama Ibu,Pekerjaan Ibu,Username,Password\n0012345678,Ahmad Fauzi,L,VII-A,Budi Santoso,PNS,Siti Aminah,Guru,ahmad.fauzi,siswa2024';
+            const link = document.createElement('a');
+            link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+            link.download = 'template_siswa.csv';
+            link.click();
+            alert('Template berhasil diunduh.');
+        });
+
+        document.getElementById('btnUpload').addEventListener('click', () => {
+            document.getElementById('fileUpload').click();
+        });
+
+        document.getElementById('fileUpload').addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function(event) {
+                    const csvText = event.target.result;
+                    const parsedData = parseCSV(csvText);
+
+                    if (parsedData.length === 0) {
+                        alert('Format CSV tidak valid atau tidak ada data!');
+                        return;
+                    }
+
+                    // Konfirmasi sebelum import
+                    const confirmImport = confirm(`Ditemukan ${parsedData.length} data. Apakah ingin mengimpor semua data?`);
+
+                    if (confirmImport) {
+                        let importedCount = 0;
+                        let skippedCount = 0;
+
+                        parsedData.forEach(row => {
+                            // Validasi format minimum
+                            if (!row.NISN || !row.Nama) {
+                                skippedCount++;
+                                return;
+                            }
+
+                            // Generate username dan password jika tidak ada
+                            const namaLower = (row.Nama || '').toLowerCase().replace(/\s+/g, '.').replace(/[^a-z.]/g, '');
+                            const username = row.Username || namaLower;
+                            const password = row.Password || 'siswa' + Date.now().toString().slice(-4);
+
+                            const newSiswa = {
+                                nisn: row.NISN || '',
+                                nama: row.Nama || '',
+                                jk: row['Jenis Kelamin'] || row.JK || 'L',
+                                kelas: row.Kelas || '',
+                                ayah: row['Nama Ayah'] || row.Ayah || '',
+                                pekerjaanAyah: row['Pekerjaan Ayah'] || '',
+                                ibu: row['Nama Ibu'] || row.Ibu || '',
+                                pekerjaanIbu: row['Pekerjaan Ibu'] || '',
+                                username: username,
+                                password: password,
+                                status: row.Status || 'Aktif'
+                            };
+
+                            // Cek apakah NISN sudah ada (update atau skip)
+                            const existingIndex = siswaData.findIndex(s => s.nisn === newSiswa.nisn);
+                            if (existingIndex >= 0) {
+                                siswaData[existingIndex] = newSiswa;
+                            } else {
+                                siswaData.push(newSiswa);
+                            }
+                            importedCount++;
+                        });
+
+                        saveAndRender();
+                        alert(`Import selesai!\nBerhasil: ${importedCount} data\nDilewati: ${skippedCount} data (format tidak lengkap)`);
+                    }
+                };
+
+                reader.readAsText(file);
+                e.target.value = '';
+            }
+        });
+
+        // Fungsi parser CSV
+        function parseCSV(text) {
+            const lines = text.split(/\r?\n/).filter(line => line.trim());
+            if (lines.length < 2) return [];
+
+            const headers = parseCSVLine(lines[0]);
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                if (values.length === headers.length) {
+                    const row = {};
+                    headers.forEach((header, idx) => {
+                        row[header.trim()] = values[idx] ? values[idx].trim() : '';
+                    });
+                    data.push(row);
+                }
+            }
+            return data;
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        document.getElementById('btnSimpan').addEventListener('click', () => {
+            if (window.isSupabaseConfigured && window.isSupabaseConfigured()) {
+                alert('Data tersinkronisasi ke Supabase!');
+            } else {
+                saveAndRender();
+                alert('Seluruh data siswa berhasil disimpan!');
+            }
+        });
+
+        // Modal Logic
+        const addModal = document.getElementById('addModal');
+        const openBtn = document.getElementById('openAddModal');
+        const closeBtn = document.getElementById('closeAddModal');
+        const form = document.getElementById('addSiswaForm');
+        const detailModal = document.getElementById('detailModal');
+        const closeDetailModal = document.getElementById('closeDetailModal');
+
+        let currentEditIndex = null;
+
+        openBtn.addEventListener('click', () => {
+            currentEditIndex = null;
+            document.getElementById('modalTitle').innerText = 'Tambah Siswa Baru';
+            document.getElementById('statusGroup').style.display = 'none';
+            document.getElementById('infoBox').style.display = 'block';
+            document.getElementById('inputPassword').value = 'siswa' + Date.now().toString().slice(-4);
+            document.getElementById('autoPassword').innerText = document.getElementById('inputPassword').value;
+            form.reset();
+            addModal.style.display = 'flex';
+        });
+
+        closeBtn.addEventListener('click', () => {
+            addModal.style.display = 'none';
+            form.reset();
+        });
+
+        closeDetailModal.addEventListener('click', () => {
+            detailModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === addModal) { addModal.style.display = 'none'; form.reset(); }
+            if (e.target === detailModal) { detailModal.style.display = 'none'; }
+        });
+
+        // Auto-generate username dari nama
+        document.getElementById('inputNama').addEventListener('input', function() {
+            if (!currentEditIndex) {
+                const namaLower = this.value.toLowerCase().replace(/\s+/g, '.');
+                document.getElementById('inputUsername').value = namaLower;
+            }
+        });
+
+        // Table Actions
+        tableBody.addEventListener('click', (e) => {
+            const tr = e.target.closest('tr');
+            if (!tr) return;
+            const index = parseInt(tr.dataset.index, 10);
+            const siswa = siswaData[index];
+
+            if (e.target.classList.contains('btn-edit')) {
+                currentEditIndex = index;
+                document.getElementById('modalTitle').innerText = 'Edit Siswa';
+                document.getElementById('statusGroup').style.display = 'block';
+                document.getElementById('infoBox').style.display = 'none';
+
+                document.getElementById('inputNisn').value = siswa.nisn;
+                document.getElementById('inputNama').value = siswa.nama;
+                document.getElementById('inputJk').value = siswa.jk;
+                document.getElementById('inputKelas').value = siswa.kelas;
+                document.getElementById('inputAyah').value = siswa.ayah || '';
+                document.getElementById('inputPekerjaanAyah').value = siswa.pekerjaanAyah || '';
+                document.getElementById('inputIbu').value = siswa.ibu || '';
+                document.getElementById('inputPekerjaanIbu').value = siswa.pekerjaanIbu || '';
+                document.getElementById('inputUsername').value = siswa.username || '';
+                document.getElementById('inputPassword').value = siswa.password || '';
+                document.getElementById('inputStatus').value = siswa.status || 'Aktif';
+
+                addModal.style.display = 'flex';
+
+            } else if (e.target.classList.contains('btn-detail')) {
+                const detailContent = document.getElementById('detailContent');
+                detailContent.innerHTML = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <span style="font-size: 11px; color: var(--text-dim);">NISN</span>
+                            <div style="font-weight: 500;">${siswa.nisn}</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 11px; color: var(--text-dim);">Nama Lengkap</span>
+                            <div style="font-weight: 500;">${siswa.nama}</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 11px; color: var(--text-dim);">Jenis Kelamin</span>
+                            <div style="font-weight: 500;">${siswa.jk === 'L' ? 'Laki-laki' : 'Perempuan'}</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 11px; color: var(--text-dim);">Kelas</span>
+                            <div style="font-weight: 500;">${siswa.kelas}</div>
+                        </div>
+                    </div>
+                    <div style="border-top: 1px solid var(--border); padding-top: 16px;">
+                        <span style="font-size: 12px; font-weight: 600; color: var(--primary);">Data Orang Tua / Wali</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <span style="font-size: 11px; color: var(--text-dim);">Nama Ayah</span>
+                            <div style="font-weight: 500;">${siswa.ayah || '-'}</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 11px; color: var(--text-dim);">Pekerjaan Ayah</span>
+                            <div style="font-weight: 500;">${siswa.pekerjaanAyah || '-'}</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 11px; color: var(--text-dim);">Nama Ibu</span>
+                            <div style="font-weight: 500;">${siswa.ibu || '-'}</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 11px; color: var(--text-dim);">Pekerjaan Ibu</span>
+                            <div style="font-weight: 500;">${siswa.pekerjaanIbu || '-'}</div>
+                        </div>
+                    </div>
+                    <div style="border-top: 1px solid var(--border); padding-top: 16px;">
+                        <span style="font-size: 12px; font-weight: 600; color: var(--primary);">Akun Login</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <span style="font-size: 11px; color: var(--text-dim);">Username</span>
+                            <div style="font-weight: 500; color: var(--success);">${siswa.username || '-'}</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 11px; color: var(--text-dim);">Password</span>
+                            <div style="font-weight: 500;">${siswa.password ? '********' : '-'}</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 11px; color: var(--text-dim);">Status</span>
+                            <div><span class="status status-${siswa.status.toLowerCase()}">${siswa.status}</span></div>
+                        </div>
+                    </div>
+                `;
+                detailModal.style.display = 'flex';
+            } else if (e.target.classList.contains('btn-delete')) {
+                const confirmDelete = confirm(`Apakah Anda yakin ingin menghapus siswa "${siswa.nama}" (NISN: ${siswa.nisn})?\n\nTindakan ini tidak dapat dibatalkan.`);
+                if (confirmDelete) {
+                    async function deleteSiswa() {
+                        try {
+                            await window.db.deleteSiswa(siswa.id);
+                        } catch (e) {
+                            console.error('Error:', e);
+                        }
+                        siswaData.splice(index, 1);
+                        saveAndRender();
+                        alert(`Siswa "${siswa.nama}" berhasil dihapus.`);
+                    }
+                    deleteSiswa();
+                }
+            }
+        });
+
+        // Form Submit
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const newData = {
+                nisn: document.getElementById('inputNisn').value,
+                nama: document.getElementById('inputNama').value,
+                jk: document.getElementById('inputJk').value,
+                kelas: document.getElementById('inputKelas').value,
+                ayah: document.getElementById('inputAyah').value,
+                pekerjaanAyah: document.getElementById('inputPekerjaanAyah').value,
+                ibu: document.getElementById('inputIbu').value,
+                pekerjaanIbu: document.getElementById('inputPekerjaanIbu').value,
+                username: document.getElementById('inputUsername').value,
+                password: document.getElementById('inputPassword').value,
+                status: document.getElementById('inputStatus').value || 'Aktif'
+            };
+
+            async function saveSiswa() {
+                try {
+                    if (currentEditIndex !== null) {
+                        // Update existing
+                        const siswa = siswaData[currentEditIndex];
+                        await window.db.updateSiswa(siswa.id, newData);
+                        alert('Data siswa berhasil diperbarui!');
+                    } else {
+                        // Insert new
+                        await window.db.insertSiswa(newData);
+                        alert('Data siswa baru berhasil ditambahkan!\n\nUsername: ' + newData.username + '\nPassword: ' + newData.password);
+                    }
+                    // Refresh data
+                    await fetchSiswa();
+                } catch (e) {
+                    console.error('Error saving:', e);
+                    // Fallback ke localStorage
+                    if (currentEditIndex !== null) {
+                        siswaData[currentEditIndex] = newData;
+                        alert('Data siswa berhasil diperbarui!');
+                    } else {
+                        siswaData.push(newData);
+                        alert('Data siswa baru berhasil ditambahkan!\n\nUsername: ' + newData.username + '\nPassword: ' + newData.password);
+                    }
+                    saveAndRender();
+                }
+            }
+            saveSiswa();
+
+            addModal.style.display = 'none';
+            form.reset();
+        });
+
+        // Search
+        searchBar.addEventListener('input', (e) => {
+            renderTable(e.target.value);
+        });
+    </script>
+</body>
+</html>

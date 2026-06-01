@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Konfigurasi Database Neon -->
+    <script src="neon-config.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kenaikan Kelas | SAIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-box {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        nav { flex: 1; }
+        nav ul { list-style: none; }
+        nav li { margin-bottom: 8px; }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: var(--text-dim);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        nav a.active, nav a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        nav a.logout-link:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .user-profile {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #334155;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 40px;
+        }
+
+        header {
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        /* Info Banner */
+        .info-banner {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .info-banner .icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .info-banner h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .info-banner p {
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .summary-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .summary-card .icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 20px;
+        }
+
+        .summary-card .icon.green { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .summary-card .icon.blue { background: rgba(37, 99, 235, 0.2); color: #2563eb; }
+        .summary-card .icon.yellow { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+        .summary-card .value { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+        .summary-card .label { font-size: 13px; color: var(--text-dim); }
+
+        /* Class Section */
+        .class-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .class-header {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .class-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .class-badge {
+            background: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .class-details h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .class-details p {
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .student-count {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 12px 20px;
+            text-align: center;
+        }
+
+        .student-count .number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .student-count .label {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        /* Student Table */
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .student-table th {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .student-table td {
+            padding: 12px 16px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .student-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .student-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .class-change-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--success);
+        }
+
+        .class-change-badge .arrow {
+            color: var(--text-dim);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .status-promoted { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .status-lulus { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+            color: var(--text-dim);
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Filter Section */
+        .filter-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .filter-select {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 16px;
+            color: white;
+            outline: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .filter-select option { background: #1e293b; }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1e293b;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 2000;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.warning { border-left: 4px solid var(--warning); }
+
+        .toast .icon {
+            font-size: 20px;
+        }
+
+        .toast.success .icon { color: var(--success); }
+        .toast.error .icon { color: var(--danger); }
+        .toast.warning .icon { color: var(--warning); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">S</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Guru</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard_guru.html">Dashboard</a></li>
+                <li><a href="rapot_guru.html">Input Nilai Rapot</a></li>
+                <li><a href="kenaikan_guru.html" class="active">Murid Baru</a></li>
+                <li><a href="jadwal_guru.html">Jadwal Mengajar</a></li>
+                <li><a href="jadwal_ujian_guru.html">Jadwal Ujian</a></li>
+                <li><a href="informasi_guru.html">Informasi</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+        <div class="user-profile">
+            <div class="avatar" id="userAvatar">-</div>
+            <div>
+                <p style="font-size: 14px; font-weight: 600;" id="userNama">Memuat...</p>
+                <p style="font-size: 12px; color: var(--text-dim);" id="userMapel">-</p>
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <header>
+            <h1>Kenaikan Kelas</h1>
+            <p class="subtitle">Informasi siswa yang akan masuk ke kelas Anda tahun ajaran baru</p>
+        </header>
+
+        <!-- Info Banner -->
+        <div class="info-banner">
+            <div class="icon">&#128218;</div>
+            <div>
+                <h3>Informasi untuk Wali Kelas</h3>
+                <p>Halaman ini menampilkan daftar siswa yang akan masuk ke kelas Anda berdasarkan hasil kenaikan kelas yang dilakukan admin. Siswa berasal dari kelas sebelumnya.</p>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="icon blue">&#127891;</div>
+                <div class="value" id="totalKelas">0</div>
+                <div class="label">Total Kelas Diampu</div>
+            </div>
+            <div class="summary-card">
+                <div class="icon green">&#128101;</div>
+                <div class="value" id="totalIncoming">0</div>
+                <div class="label">Total Siswa Baru</div>
+            </div>
+            <div class="summary-card">
+                <div class="icon yellow">&#9203;</div>
+                <div class="value" id="pendingPromotion">0</div>
+                <div class="label">Menunggu Kenaikan</div>
+            </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="filter-group">
+            <select class="filter-select" id="filterKelas">
+                <option value="">Semua Kelas Saya</option>
+                <option value="VII-A">VII-A</option>
+                <option value="VII-B">VII-B</option>
+                <option value="VIII-A">VIII-A</option>
+                <option value="VIII-B">VIII-B</option>
+                <option value="IX-A">IX-A</option>
+                <option value="IX-B">IX-B</option>
+            </select>
+        </div>
+
+        <!-- Class Sections Container -->
+        <div id="classSectionsContainer">
+            <!-- Dynamic content will be loaded here -->
+        </div>
+    </main>
+
+    <script>
+        // Default mock data with 15 students
+        const defaultKenaikanData = [
+            { id: 1, nisn: '0012345678', nama: 'Ahmad Fauzi', kelas: 'VII-A', status: 'pending' },
+            { id: 2, nisn: '0012345679', nama: 'Citra Lestari', kelas: 'VII-A', status: 'pending' },
+            { id: 3, nisn: '0012345680', nama: 'Dewi Rahayu', kelas: 'VII-B', status: 'pending' },
+            { id: 4, nisn: '0012345681', nama: 'Eko Prasetyo', kelas: 'VII-B', status: 'pending' },
+            { id: 5, nisn: '0023456781', nama: 'Fajar Nugroho', kelas: 'VIII-A', status: 'promoted', kelasBaru: 'IX-A' },
+            { id: 6, nisn: '0023456782', nama: 'Gita Permata', kelas: 'VIII-A', status: 'promoted', kelasBaru: 'IX-A' },
+            { id: 7, nisn: '0023456783', nama: 'Hendra Wijaya', kelas: 'VIII-B', status: 'promoted', kelasBaru: 'IX-B' },
+            { id: 8, nisn: '0023456784', nama: 'Indah Syaharani', kelas: 'VIII-B', status: 'promoted', kelasBaru: 'IX-B' },
+            { id: 9, nisn: '0034567891', nama: 'Joko Susilo', kelas: 'IX-A', status: 'promoted', kelasBaru: 'LULUS' },
+            { id: 10, nisn: '0034567892', nama: 'Kartika Sari', kelas: 'IX-A', status: 'promoted', kelasBaru: 'LULUS' },
+            { id: 11, nisn: '0034567893', nama: 'Lina Marlina', kelas: 'IX-B', status: 'promoted', kelasBaru: 'LULUS' },
+            { id: 12, nisn: '0034567894', nama: 'M Adi Pratama', kelas: 'IX-B', status: 'promoted', kelasBaru: 'LULUS' },
+            { id: 13, nisn: '0012345682', nama: 'Nina Andriani', kelas: 'VII-A', status: 'pending' },
+            { id: 14, nisn: '0023456785', nama: 'Oscar Dharmawan', kelas: 'VIII-A', status: 'promoted', kelasBaru: 'IX-A' },
+            { id: 15, nisn: '0034567895', nama: 'Putri Hapsari', kelas: 'IX-A', status: 'promoted', kelasBaru: 'LULUS' }
+        ];
+
+        // Class promotion mapping
+        const classPromotionMap = {
+            'VII-A': 'VIII-A',
+            'VII-B': 'VIII-B',
+            'VIII-A': 'IX-A',
+            'VIII-B': 'IX-B',
+            'IX-A': 'LULUS',
+            'IX-B': 'LULUS'
+        };
+
+        // Teacher's assigned classes (mock data - in real app, this comes from user profile)
+        const teacherClasses = ['VIII-A', 'IX-A']; // Teacher is wali kelas for VIII-A and IX-A
+
+        let kenaikanData = [];
+
+        // Load user data
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            const userNama = currentUser.nama || 'Siti Aminah, S.Pd.';
+            const userMapel = currentUser.mapel || 'Bahasa Indonesia';
+
+            document.getElementById('userAvatar').textContent = userNama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('userNama').textContent = userNama;
+            document.getElementById('userMapel').textContent = 'Guru ' + userMapel;
+
+            loadData();
+        });
+
+        function loadData() {
+            try {
+                const stored = localStorage.getItem('sais_kenaikan_data');
+                if (stored) {
+                    kenaikanData = JSON.parse(stored);
+                } else {
+                    kenaikanData = JSON.parse(JSON.stringify(defaultKenaikanData));
+                }
+            } catch (e) {
+                kenaikanData = JSON.parse(JSON.stringify(defaultKenaikanData));
+            }
+
+            renderClasses();
+            updateSummary();
+        }
+
+        function updateSummary() {
+            // Get students incoming to teacher's classes
+            const filterKelas = document.getElementById('filterKelas').value;
+            let incomingStudents = [];
+
+            if (filterKelas) {
+                incomingStudents = kenaikanData.filter(s => {
+                    return (s.kelasBaru || classPromotionMap[s.kelas]) === filterKelas && s.status === 'promoted';
+                });
+            } else {
+                incomingStudents = kenaikanData.filter(s => {
+                    return teacherClasses.includes(s.kelasBaru || classPromotionMap[s.kelas]) && s.status === 'promoted';
+                });
+            }
+
+            const pendingCount = kenaikanData.filter(s => s.status === 'pending').length;
+
+            document.getElementById('totalKelas').textContent = teacherClasses.length;
+            document.getElementById('totalIncoming').textContent = incomingStudents.length;
+            document.getElementById('pendingPromotion').textContent = pendingCount;
+        }
+
+        function renderClasses() {
+            const container = document.getElementById('classSectionsContainer');
+            const filterKelas = document.getElementById('filterKelas').value;
+
+            // Get unique target classes
+            let targetClasses = [...new Set(
+                kenaikanData.map(s => s.kelasBaru || classPromotionMap[s.kelas]).filter(c => c !== 'LULUS')
+            )];
+
+            // Filter by teacher's classes if no specific filter
+            if (!filterKelas) {
+                targetClasses = targetClasses.filter(c => teacherClasses.includes(c));
+            } else {
+                targetClasses = [filterKelas];
+            }
+
+            if (targetClasses.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">&#128218;</div>
+                        <h3>Belum Ada Data Kenaikan</h3>
+                        <p>Belum ada siswa yang dinaikkan ke kelas Anda. Kenaikan kelas akan diproses oleh admin sekolah.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = targetClasses.map(targetClass => {
+                const incomingStudents = kenaikanData.filter(s => {
+                    const newClass = s.kelasBaru || classPromotionMap[s.kelas];
+                    return newClass === targetClass && s.status === 'promoted';
+                });
+
+                const previousClass = Object.keys(classPromotionMap).find(k => classPromotionMap[k] === targetClass) || 'VII-A';
+
+                return `
+                    <div class="class-section">
+                        <div class="class-header">
+                            <div class="class-info">
+                                <div class="class-badge">${targetClass}</div>
+                                <div class="class-details">
+                                    <h3>Siswa Baru Kelas ${targetClass}</h3>
+                                    <p>Dari kelas ${previousClass} tahun ajaran sebelumnya</p>
+                                </div>
+                            </div>
+                            <div class="student-count">
+                                <div class="number">${incomingStudents.length}</div>
+                                <div class="label">Siswa Baru</div>
+                            </div>
+                        </div>
+                        <table class="student-table">
+                            <thead>
+                                <tr>
+                                    <th>NO</th>
+                                    <th>NISN</th>
+                                    <th>NAMA SISWA</th>
+                                    <th>KELAS ASAL</th>
+                                    <th>STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${incomingStudents.length > 0 ? incomingStudents.map((student, index) => `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${student.nisn}</td>
+                                        <td style="font-weight: 500;">${student.nama}</td>
+                                        <td>
+                                            <span class="class-change-badge">
+                                                <span>${student.kelas}</span>
+                                                <span class="arrow">&rarr;</span>
+                                                <span>${targetClass}</span>
+                                            </span>
+                                        </td>
+                                        <td><span class="status-badge status-promoted">Sudah Dinaikkan</span></td>
+                                    </tr>
+                                `).join('') : `
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; color: var(--text-dim); padding: 40px;">
+                                            Belum ada siswa yang naik ke kelas ini
+                                        </td>
+                                    </tr>
+                                `}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Event listeners
+        document.getElementById('filterKelas').addEventListener('change', () => {
+            renderClasses();
+            updateSummary();
+        });
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            let icon = '&#10004;';
+            if (type === 'error') icon = '&#10006;';
+            if (type === 'warning') icon = '&#9888;';
+
+            toast.innerHTML = `
+                <span class="icon">${icon}</span>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-out forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

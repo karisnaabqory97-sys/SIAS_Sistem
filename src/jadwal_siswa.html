@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <script src="neon-config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Pelajaran | SAIS Siswa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body { background: var(--bg-main); color: var(--text-main); display: flex; min-height: 100vh; }
+
+        aside {
+            width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 24px; position: fixed; height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .logo-section { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+
+        .logo-box {
+            width: 32px; height: 32px; background: var(--primary); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;
+        }
+
+        nav { flex: 1; }
+        nav ul { list-style: none; }
+        nav li { margin-bottom: 8px; }
+
+        nav a {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            text-decoration: none; color: var(--text-dim); border-radius: 12px;
+            font-size: 14px; transition: all 0.3s;
+        }
+
+        nav a.active, nav a:hover { background: var(--primary); color: white; }
+        nav a.logout-link:hover { background: #ef4444; color: white; }
+
+        .user-profile {
+            margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .avatar {
+            width: 40px; height: 40px; background: #334155; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 600; color: white;
+        }
+
+        main { flex: 1; margin-left: 260px; padding: 40px; }
+
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+
+        h1 { font-size: 24px; font-weight: 600; }
+
+        .content-card {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 24px; padding: 32px;
+        }
+
+        .schedule-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+
+        .schedule-table th {
+            padding: 16px; font-size: 14px; color: var(--text-dim);
+            border-bottom: 1px solid var(--border); font-weight: 600; text-align: center;
+        }
+
+        .schedule-table td {
+            padding: 16px; border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border); text-align: center; vertical-align: top;
+        }
+
+        .schedule-table td:last-child { border-right: none; }
+
+        .time-col {
+            font-weight: 600; color: var(--primary); width: 100px;
+            border-right: 1px solid var(--border) !important;
+        }
+
+        .subject-block {
+            background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 8px; padding: 12px; margin-bottom: 8px; color: #10b981;
+        }
+
+        .subject-block.istirahat {
+            background: rgba(255, 255, 255, 0.05); border-color: var(--border);
+            color: var(--text-dim); font-size: 12px; padding: 8px;
+        }
+
+        .subject-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .subject-room { font-size: 11px; color: var(--text-dim); }
+        .no-class { color: var(--text-dim); font-size: 13px; padding: 20px 0; }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">S</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Siswa</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard_siswa.html">Dashboard</a></li>
+                <li><a href="jadwal_siswa.html" class="active">Jadwal</a></li>
+                <li><a href="jadwal_ujian_siswa.html">Ujian</a></li>
+                <li><a href="nilai_siswa.html">Nilai</a></li>
+                <li><a href="rapot_siswa.html">Rapot</a></li>
+                <li><a href="kenaikan_siswa.html">Kenaikan Kelas</a></li>
+                <li><a href="informasi_siswa.html">Informasi</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+        <div class="user-profile">
+            <div class="avatar" id="userAvatar">-</div>
+            <div>
+                <p style="font-size: 14px; font-weight: 600;" id="userNama">Memuat...</p>
+                <p style="font-size: 12px; color: var(--text-dim);" id="userKelas">-</p>
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1>Jadwal Pelajaran Mingguan</h1>
+                <p style="color: var(--text-dim); font-size: 14px;" id="scheduleInfo">Memuat jadwal...</p>
+            </div>
+            <button style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 500;">
+                Unduh PDF
+            </button>
+        </header>
+
+        <div class="content-card">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th class="time-col">Waktu</th>
+                        <th>Senin</th>
+                        <th>Selasa</th>
+                        <th>Rabu</th>
+                        <th>Kamis</th>
+                        <th>Jumat</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleBody">
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // Default jadwal per kelas
+        const defaultJadwal = {
+            'VII-A': {
+                '07:30-09:00': {
+                    senin: {nama: 'Matematika', guru: 'Drs. Heru S.', ruang: 'Ruang 204'},
+                    selasa: {nama: 'IPA', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    rabu: {nama: 'B. Indonesia', guru: 'Siti Aminah', ruang: 'Ruang 204'},
+                    kamis: {nama: 'Matematika', guru: 'Drs. Heru S.', ruang: 'Ruang 204'},
+                    jumat: {nama: 'Senam', guru: '-', ruang: 'Lapangan'}
+                },
+                '09:00-10:30': {
+                    senin: {nama: 'B. Inggris', guru: 'Mr. John', ruang: 'Lab Bahasa'},
+                    selasa: {nama: 'IPS', guru: 'Budi W.', ruang: 'Ruang 204'},
+                    rabu: {nama: 'PJOK', guru: 'Supriadi', ruang: 'Lapangan'},
+                    kamis: {nama: 'Seni Budaya', guru: 'Kartini', ruang: 'Ruang Seni'},
+                    jumat: {nama: 'B. Inggris', guru: 'Mr. John', ruang: 'Lab Bahasa'}
+                },
+                '10:45-12:15': {
+                    senin: {nama: 'Pend. Agama', guru: 'Ust. Ali', ruang: 'Masjid'},
+                    selasa: {nama: 'IPA', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    rabu: {nama: 'Prakarya', guru: 'Diana', ruang: 'Ruang 204'},
+                    kamis: {nama: 'PPKn', guru: 'Haryanto', ruang: 'Ruang 204'},
+                    jumat: {nama: 'Pend. Agama', guru: 'Ust. Ali', ruang: 'Masjid'}
+                }
+            },
+            'VII-B': {
+                '07:30-09:00': {
+                    senin: {nama: 'B. Indonesia', guru: 'Siti Aminah', ruang: 'Ruang 205'},
+                    selasa: {nama: 'Matematika', guru: 'Drs. Heru S.', ruang: 'Ruang 205'},
+                    rabu: {nama: 'IPA', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    kamis: {nama: 'IPS', guru: 'Budi W.', ruang: 'Ruang 205'},
+                    jumat: {nama: 'PJOK', guru: 'Supriadi', ruang: 'Lapangan'}
+                },
+                '09:00-10:30': {
+                    senin: {nama: 'Matematika', guru: 'Drs. Heru S.', ruang: 'Ruang 205'},
+                    selasa: {nama: 'B. Inggris', guru: 'Mr. John', ruang: 'Lab Bahasa'},
+                    rabu: {nama: 'B. Indonesia', guru: 'Siti Aminah', ruang: 'Ruang 205'},
+                    kamis: {nama: 'IPA', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    jumat: {nama: 'Seni Budaya', guru: 'Kartini', ruang: 'Ruang Seni'}
+                },
+                '10:45-12:15': {
+                    senin: {nama: 'IPS', guru: 'Budi W.', ruang: 'Ruang 205'},
+                    selasa: {nama: 'Pend. Agama', guru: 'Ust. Ali', ruang: 'Masjid'},
+                    rabu: {nama: 'PPKn', guru: 'Haryanto', ruang: 'Ruang 205'},
+                    kamis: {nama: 'B. Inggris', guru: 'Mr. John', ruang: 'Lab Bahasa'},
+                    jumat: {nama: 'Prakarya', guru: 'Diana', ruang: 'Ruang 205'}
+                }
+            },
+            'VIII-A': {
+                '07:30-09:00': {
+                    senin: {nama: 'Fisika', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    selasa: {nama: 'B. Indonesia', guru: 'Siti Aminah', ruang: 'Ruang 301'},
+                    rabu: {nama: 'Matematika', guru: 'Drs. Heru S.', ruang: 'Ruang 301'},
+                    kamis: {nama: 'B. Inggris', guru: 'Mr. John', ruang: 'Lab Bahasa'},
+                    jumat: {nama: 'Pend. Agama', guru: 'Ust. Ali', ruang: 'Masjid'}
+                },
+                '09:00-10:30': {
+                    senin: {nama: 'Matematika', guru: 'Drs. Heru S.', ruang: 'Ruang 301'},
+                    selasa: {nama: 'IPS', guru: 'Budi W.', ruang: 'Ruang 301'},
+                    rabu: {nama: 'Fisika', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    kamis: {nama: 'IPA', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    jumat: {nama: 'PJOK', guru: 'Supriadi', ruang: 'Lapangan'}
+                },
+                '10:45-12:15': {
+                    senin: {nama: 'B. Inggris', guru: 'Mr. John', ruang: 'Lab Bahasa'},
+                    selasa: {nama: 'Seni Budaya', guru: 'Kartini', ruang: 'Ruang Seni'},
+                    rabu: {nama: 'PPKn', guru: 'Haryanto', ruang: 'Ruang 301'},
+                    kamis: {nama: 'IPS', guru: 'Budi W.', ruang: 'Ruang 301'},
+                    jumat: {nama: 'Prakarya', guru: 'Diana', ruang: 'Ruang 301'}
+                }
+            },
+            'VIII-B': {
+                '07:30-09:00': {
+                    senin: {nama: 'IPS', guru: 'Budi W.', ruang: 'Ruang 302'},
+                    selasa: {nama: 'Fisika', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    rabu: {nama: 'B. Indonesia', guru: 'Siti Aminah', ruang: 'Ruang 302'},
+                    kamis: {nama: 'Matematika', guru: 'Drs. Heru S.', ruang: 'Ruang 302'},
+                    jumat: {nama: 'IPA', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'}
+                },
+                '09:00-10:30': {
+                    senin: {nama: 'Matematika', guru: 'Drs. Heru S.', ruang: 'Ruang 302'},
+                    selasa: {nama: 'B. Inggris', guru: 'Mr. John', ruang: 'Lab Bahasa'},
+                    rabu: {nama: 'IPS', guru: 'Budi W.', ruang: 'Ruang 302'},
+                    kamis: {nama: 'Fisika', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    jumat: {nama: 'B. Indonesia', guru: 'Siti Aminah', ruang: 'Ruang 302'}
+                },
+                '10:45-12:15': {
+                    senin: {nama: 'PJOK', guru: 'Supriadi', ruang: 'Lapangan'},
+                    selasa: {nama: 'Pend. Agama', guru: 'Ust. Ali', ruang: 'Masjid'},
+                    rabu: {nama: 'B. Inggris', guru: 'Mr. John', ruang: 'Lab Bahasa'},
+                    kamis: {nama: 'Seni Budaya', guru: 'Kartini', ruang: 'Ruang Seni'},
+                    jumat: {nama: 'PPKn', guru: 'Haryanto', ruang: 'Ruang 302'}
+                }
+            },
+            'IX-A': {
+                '07:30-09:00': {
+                    senin: {nama: 'Matematika', guru: 'Drs. Heru S.', ruang: 'Ruang 401'},
+                    selasa: {nama: 'B. Indonesia', guru: 'Siti Aminah', ruang: 'Ruang 401'},
+                    rabu: {nama: 'Fisika', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    kamis: {nama: 'B. Inggris', guru: 'Mr. John', ruang: 'Lab Bahasa'},
+                    jumat: {nama: 'Pend. Agama', guru: 'Ust. Ali', ruang: 'Masjid'}
+                },
+                '09:00-10:30': {
+                    senin: {nama: 'Fisika', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    selasa: {nama: 'Matematika', guru: 'Drs. Heru S.', ruang: 'Ruang 401'},
+                    rabu: {nama: 'B. Inggris', guru: 'Mr. John', ruang: 'Lab Bahasa'},
+                    kamis: {nama: 'IPA', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    jumat: {nama: 'IPS', guru: 'Budi W.', ruang: 'Ruang 401'}
+                },
+                '10:45-12:15': {
+                    senin: {nama: 'IPS', guru: 'Budi W.', ruang: 'Ruang 401'},
+                    selasa: {nama: 'PJOK', guru: 'Supriadi', ruang: 'Lapangan'},
+                    rabu: {nama: 'Seni Budaya', guru: 'Kartini', ruang: 'Ruang Seni'},
+                    kamis: {nama: 'B. Indonesia', guru: 'Siti Aminah', ruang: 'Ruang 401'},
+                    jumat: {nama: 'Prakarya', guru: 'Diana', ruang: 'Ruang 401'}
+                }
+            },
+            'IX-B': {
+                '07:30-09:00': {
+                    senin: {nama: 'B. Inggris', guru: 'Mr. John', ruang: 'Lab Bahasa'},
+                    selasa: {nama: 'Matematika', guru: 'Drs. Heru S.', ruang: 'Ruang 402'},
+                    rabu: {nama: 'IPA', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    kamis: {nama: 'B. Indonesia', guru: 'Siti Aminah', ruang: 'Ruang 402'},
+                    jumat: {nama: 'Fisika', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'}
+                },
+                '09:00-10:30': {
+                    senin: {nama: 'B. Indonesia', guru: 'Siti Aminah', ruang: 'Ruang 402'},
+                    selasa: {nama: 'Fisika', guru: 'Rizky P., M.Sc.', ruang: 'Lab IPA'},
+                    rabu: {nama: 'Matematika', guru: 'Drs. Heru S.', ruang: 'Ruang 402'},
+                    kamis: {nama: 'IPS', guru: 'Budi W.', ruang: 'Ruang 402'},
+                    jumat: {nama: 'B. Inggris', guru: 'Mr. John', ruang: 'Lab Bahasa'}
+                },
+                '10:45-12:15': {
+                    senin: {nama: 'IPS', guru: 'Budi W.', ruang: 'Ruang 402'},
+                    selasa: {nama: 'Pend. Agama', guru: 'Ust. Ali', ruang: 'Masjid'},
+                    rabu: {nama: 'PPKn', guru: 'Haryanto', ruang: 'Ruang 402'},
+                    kamis: {nama: 'PJOK', guru: 'Supriadi', ruang: 'Lapangan'},
+                    jumat: {nama: 'Seni Budaya', guru: 'Kartini', ruang: 'Ruang Seni'}
+                }
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Load user data
+            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            const userNama = currentUser.nama || 'Ahmad Fauzi';
+            const userKelas = currentUser.kelas || 'VII-A';
+
+            // Update user profile
+            document.getElementById('userAvatar').textContent = userNama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('userNama').textContent = userNama;
+            document.getElementById('userKelas').textContent = 'Kelas ' + userKelas;
+
+            // Get jadwal for user's class
+            const jadwalKelas = defaultJadwal[userKelas] || defaultJadwal['VII-A'];
+            document.getElementById('scheduleInfo').textContent = 'Kelas ' + userKelas + ' | Semester Ganjil 2025/2026';
+
+            // Load custom jadwal from localStorage if exists
+            const savedJadwal = JSON.parse(localStorage.getItem('sais_jadwal') || '{}');
+            const classJadwal = savedJadwal[userKelas] || jadwalKelas;
+
+            // Render schedule
+            renderSchedule(classJadwal);
+        });
+
+        function renderSchedule(jadwal) {
+            const tbody = document.getElementById('scheduleBody');
+            tbody.innerHTML = '';
+
+            const waktuSlots = ['07:30-09:00', '09:00-10:30', '10:45-12:15'];
+            const hariList = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
+
+            waktuSlots.forEach(waktu => {
+                const tr = document.createElement('tr');
+
+                const timeTd = document.createElement('td');
+                timeTd.className = 'time-col';
+                timeTd.textContent = waktu.replace('-', ' - ');
+                tr.appendChild(timeTd);
+
+                hariList.forEach(hari => {
+                    const td = document.createElement('td');
+                    const schedule = jadwal[waktu] && jadwal[waktu][hari];
+
+                    if (schedule) {
+                        td.innerHTML = `
+                            <div class="subject-block">
+                                <div class="subject-name">${schedule.nama}</div>
+                                <div class="subject-room">${schedule.ruang} • ${schedule.guru}</div>
+                            </div>
+                        `;
+                    } else {
+                        td.innerHTML = '<div class="no-class">-</div>';
+                    }
+                    tr.appendChild(td);
+                });
+
+                tbody.appendChild(tr);
+
+                if (waktu === '09:00-10:30') {
+                    const breakTr = document.createElement('tr');
+                    breakTr.innerHTML = `
+                        <td class="time-col" style="color: var(--text-dim);">10:30 - 10:45</td>
+                        <td colspan="5">
+                            <div class="subject-block istirahat">ISTIRAHAT</div>
+                        </td>
+                    `;
+                    tbody.appendChild(breakTr);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

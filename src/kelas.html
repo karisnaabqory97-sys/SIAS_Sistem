@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Konfigurasi Database Neon -->
+    <script src="neon-config.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Kelas | SAIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-box {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        nav {
+            flex: 1;
+        }
+
+        nav ul {
+            list-style: none;
+        }
+
+        nav li {
+            margin-bottom: 8px;
+        }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: var(--text-dim);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        nav a.active, nav a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        nav a.logout-link:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 40px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .kelas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .kelas-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            transition: transform 0.3s;
+        }
+
+        .kelas-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .kelas-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .kelas-info h3 {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .kelas-info p {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+        }
+
+        .kelas-stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+        }
+
+        .stat-item {
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            display: block;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-sidebar);
+            padding: 32px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .btn-close:hover {
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-footer {
+            margin-top: 32px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">S</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Admin</span>
+        </div>
+                <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="siswa.html">Manajemen Siswa</a></li>
+                <li><a href="guru.html">Manajemen Guru</a></li>
+                <li><a href="kelas.html" class="active">Manajemen Kelas</a></li>
+                <li><a href="pelajaran.html">Manajemen Pelajaran</a></li>
+                <li><a href="jadwal.html">Manajemen Jadwal</a></li>
+                <li><a href="rapot.html">Manajemen Rapot</a></li>
+                <li><a href="kenaikan_kelas.html">Kenaikan Kelas</a></li>
+                <li><a href="informasi.html">Manajemen Informasi</a></li>
+                <li><a href="pengaturan.html">Pengaturan</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1 style="font-size: 24px; font-weight: 600;">Manajemen Kelas</h1>
+                <p style="color: var(--text-dim); font-size: 14px;">Total 32 rombongan belajar aktif</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn-secondary" id="btnTemplate" title="Unduh format excel">📄 Template</button>
+                <input type="file" id="fileUpload" accept=".xls,.xlsx,.csv" style="display: none;">
+                <button class="btn-secondary" id="btnUpload" title="Upload data dari excel">📤 Upload Massal</button>
+                <button class="btn-success" id="btnSimpan">💾 Simpan</button>
+                <button class="btn-add" id="btnTambahKelas" style="margin-left: 12px;">+ Tambah Kelas</button>
+            </div>
+        </header>
+
+        <div class="kelas-grid" id="kelasGrid">
+            <!-- Cards will be rendered here by JavaScript -->
+        </div>
+    </main>
+
+    <!-- Modal Tambah Kelas -->
+    <div class="modal-overlay" id="modalTambahKelas">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Tambah Kelas Baru</h2>
+                <button class="btn-close" id="btnCloseModal">&times;</button>
+            </div>
+            <form id="formTambahKelas">
+                <div class="form-group">
+                    <label class="form-label">Nama Kelas</label>
+                    <input type="text" id="inputNamaKelas" class="form-control" placeholder="Contoh: Kelas IX-A" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Kode Kelas (Singkatan)</label>
+                    <input type="text" id="inputKodeKelas" class="form-control" placeholder="Contoh: 9A" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ruang</label>
+                    <input type="text" id="inputRuang" class="form-control" placeholder="Contoh: Ruang Teori 1 - Lantai 2" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Wali Kelas</label>
+                    <input type="text" id="inputWaliKelas" class="form-control" placeholder="Nama Wali Kelas" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Jumlah Siswa</label>
+                    <input type="number" id="inputSiswa" class="form-control" placeholder="0" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="btnBatalModal">Batal</button>
+                    <button type="submit" class="btn-success">Simpan Kelas</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Element References
+            const btnTemplate = document.getElementById('btnTemplate');
+            const btnUpload = document.getElementById('btnUpload');
+            const fileUpload = document.getElementById('fileUpload');
+            const btnSimpan = document.getElementById('btnSimpan');
+            const btnTambahKelas = document.getElementById('btnTambahKelas');
+            
+            const modalTambahKelas = document.getElementById('modalTambahKelas');
+            const btnCloseModal = document.getElementById('btnCloseModal');
+            const btnBatalModal = document.getElementById('btnBatalModal');
+            const formTambahKelas = document.getElementById('formTambahKelas');
+            const kelasGrid = document.getElementById('kelasGrid');
+
+            // Data State Management
+            const defaultKelasData = [
+                { kode: '7A', nama: 'Kelas VII-A', ruang: 'Ruang Teori 1 - Lantai 2', wali: 'Siti Aminah, S.Pd.', siswa: 32 },
+                { kode: '7B', nama: 'Kelas VII-B', ruang: 'Ruang Teori 2 - Lantai 2', wali: 'Drs. Heru Sujatmiko', siswa: 30 },
+                { kode: '8A', nama: 'Kelas VIII-A', ruang: 'Ruang Teori 5 - Lantai 3', wali: 'Rizky Pratama, M.Sc.', siswa: 34 }
+            ];
+
+            let kelasData = [];
+            try {
+                const stored = localStorage.getItem('sais_kelas_data');
+                if (stored) {
+                    kelasData = JSON.parse(stored);
+                } else {
+                    // Deep copy default data
+                    kelasData = JSON.parse(JSON.stringify(defaultKelasData));
+                }
+            } catch (e) {
+                console.error("Error reading from localStorage", e);
+                kelasData = JSON.parse(JSON.stringify(defaultKelasData));
+            }
+
+            let currentEditIndex = null;
+
+            function saveAndRender() {
+                try {
+                    localStorage.setItem('sais_kelas_data', JSON.stringify(kelasData));
+                } catch (e) {
+                    console.error("Error saving to localStorage", e);
+                }
+                renderKelas();
+            }
+
+            function renderKelas() {
+                kelasGrid.innerHTML = '';
+                kelasData.forEach((kelas, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'kelas-card';
+                    card.dataset.index = index;
+                    card.innerHTML = `
+                        <div class="kelas-icon">${kelas.kode}</div>
+                        <div class="kelas-info">
+                            <h3>${kelas.nama}</h3>
+                            <p>${kelas.ruang}</p>
+                        </div>
+                        <div class="kelas-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Wali Kelas</span>
+                                <span class="stat-value">${kelas.wali}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Siswa</span>
+                                <span class="stat-value">${kelas.siswa} Orang</span>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-action">Atur Siswa</button>
+                            <button class="btn-action">Edit</button>
+                        </div>
+                    `;
+                    kelasGrid.appendChild(card);
+                });
+
+                // Update total count
+                const countText = document.querySelector('header p');
+                countText.innerText = `Total ${kelasData.length} rombongan belajar aktif`;
+            }
+
+            // Initial render
+            renderKelas();
+
+            // 1. Template
+            btnTemplate.addEventListener('click', function() {
+                // Simulasi download csv
+                const link = document.createElement('a');
+                link.href = 'data:text/csv;charset=utf-8,Nama Kelas,Kode,Ruang,Wali Kelas,Jumlah Siswa\nVII-A,7A,Ruang Teori 1,Siti Aminah,32';
+                link.download = 'template_kelas.csv';
+                link.click();
+                alert('Template berhasil diunduh.');
+            });
+
+            // 2. Upload Massal
+            btnUpload.addEventListener('click', function() {
+                fileUpload.click();
+            });
+
+            fileUpload.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    const fileName = e.target.files[0].name;
+                    alert('Berhasil mengupload file: ' + fileName);
+                    fileUpload.value = '';
+                }
+            });
+
+            // 3. Simpan (Global button)
+            btnSimpan.addEventListener('click', function() {
+                saveAndRender();
+                alert('Seluruh data kelas berhasil disimpan permanen!');
+            });
+
+            // 4. Tambah/Edit Kelas (Modal)
+            function openModal() {
+                modalTambahKelas.classList.add('active');
+            }
+
+            function closeModal() {
+                modalTambahKelas.classList.remove('active');
+                formTambahKelas.reset();
+                currentEditIndex = null;
+                document.querySelector('.modal-title').innerText = 'Tambah Kelas Baru';
+            }
+
+            btnTambahKelas.addEventListener('click', function() {
+                currentEditIndex = null;
+                document.querySelector('.modal-title').innerText = 'Tambah Kelas Baru';
+                formTambahKelas.reset();
+                openModal();
+            });
+
+            btnCloseModal.addEventListener('click', closeModal);
+            btnBatalModal.addEventListener('click', closeModal);
+
+            modalTambahKelas.addEventListener('click', function(e) {
+                if (e.target === modalTambahKelas) {
+                    closeModal();
+                }
+            });
+
+            // Submit Form Tambah/Edit Kelas
+            formTambahKelas.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const newData = {
+                    nama: document.getElementById('inputNamaKelas').value,
+                    kode: document.getElementById('inputKodeKelas').value,
+                    ruang: document.getElementById('inputRuang').value,
+                    wali: document.getElementById('inputWaliKelas').value,
+                    siswa: document.getElementById('inputSiswa').value
+                };
+
+                if (currentEditIndex !== null) {
+                    const idx = parseInt(currentEditIndex, 10);
+                    kelasData[idx] = newData;
+                    alert('Data kelas ' + newData.nama + ' berhasil diperbarui!');
+                } else {
+                    kelasData.push(newData);
+                    alert('Kelas ' + newData.nama + ' berhasil ditambahkan!');
+                }
+                
+                saveAndRender();
+                closeModal();
+            });
+
+            // 5. Card Actions (Atur Siswa & Edit)
+            kelasGrid.addEventListener('click', function(e) {
+                if (e.target.classList.contains('btn-action')) {
+                    const card = e.target.closest('.kelas-card');
+                    const index = card.dataset.index;
+                    const kelas = kelasData[parseInt(index, 10)];
+                    
+                    if (e.target.innerText.includes('Atur Siswa')) {
+                        const filterText = kelas.nama.replace('Kelas ', '');
+                        window.location.href = 'siswa.html?filter=' + encodeURIComponent(filterText);
+                    } else if (e.target.innerText.includes('Edit')) {
+                        currentEditIndex = index;
+                        document.querySelector('.modal-title').innerText = 'Edit Kelas';
+                        
+                        document.getElementById('inputKodeKelas').value = kelas.kode;
+                        document.getElementById('inputNamaKelas').value = kelas.nama;
+                        document.getElementById('inputRuang').value = kelas.ruang;
+                        document.getElementById('inputWaliKelas').value = kelas.wali;
+                        document.getElementById('inputSiswa').value = kelas.siswa;
+                        
+                        openModal();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Konfigurasi Database Neon -->
+    <script src="neon-config.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan Sistem | SAIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-box {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        nav {
+            flex: 1;
+        }
+
+        nav ul {
+            list-style: none;
+        }
+
+        nav li {
+            margin-bottom: 8px;
+        }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: var(--text-dim);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        nav a.active, nav a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        nav a.logout-link:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 40px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        .settings-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s;
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            transition: 0.3s;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            opacity: 0.7;
+        }
+
+        .upload-text {
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 12px;
+            color: var(--text-dim);
+            opacity: 0.7;
+        }
+
+        .preview-box {
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .img-preview {
+            width: 64px;
+            height: 64px;
+            background: var(--bg-sidebar);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .img-preview.pwa-icon {
+            border-radius: 20%;
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">S</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Admin</span>
+        </div>
+                <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="siswa.html">Manajemen Siswa</a></li>
+                <li><a href="guru.html">Manajemen Guru</a></li>
+                <li><a href="kelas.html">Manajemen Kelas</a></li>
+                <li><a href="pelajaran.html">Manajemen Pelajaran</a></li>
+                <li><a href="jadwal.html">Manajemen Jadwal</a></li>
+                <li><a href="rapot.html">Manajemen Rapot</a></li>
+                <li><a href="kenaikan_kelas.html">Kenaikan Kelas</a></li>
+                <li><a href="informasi.html">Manajemen Informasi</a></li>
+                <li><a href="pengaturan.html" class="active">Pengaturan</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1>Pengaturan Sistem</h1>
+                <p style="color: var(--text-dim); font-size: 14px;">Konfigurasi identitas aplikasi dan profil sekolah.</p>
+            </div>
+            <button class="btn-primary" onclick="simulateSave()">💾 Simpan Perubahan</button>
+        </header>
+
+        <div class="settings-grid">
+            <!-- Informasi Umum -->
+            <div class="settings-card">
+                <div class="card-title">
+                    <span>🏢</span> Informasi Umum
+                </div>
+                
+                <div class="form-group">
+                    <label>Nama Aplikasi / Sistem</label>
+                    <input type="text" id="appName" value="SAIS - Sistem Informasi Sekolah">
+                </div>
+
+                <div class="form-group">
+                    <label>Nama Sekolah</label>
+                    <input type="text" id="schoolName" value="SMP Negeri 1 Nusantara">
+                </div>
+
+                <div class="form-group">
+                    <label>Alamat & Profil Singkat Sekolah</label>
+                    <textarea id="schoolProfile">Jl. Pendidikan No. 123, Kota Nusantara. 
+Sekolah berstandar nasional dengan fasilitas lengkap dan tenaga pengajar profesional. Mencetak generasi bangsa yang berakhlak mulia dan berprestasi.</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Kontak Utama (Email / Telepon)</label>
+                    <input type="text" id="schoolContact" value="info@smp1nusantara.sch.id | (021) 555-0198">
+                </div>
+            </div>
+
+            <!-- Identitas Visual -->
+            <div class="settings-card">
+                <div class="card-title">
+                    <span>🎨</span> Identitas Visual & PWA
+                </div>
+
+                <div class="form-group">
+                    <label>Logo Sekolah</label>
+                    <div class="upload-area" onclick="document.getElementById('logoInput').click()">
+                        <div class="upload-icon">🖼️</div>
+                        <div class="upload-text">Klik untuk mengunggah logo sekolah</div>
+                        <div class="upload-hint">Format disarankan: PNG transparan, maks 2MB</div>
+                    </div>
+                    <input type="file" id="logoInput" style="display: none;" accept="image/*">
+                    <div class="preview-box">
+                        <div class="img-preview" style="color: var(--primary); font-size: 24px; font-weight: bold;">S</div>
+                        <div style="font-size: 12px; color: var(--text-dim);">Logo saat ini (Default)</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 32px; margin-bottom: 24px; height: 1px; background: var(--border);"></div>
+
+                <div class="form-group">
+                    <label>Ikon Aplikasi (PWA Icon)</label>
+                    <p style="font-size: 12px; color: var(--text-dim); margin-bottom: 12px;">Ikon ini akan muncul ketika pengguna menginstal web app ini ke layar beranda HP mereka.</p>
+                    <div class="upload-area" onclick="document.getElementById('pwaInput').click()">
+                        <div class="upload-icon">📱</div>
+                        <div class="upload-text">Klik untuk mengunggah Ikon PWA</div>
+                        <div class="upload-hint">Format wajib: PNG ukuran 512x512px</div>
+                    </div>
+                    <input type="file" id="pwaInput" style="display: none;" accept="image/png">
+                    <div class="preview-box">
+                        <div class="img-preview pwa-icon" style="background: var(--primary); color: white; font-size: 24px; font-weight: bold;">S</div>
+                        <div style="font-size: 12px; color: var(--text-dim);">Ikon saat ini (Generated)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Load data on page load
+        window.onload = function() {
+            const savedAppName = localStorage.getItem('sais_appName');
+            const savedSchoolName = localStorage.getItem('sais_schoolName');
+            const savedSchoolProfile = localStorage.getItem('sais_schoolProfile');
+            const savedSchoolContact = localStorage.getItem('sais_schoolContact');
+            const savedLogo = localStorage.getItem('sais_logo');
+            const savedPwa = localStorage.getItem('sais_pwa');
+
+            if (savedAppName) document.getElementById('appName').value = savedAppName;
+            if (savedSchoolName) document.getElementById('schoolName').value = savedSchoolName;
+            if (savedSchoolProfile) document.getElementById('schoolProfile').value = savedSchoolProfile;
+            if (savedSchoolContact) document.getElementById('schoolContact').value = savedSchoolContact;
+
+            if (savedLogo) {
+                const previewBox = document.querySelector('.img-preview:not(.pwa-icon)');
+                previewBox.innerHTML = `<img src="${savedLogo}" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+                previewBox.nextElementSibling.innerText = 'Logo Tersimpan';
+            }
+
+            if (savedPwa) {
+                const previewBox = document.querySelector('.img-preview.pwa-icon');
+                previewBox.innerHTML = `<img src="${savedPwa}" alt="PWA" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+                previewBox.nextElementSibling.innerText = 'Ikon Tersimpan';
+            }
+        };
+
+        function simulateSave() {
+            const btn = document.querySelector('.btn-primary');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '⏳ Menyimpan...';
+            btn.style.opacity = '0.8';
+
+            // Save to localStorage
+            localStorage.setItem('sais_appName', document.getElementById('appName').value);
+            localStorage.setItem('sais_schoolName', document.getElementById('schoolName').value);
+            localStorage.setItem('sais_schoolProfile', document.getElementById('schoolProfile').value);
+            localStorage.setItem('sais_schoolContact', document.getElementById('schoolContact').value);
+
+            const logoImg = document.querySelector('.img-preview:not(.pwa-icon) img');
+            if (logoImg) localStorage.setItem('sais_logo', logoImg.src);
+
+            const pwaImg = document.querySelector('.img-preview.pwa-icon img');
+            if (pwaImg) localStorage.setItem('sais_pwa', pwaImg.src);
+            
+            setTimeout(() => {
+                btn.innerHTML = '✅ Berhasil Disimpan';
+                btn.style.background = '#10b981';
+                btn.style.opacity = '1';
+
+                const logoText = document.querySelector('.img-preview:not(.pwa-icon)').nextElementSibling;
+                if(logoText.innerText.includes('Belum')) logoText.innerText = 'Logo Tersimpan';
+
+                const pwaText = document.querySelector('.img-preview.pwa-icon').nextElementSibling;
+                if(pwaText.innerText.includes('Belum')) pwaText.innerText = 'Ikon Tersimpan';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = 'var(--primary)';
+                }, 2000);
+            }, 1000);
+        }
+
+        // Handle file selection and preview
+        document.getElementById('logoInput').addEventListener('change', function(e) {
+            if(e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const previewBox = document.querySelector('.img-preview:not(.pwa-icon)');
+                    previewBox.innerHTML = `<img src="${event.target.result}" alt="Logo Preview" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+                    previewBox.nextElementSibling.innerText = 'Logo Baru (Belum Disimpan)';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('pwaInput').addEventListener('change', function(e) {
+            if(e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const previewBox = document.querySelector('.img-preview.pwa-icon');
+                    previewBox.innerHTML = `<img src="${event.target.result}" alt="PWA Preview" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+                    previewBox.nextElementSibling.innerText = 'Ikon Baru (Belum Disimpan)';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>

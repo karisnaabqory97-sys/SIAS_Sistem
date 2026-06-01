@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Konfigurasi Database Neon -->
+    <script src="neon-config.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Guru | SAIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-box {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+        }
+
+        nav {
+            flex: 1;
+        }
+
+        nav ul {
+            list-style: none;
+        }
+
+        nav li {
+            margin-bottom: 8px;
+        }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: var(--text-dim);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        nav a.active, nav a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        nav a.logout-link:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .user-profile {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #334155;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 40px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 24px;
+            border-radius: 20px;
+        }
+
+        .content-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            text-align: left;
+            color: var(--text-dim);
+            font-size: 13px;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">S</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Guru</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard_guru.html" class="active">Dashboard</a></li>
+                <li><a href="rapot_guru.html">Input Nilai Rapot</a></li>
+                <li><a href="kenaikan_guru.html">Murid Baru</a></li>
+                <li><a href="jadwal_guru.html">Jadwal Mengajar</a></li>
+                <li><a href="jadwal_ujian_guru.html">Jadwal Ujian</a></li>
+                <li><a href="informasi_guru.html">Informasi</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+        <div class="user-profile">
+            <div class="avatar" id="userAvatar">-</div>
+            <div>
+                <p style="font-size: 14px; font-weight: 600;" id="userNama">Memuat...</p>
+                <p style="font-size: 12px; color: var(--text-dim);" id="userMapel">-</p>
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1>Dashboard Guru</h1>
+                <p style="color: var(--text-dim);" id="welcomeText">Selamat datang kembali.</p>
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <p style="color: var(--text-dim); font-size: 14px;">Total Kelas</p>
+                <p style="font-size: 24px; font-weight: 700;">6 Kelas</p>
+            </div>
+            <div class="stat-card">
+                <p style="color: var(--text-dim); font-size: 14px;">Total Siswa</p>
+                <p style="font-size: 24px; font-weight: 700;">210 Siswa</p>
+            </div>
+            <div class="stat-card">
+                <p style="color: var(--text-dim); font-size: 14px;">Tugas Belum Dinilai</p>
+                <p style="font-size: 24px; font-weight: 700; color: #fbbf24;">12 Tugas</p>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>Jadwal Mengajar Hari Ini</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Jam</th>
+                        <th>Kelas</th>
+                        <th>Mata Pelajaran</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>07:30 - 09:00</td>
+                        <td>VII-A</td>
+                        <td>Bahasa Indonesia</td>
+                        <td style="color: #10b981;">Selesai</td>
+                    </tr>
+                    <tr>
+                        <td>09:00 - 10:30</td>
+                        <td>VIII-B</td>
+                        <td>Bahasa Indonesia</td>
+                        <td style="color: #fbbf24;">Sedang Berlangsung</td>
+                    </tr>
+                    <tr>
+                        <td>10:45 - 12:15</td>
+                        <td>IX-C</td>
+                        <td>Bahasa Indonesia</td>
+                        <td>Mendatang</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="content-section" style="margin-top: 24px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center;">
+                <h3>Pengumuman Sekolah</h3>
+                <a href="informasi_guru.html" style="color: var(--primary); font-size: 13px; text-decoration: none;">Lihat Semua</a>
+            </div>
+            <div id="pengumumanGuruContainer">
+                <!-- Dynamic announcements will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // Load user data from login
+            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            const userNama = currentUser.nama || 'Siti Aminah, S.Pd.';
+            const userMapel = currentUser.mapel || 'Bahasa Indonesia';
+
+            // Update user profile
+            document.getElementById('userAvatar').textContent = userNama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('userNama').textContent = userNama;
+            document.getElementById('userMapel').textContent = 'Guru ' + userMapel;
+
+            // Update welcome message
+            const firstName = userNama.split(' ')[0].replace(/,/g, '');
+            document.getElementById('welcomeText').textContent = 'Selamat datang kembali, ' + firstName + '.';
+
+            // Load announcements
+            const defaultInfo = [
+                { tanggal: '2026-05-28', judul: 'Persiapan Ujian Tengah Semester', isi: 'Jadwal UTS telah diperbarui, silakan cek menu jadwal.', sasaran: 'Semua', status: 'Aktif' },
+                { tanggal: '2026-05-25', judul: 'Rapat Komite Sekolah', isi: 'Rapat akan diadakan hari Sabtu pukul 09:00 WIB di aula sekolah.', sasaran: 'Guru', status: 'Aktif' },
+                { tanggal: '2026-05-20', judul: 'Lomba Hari Pendidikan Nasional', isi: 'Berbagai lomba akademik dan olahraga akan diselenggarakan.', sasaran: 'Siswa', status: 'Aktif' }
+            ];
+
+            let infoData = [];
+            try {
+                const stored = localStorage.getItem('sais_dataInformasi');
+                if (stored) {
+                    infoData = JSON.parse(stored);
+                } else {
+                    infoData = defaultInfo;
+                    localStorage.setItem('sais_dataInformasi', JSON.stringify(defaultInfo));
+                }
+            } catch (e) {
+                infoData = defaultInfo;
+            }
+
+            const container = document.getElementById('pengumumanGuruContainer');
+            const filteredInfo = infoData.filter(info =>
+                (info.sasaran === 'Semua' || info.sasaran === 'Guru') && info.status === 'Aktif'
+            );
+
+            if (filteredInfo.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-dim); font-size: 14px;">Tidak ada pengumuman terbaru.</p>';
+            } else {
+                container.innerHTML = filteredInfo.slice(0, 3).map(info => `
+                    <div style="padding: 16px 0; border-bottom: 1px solid var(--border);">
+                        <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px;">Tanggal: ${info.tanggal.split('-').reverse().join('/')}</p>
+                        <p style="font-weight: 600; font-size: 15px; color: var(--text-main);">${info.judul}</p>
+                        <p style="font-size: 13px; color: var(--text-dim); margin-top: 4px;">${info.isi}</p>
+                    </div>
+                `).join('');
+                if (container.lastElementChild) {
+                    container.lastElementChild.style.borderBottom = 'none';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

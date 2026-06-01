@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Konfigurasi Database Neon -->
+    <script src="neon-config.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Siswa | SAIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-box {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+        }
+
+        nav {
+            flex: 1;
+        }
+
+        nav ul {
+            list-style: none;
+        }
+
+        nav li {
+            margin-bottom: 8px;
+        }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: var(--text-dim);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        nav a.active, nav a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        nav a.logout-link:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .user-profile {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #334155;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 40px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .welcome-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            padding: 32px;
+            border-radius: 24px;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .welcome-text h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .content-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .grade-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            margin-bottom: 12px;
+        }
+
+        .subject-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .subject-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .grade-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .schedule-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .schedule-item:last-child {
+            border-bottom: none;
+        }
+
+        .time {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">S</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Siswa</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard_siswa.html" class="active">Dashboard</a></li>
+                <li><a href="jadwal_siswa.html">Jadwal</a></li>
+                <li><a href="jadwal_ujian_siswa.html">Ujian</a></li>
+                <li><a href="nilai_siswa.html">Nilai</a></li>
+                <li><a href="rapot_siswa.html">Rapot</a></li>
+                <li><a href="kenaikan_siswa.html">Kenaikan Kelas</a></li>
+                <li><a href="informasi_siswa.html">Informasi</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+        <div class="user-profile">
+            <div class="avatar" id="userAvatar">-</div>
+            <div>
+                <p style="font-size: 14px; font-weight: 600;" id="userNama">Memuat...</p>
+                <p style="font-size: 12px; color: var(--text-dim);" id="userKelas">-</p>
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <div class="welcome-card">
+            <div class="welcome-text">
+                <h2 id="welcomeText">Halo, Siswa! 👋</h2>
+                <p id="welcomeSubtitle">Selamat datang di portal siswa.</p>
+            </div>
+            <div style="font-size: 48px;">📚</div>
+        </div>
+
+        <div class="grid-container">
+            <div class="content-card">
+                <div class="card-header">
+                    <h3 class="card-title">Nilai Terakhir</h3>
+                    <a href="#" style="color: var(--primary); font-size: 13px; text-decoration: none;">Lihat Semua</a>
+                </div>
+                <div class="grade-item">
+                    <div class="subject-info">
+                        <div class="subject-icon">MT</div>
+                        <div>
+                            <p style="font-weight: 500;">Matematika</p>
+                            <p style="font-size: 12px; color: var(--text-dim);">Ujian Tengah Semester</p>
+                        </div>
+                    </div>
+                    <div class="grade-value">92</div>
+                </div>
+                <div class="grade-item">
+                    <div class="subject-info">
+                        <div class="subject-icon">BI</div>
+                        <div>
+                            <p style="font-weight: 500;">Bahasa Indonesia</p>
+                            <p style="font-size: 12px; color: var(--text-dim);">Tugas Harian 3</p>
+                        </div>
+                    </div>
+                    <div class="grade-value">88</div>
+                </div>
+                <div class="grade-item">
+                    <div class="subject-info">
+                        <div class="subject-icon">IP</div>
+                        <div>
+                            <p style="font-weight: 500;">IPA</p>
+                            <p style="font-size: 12px; color: var(--text-dim);">Kuis Pekanan</p>
+                        </div>
+                    </div>
+                    <div class="grade-value">95</div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="card-header">
+                    <h3 class="card-title">Jadwal Hari Ini</h3>
+                </div>
+                <div class="schedule-item">
+                    <p class="time">07:30 - 09:00</p>
+                    <p style="font-weight: 500;">Matematika</p>
+                    <p style="font-size: 12px; color: var(--text-dim);">Ruang 204</p>
+                </div>
+                <div class="schedule-item">
+                    <p class="time">09:00 - 10:30</p>
+                    <p style="font-weight: 500;">Bahasa Inggris</p>
+                    <p style="font-size: 12px; color: var(--text-dim);">Lab Bahasa</p>
+                </div>
+                <div class="schedule-item">
+                    <p class="time">10:45 - 12:15</p>
+                    <p style="font-weight: 500;">Pendidikan Agama</p>
+                    <p style="font-size: 12px; color: var(--text-dim);">Masjid Sekolah</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-card" style="margin-top: 24px;">
+            <div class="card-header">
+                <h3 class="card-title">Pengumuman Sekolah</h3>
+                <a href="informasi_siswa.html" style="color: var(--primary); font-size: 13px; text-decoration: none;">Lihat Semua</a>
+            </div>
+            <div id="pengumumanSiswaContainer">
+                <!-- Dynamic announcements will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // Load user data from login
+            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            const userNama = currentUser.nama || 'Ahmad Fauzi';
+            const userKelas = currentUser.kelas || 'VII-A';
+
+            // Update user profile
+            document.getElementById('userAvatar').textContent = userNama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('userNama').textContent = userNama;
+            document.getElementById('userKelas').textContent = 'Kelas ' + userKelas;
+
+            // Update welcome message
+            document.getElementById('welcomeText').textContent = 'Halo, ' + userNama.split(' ')[0] + '! 👋';
+            document.getElementById('welcomeSubtitle').textContent = 'Semangat belajarnya ya, hari ini ada 4 mata pelajaran.';
+
+            // Load announcements
+            const defaultInfo = [
+                { tanggal: '2026-05-28', judul: 'Persiapan Ujian Tengah Semester', isi: 'Jadwal UTS telah diperbarui, silakan cek menu jadwal.', sasaran: 'Semua', status: 'Aktif' },
+                { tanggal: '2026-05-25', judul: 'Rapat Komite Sekolah', isi: 'Rapat akan diadakan hari Sabtu pukul 09:00 WIB di aula sekolah.', sasaran: 'Guru', status: 'Aktif' },
+                { tanggal: '2026-05-20', judul: 'Lomba Hari Pendidikan Nasional', isi: 'Berbagai lomba akademik dan olahraga akan diselenggarakan.', sasaran: 'Siswa', status: 'Aktif' }
+            ];
+
+            let infoData = [];
+            try {
+                const stored = localStorage.getItem('sais_dataInformasi');
+                if (stored) {
+                    infoData = JSON.parse(stored);
+                } else {
+                    infoData = defaultInfo;
+                    localStorage.setItem('sais_dataInformasi', JSON.stringify(defaultInfo));
+                }
+            } catch (e) {
+                infoData = defaultInfo;
+            }
+
+            const container = document.getElementById('pengumumanSiswaContainer');
+            const filteredInfo = infoData.filter(info =>
+                (info.sasaran === 'Semua' || info.sasaran === 'Siswa') && info.status === 'Aktif'
+            );
+
+            if (filteredInfo.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-dim); font-size: 14px;">Tidak ada pengumuman terbaru.</p>';
+            } else {
+                container.innerHTML = filteredInfo.slice(0, 3).map(info => `
+                    <div style="padding: 16px; border-bottom: 1px solid var(--border); margin-bottom: 8px;">
+                        <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px;">Tanggal: ${info.tanggal.split('-').reverse().join('/')}</p>
+                        <p style="font-weight: 600; font-size: 15px; color: var(--text-main);">${info.judul}</p>
+                        <p style="font-size: 13px; color: var(--text-dim); margin-top: 4px;">${info.isi}</p>
+                    </div>
+                `).join('');
+                if (container.lastElementChild) {
+                    container.lastElementChild.style.borderBottom = 'none';
+                    container.lastElementChild.style.marginBottom = '0';
+                }
+            }
+        });
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('sais_current_user');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

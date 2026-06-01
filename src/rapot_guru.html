@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Konfigurasi Database Neon -->
+    <script src="neon-config.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Nilai Rapot | SAIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-box {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        nav { flex: 1; }
+        nav ul { list-style: none; }
+        nav li { margin-bottom: 8px; }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: var(--text-dim);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        nav a.active, nav a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        nav a.logout-link:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .user-info {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .user-info .name { font-weight: 600; font-size: 14px; }
+        .user-info .role { font-size: 12px; color: var(--text-dim); }
+
+        main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 40px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 32px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .header-left h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header-left p {
+            color: var(--text-dim);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 16px;
+            color: white;
+            outline: none;
+            font-size: 14px;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .filter-select option { background: #1e293b; }
+
+        .info-banner {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.1));
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .info-banner .icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .info-banner .text h3 { font-size: 16px; margin-bottom: 4px; }
+        .info-banner .text p { font-size: 13px; color: var(--text-dim); }
+
+        .progress-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-header span { font-size: 14px; font-weight: 500; }
+        .progress-header .percentage { color: var(--success); font-weight: 600; }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px 16px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+        .input-nilai {
+            width: 70px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-nilai:focus {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .input-nilai.warning { border-color: var(--warning); background: rgba(245, 158, 11, 0.1); }
+        .input-nilai.danger { border-color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+        .input-nilai.success { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+
+        .btn-save {
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: none;
+            background: var(--success);
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-save:hover { background: #059669; }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover { background: #1d4ed8; }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .status-sudah { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .status-belum { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+        .grade-display {
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .grade-a { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .grade-b { background: rgba(37, 99, 235, 0.2); color: #2563eb; }
+        .grade-c { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .grade-d { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--success);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1001;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.error { background: var(--danger); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: #1e293b;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            width: 100%;
+            max-width: 500px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            margin-bottom: 24px;
+        }
+
+        .modal-title { font-size: 20px; font-weight: 600; }
+        .modal-subtitle { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .modal-footer {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .quick-stats {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .quick-stat {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .quick-stat .value { font-size: 24px; font-weight: 700; color: var(--primary); }
+        .quick-stat .label { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">S</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Guru</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard_guru.html">Dashboard</a></li>
+                <li><a href="rapot_guru.html" class="active">Input Nilai Rapot</a></li>
+                <li><a href="kenaikan_guru.html">Murid Baru</a></li>
+                <li><a href="jadwal_guru.html">Jadwal Mengajar</a></li>
+                <li><a href="jadwal_ujian_guru.html">Jadwal Ujian</a></li>
+                <li><a href="informasi_guru.html">Informasi</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+        <div class="user-info">
+            <div class="name">Heru Sujatmiko, S.Pd.</div>
+            <div class="role">Guru Matematika</div>
+        </div>
+    </aside>
+
+    <main>
+        <header>
+            <div class="header-left">
+                <h1>Input Nilai Rapot</h1>
+                <p>Input dan kelola nilai siswa untuk rapot semester ini</p>
+            </div>
+            <div class="filter-group">
+                <select class="filter-select" id="filterKelas">
+                    <option value="">Pilih Kelas</option>
+                    <option value="VII-A">VII-A</option>
+                    <option value="VII-B">VII-B</option>
+                    <option value="VIII-A">VIII-A</option>
+                    <option value="VIII-B">VIII-B</option>
+                    <option value="IX-A">IX-A</option>
+                    <option value="IX-B">IX-B</option>
+                </select>
+                <select class="filter-select" id="filterMapel">
+                    <option value="">Pilih Mapel</option>
+                    <option value="Matematika">Matematika</option>
+                    <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                    <option value="IPA">IPA</option>
+                    <option value="IPS">IPS</option>
+                    <option value="Bahasa Inggris">Bahasa Inggris</option>
+                </select>
+            </div>
+        </header>
+
+        <!-- Info Banner -->
+        <div class="info-banner">
+            <div class="icon">&#9998;</div>
+            <div class="text">
+                <h3>Petunjuk Penginputan Nilai</h3>
+                <p>Input nilai dengan skala 0-100. Grade akan otomatis terhitung. Klik "Simpan" setelah input.</p>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <div class="progress-header">
+                <span>Progress Penginputan</span>
+                <span class="percentage" id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+            </div>
+            <div class="quick-stats" style="margin-top: 16px;">
+                <div class="quick-stat">
+                    <div class="value" id="totalSiswa">0</div>
+                    <div class="label">Total Siswa</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="value" id="sudahInput">0</div>
+                    <div class="label">Sudah Dinilai</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="value" id="belumInput">0</div>
+                    <div class="label">Belum Dinilai</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nilai Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">NO</th>
+                        <th>NISN</th>
+                        <th>NAMA SISWA</th>
+                        <th>KELAS</th>
+                        <th>NILAI (0-100)</th>
+                        <th>GRADE</th>
+                        <th>STATUS</th>
+                        <th style="width: 100px;">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="nilaiTableBody">
+                    <!-- Data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+            <button class="btn-secondary" onclick="resetForm()">Reset Filter</button>
+            <button class="btn-primary" onclick="simpanSemua()">
+                <span>&#128190;</span> Simpan Semua
+            </button>
+        </div>
+    </main>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Berhasil!</h2>
+                <p class="modal-subtitle">Nilai berhasil disimpan</p>
+            </div>
+            <p style="text-align: center; padding: 20px 0;">
+                <span style="font-size: 48px; color: var(--success);">&#10004;</span>
+            </p>
+            <p style="text-align: center; color: var(--text-dim);">
+                Data nilai berhasil disimpan ke sistem.
+            </p>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="closeModal('successModal')">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Default data
+        const defaultNilaiData = [
+            { id: 1, nisn: '0012345678', nama: 'Ahmad Fauzi', kelas: 'VII-A', mapel: 'Matematika', nilai: 85 },
+            { id: 2, nisn: '0023456781', nama: 'Budi Santoso', kelas: 'VII-A', mapel: 'Matematika', nilai: 78 },
+            { id: 3, nisn: '0023456782', nama: 'Citra Dewi', kelas: 'VII-A', mapel: 'Matematika', nilai: 92 },
+            { id: 4, nisn: '0023456783', nama: 'Dian Pratama', kelas: 'VII-A', mapel: 'Matematika', nilai: 65 },
+            { id: 5, nisn: '0023456784', nama: 'Eko Wijaya', kelas: 'VII-A', mapel: 'Matematika', nilai: 0 },
+            { id: 6, nisn: '0023456785', nama: 'Fitri Handayani', kelas: 'VII-A', mapel: 'Matematika', nilai: 0 },
+            { id: 7, nisn: '0023456786', nama: 'Gunawan Setiawan', kelas: 'VII-A', mapel: 'Matematika', nilai: 88 },
+            { id: 8, nisn: '0023456787', nama: 'Hendra Kusuma', kelas: 'VII-A', mapel: 'Matematika', nilai: 0 },
+        ];
+
+        let nilaiData = [];
+
+        function calculateGrade(nilai) {
+            if (nilai >= 90) return { grade: 'A', class: 'grade-a' };
+            if (nilai >= 80) return { grade: 'B', class: 'grade-b' };
+            if (nilai >= 70) return { grade: 'C', class: 'grade-c' };
+            return { grade: 'D', class: 'grade-d' };
+        }
+
+        function getGradeClass(nilai) {
+            if (nilai >= 90) return 'success';
+            if (nilai >= 70) return '';
+            if (nilai >= 50) return 'warning';
+            return 'danger';
+        }
+
+        function fetchNilai() {
+            if (window.isSupabaseConfigured && window.isSupabaseConfigured()) {
+                // Supabase integration
+                console.log("Mengambil data dari Supabase...");
+            }
+
+            const stored = localStorage.getItem('sais_nilai_data');
+            nilaiData = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(defaultNilaiData));
+            renderTable();
+            updateProgress();
+        }
+
+        function saveData() {
+            localStorage.setItem('sais_nilai_data', JSON.stringify(nilaiData));
+        }
+
+        function renderTable(filterKelas = '', filterMapel = '') {
+            const tableBody = document.getElementById('nilaiTableBody');
+            tableBody.innerHTML = '';
+
+            let filteredData = nilaiData;
+            if (filterKelas) {
+                filteredData = filteredData.filter(n => n.kelas === filterKelas);
+            }
+            if (filterMapel) {
+                filteredData = filteredData.filter(n => n.mapel === filterMapel);
+            }
+
+            filteredData.forEach((nilai, index) => {
+                const gradeInfo = calculateGrade(nilai.nilai);
+                const status = nilai.nilai > 0 ? 'Sudah' : 'Belum';
+                const gradeClass = getGradeClass(nilai.nilai);
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${nilai.nisn}</td>
+                    <td>${nilai.nama}</td>
+                    <td>${nilai.kelas}</td>
+                    <td>
+                        <input type="number"
+                               class="input-nilai ${gradeClass}"
+                               value="${nilai.nilai || ''}"
+                               min="0"
+                               max="100"
+                               placeholder="-"
+                               onchange="updateNilai(${nilai.id}, this.value)"
+                               oninput="updateGradeDisplay(this)">
+                    </td>
+                    <td>
+                        <span class="grade-display ${gradeInfo.class}" id="grade-${nilai.id}">
+                            ${nilai.nilai > 0 ? gradeInfo.grade : '-'}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge ${status === 'Sudah' ? 'status-sudah' : 'status-belum'}">
+                            ${status}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-save" onclick="saveSingle(${nilai.id})">Simpan</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            updateProgress();
+        }
+
+        function updateNilai(id, value) {
+            const nilai = parseInt(value) || 0;
+            const index = nilaiData.findIndex(n => n.id === id);
+            if (index !== -1) {
+                nilaiData[index].nilai = Math.min(100, Math.max(0, nilai));
+            }
+        }
+
+        function updateGradeDisplay(input) {
+            const value = parseInt(input.value) || 0;
+            const gradeInfo = calculateGrade(value);
+            input.className = `input-nilai ${getGradeClass(value)}`;
+        }
+
+        function updateProgress() {
+            const total = nilaiData.length;
+            const sudah = nilaiData.filter(n => n.nilai > 0).length;
+            const belum = total - sudah;
+            const percent = total > 0 ? Math.round((sudah / total) * 100) : 0;
+
+            document.getElementById('totalSiswa').textContent = total;
+            document.getElementById('sudahInput').textContent = sudah;
+            document.getElementById('belumInput').textContent = belum;
+            document.getElementById('progressPercent').textContent = percent + '%';
+            document.getElementById('progressFill').style.width = percent + '%';
+        }
+
+        function saveSingle(id) {
+            const index = nilaiData.findIndex(n => n.id === id);
+            if (index !== -1) {
+                saveData();
+                showToast('Nilai berhasil disimpan!');
+            }
+        }
+
+        function simpanSemua() {
+            saveData();
+            document.getElementById('successModal').classList.add('active');
+        }
+
+        function resetForm() {
+            document.getElementById('filterKelas').value = '';
+            document.getElementById('filterMapel').value = '';
+            renderTable();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${isError ? 'error' : ''}`;
+            toast.innerHTML = `<span>&#10004;</span> ${message}`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Event listeners
+        document.getElementById('filterKelas').addEventListener('change', (e) => {
+            renderTable(e.target.value, document.getElementById('filterMapel').value);
+        });
+
+        document.getElementById('filterMapel').addEventListener('change', (e) => {
+            renderTable(document.getElementById('filterKelas').value, e.target.value);
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.remove('active');
+            }
+        });
+
+        // Initialize
+        fetchNilai();
+    </script>
+</body>
+</html>

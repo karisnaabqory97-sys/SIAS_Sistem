@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <script src="neon-config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Ujian | SAIS Guru</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body { background: var(--bg-main); color: var(--text-main); display: flex; min-height: 100vh; }
+
+        aside {
+            width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 24px; position: fixed; height: 100vh; overflow-y: auto; overflow-x: hidden;
+        }
+
+        .logo-section { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+
+        .logo-box {
+            width: 32px; height: 32px; background: var(--primary); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;
+        }
+
+        nav { flex: 1; }
+        nav ul { list-style: none; }
+        nav li { margin-bottom: 8px; }
+
+        nav a {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            text-decoration: none; color: var(--text-dim); border-radius: 12px;
+            font-size: 14px; transition: all 0.3s;
+        }
+
+        nav a.active, nav a:hover { background: var(--primary); color: white; }
+        nav a.logout-link:hover { background: #ef4444; color: white; }
+
+        .user-profile {
+            margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .avatar {
+            width: 40px; height: 40px; background: #334155; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 600; color: white;
+        }
+
+        main { flex: 1; margin-left: 260px; padding: 40px; }
+
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+
+        h1 { font-size: 24px; font-weight: 600; }
+
+        .filters { display: flex; gap: 12px; }
+
+        select {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+            padding: 10px 14px; color: white; font-size: 13px; outline: none;
+        }
+
+        select option { background: var(--bg-sidebar); }
+
+        .card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px;
+            padding: 24px; margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+        }
+
+        .card-title { font-size: 18px; font-weight: 600; }
+
+        .badge {
+            padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 500;
+        }
+
+        .badge-uts { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge-uas { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge-tugas { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+
+        .exam-list { display: flex; flex-direction: column; gap: 16px; }
+
+        .exam-item {
+            background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border);
+            border-radius: 16px; padding: 20px; display: flex; justify-content: space-between;
+            align-items: center; transition: all 0.3s;
+        }
+
+        .exam-item:hover { border-color: var(--primary); }
+
+        .exam-info h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+
+        .exam-meta { display: flex; gap: 20px; font-size: 13px; color: var(--text-dim); flex-wrap: wrap; }
+        .exam-meta span { display: flex; align-items: center; gap: 6px; }
+
+        .exam-badge-group { display: flex; gap: 8px; }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: var(--text-dim);
+        }
+
+        .empty-state h3 { font-size: 18px; margin-bottom: 8px; }
+
+        .count-badge {
+            background: rgba(16, 185, 129, 0.1); color: var(--primary);
+            padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">S</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Guru</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard_guru.html">Dashboard</a></li>
+                <li><a href="rapot_guru.html">Input Nilai Rapot</a></li>
+                <li><a href="kenaikan_guru.html">Murid Baru</a></li>
+                <li><a href="jadwal_guru.html">Jadwal Mengajar</a></li>
+                <li><a href="jadwal_ujian_guru.html" class="active">Jadwal Ujian</a></li>
+                <li><a href="informasi_guru.html">Informasi</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+        <div class="user-profile">
+            <div class="avatar" id="userAvatar">-</div>
+            <div>
+                <p style="font-size: 14px; font-weight: 600;" id="userNama">Memuat...</p>
+                <p style="font-size: 12px; color: var(--text-dim);" id="userMapel">-</p>
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1>Jadwal Ujian</h1>
+                <p style="color: var(--text-dim); font-size: 14px;">Jadwal ujian semester untuk semua kelas.</p>
+            </div>
+            <div class="filters">
+                <select id="filterJenis">
+                    <option value="">Semua Jenis</option>
+                    <option value="UTS">UTS</option>
+                    <option value="UAS">UAS</option>
+                    <option value="Tugas">Tugas / Kuis</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Daftar Jadwal Ujian</h3>
+                <span class="count-badge" id="totalCount">0 ujian</span>
+            </div>
+            <div id="examList" class="exam-list">
+            </div>
+        </div>
+    </main>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // Load user data
+            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            const userNama = currentUser.nama || 'Siti Aminah, S.Pd.';
+            const userMapel = currentUser.mapel || 'Bahasa Indonesia';
+
+            document.getElementById('userAvatar').textContent = userNama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('userNama').textContent = userNama;
+            document.getElementById('userMapel').textContent = 'Guru ' + userMapel;
+
+            // Load exam data
+            loadExams();
+
+            document.getElementById('filterJenis').addEventListener('change', loadExams);
+        });
+
+        function loadExams() {
+            let ujianData = [];
+            try {
+                const stored = localStorage.getItem('sais_jadwal_ujian');
+                if (stored) {
+                    ujianData = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+
+            const filterJenis = document.getElementById('filterJenis').value;
+            let filtered = [...ujianData];
+
+            if (filterJenis) {
+                filtered = filtered.filter(u => u.jenis === filterJenis);
+            }
+
+            filtered.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+
+            const container = document.getElementById('examList');
+            document.getElementById('totalCount').textContent = filtered.length + ' ujian';
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Belum ada jadwal ujian</h3>
+                        <p>Jadwal ujian akan ditampilkan di sini setelah admin menambahkan.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(u => `
+                <div class="exam-item">
+                    <div class="exam-info">
+                        <h3>
+                            ${u.mapel}
+                            <span class="badge badge-${u.jenis.toLowerCase()}">${u.jenis}</span>
+                        </h3>
+                        <div class="exam-meta">
+                            <span>📅 ${formatDate(u.tanggal)}</span>
+                            <span>🕐 ${u.waktuMulai} - ${u.waktuSelesai}</span>
+                            <span>📍 ${u.ruang}</span>
+                            <span>👥 Kelas ${u.kelas}</span>
+                        </div>
+                        ${u.keterangan ? `<p style="font-size: 12px; color: var(--text-dim); margin-top: 8px;">${u.keterangan}</p>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatDate(dateStr) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const parts = dateStr.split('-');
+            const day = parseInt(parts[2]);
+            const month = months[parseInt(parts[1]) - 1];
+            const year = parts[0];
+            const d = new Date(dateStr);
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            return `${days[d.getDay()]}, ${day} ${month} ${year}`;
+        }
+    </script>
+</body>
+</html>

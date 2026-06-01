@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Konfigurasi Database Neon -->
+    <script src="neon-config.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapot Saya | SAIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-box {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        nav { flex: 1; }
+        nav ul { list-style: none; }
+        nav li { margin-bottom: 8px; }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: var(--text-dim);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        nav a.active, nav a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        nav a.logout-link:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .user-info {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .user-info .name { font-weight: 600; font-size: 14px; }
+        .user-info .role { font-size: 12px; color: var(--text-dim); }
+
+        main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 40px;
+        }
+
+        header {
+            margin-bottom: 32px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        header p {
+            color: var(--text-dim);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .semester-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .tab-btn:hover:not(.active) {
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .rapot-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        .rapot-header {
+            background: linear-gradient(135deg, var(--primary), #1d4ed8);
+            padding: 32px;
+            text-align: center;
+        }
+
+        .rapot-header h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .rapot-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .student-info {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-item .label {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item .value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .summary-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .summary-item .icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 20px;
+        }
+
+        .summary-item .icon.green { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .summary-item .icon.blue { background: rgba(37, 99, 235, 0.2); color: var(--primary); }
+        .summary-item .icon.yellow { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .summary-item .icon.red { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        .summary-item .value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .summary-item .label {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .rapot-table {
+            padding: 24px;
+        }
+
+        .rapot-table h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        td {
+            padding: 12px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+        .grade-badge {
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .grade-a { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .grade-b { background: rgba(37, 99, 235, 0.2); color: #2563eb; }
+        .grade-c { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .grade-d { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .nilai-progress {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill.excellent { background: var(--success); }
+        .progress-fill.good { background: var(--primary); }
+        .progress-fill.average { background: var(--warning); }
+        .progress-fill.poor { background: var(--danger); }
+
+        .nilai-text {
+            font-weight: 600;
+            min-width: 40px;
+        }
+
+        .btn-print {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 24px;
+            transition: all 0.3s;
+        }
+
+        .btn-print:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        .rank-badge {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1e293b;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1024px) {
+            .student-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .summary-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            aside {
+                width: 80px;
+                padding: 16px;
+            }
+
+            aside span, nav a span, .user-info span {
+                display: none;
+            }
+
+            main {
+                margin-left: 80px;
+            }
+
+            .student-info {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">S</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Siswa</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard_siswa.html">Dashboard</a></li>
+                <li><a href="jadwal_siswa.html">Jadwal</a></li>
+                <li><a href="jadwal_ujian_siswa.html">Ujian</a></li>
+                <li><a href="nilai_siswa.html">Nilai</a></li>
+                <li><a href="rapot_siswa.html" class="active">Rapot</a></li>
+                <li><a href="kenaikan_siswa.html">Kenaikan Kelas</a></li>
+                <li><a href="informasi_siswa.html">Informasi</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+        <div class="user-info">
+            <div class="name" id="studentName">Ahmad Fauzi</div>
+            <div class="role" id="studentClass">VII-A</div>
+        </div>
+    </aside>
+
+    <main>
+        <header>
+            <h1>Rapot Saya</h1>
+            <p>Lihat hasil belajar dan nilai rapot semester ini</p>
+        </header>
+
+        <!-- Semester Tabs -->
+        <div class="semester-tabs">
+            <button class="tab-btn active" onclick="switchSemester('ganjil')">Semester Ganjil</button>
+            <button class="tab-btn" onclick="switchSemester('genap')">Semester Genap</button>
+        </div>
+
+        <!-- Rapot Card -->
+        <div class="rapot-card">
+            <div class="rapot-header">
+                <h2>RAPOT HASIL BELAJAR</h2>
+                <p id="semesterTitle">Semester Ganjil Tahun Ajaran 2025/2026</p>
+            </div>
+
+            <div class="student-info">
+                <div class="info-item">
+                    <div class="label">NISN</div>
+                    <div class="value" id="studentNisn">0012345678</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Nama Lengkap</div>
+                    <div class="value" id="studentFullName">Ahmad Fauzi</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Kelas</div>
+                    <div class="value" id="studentKelas">VII-A</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Ranking</div>
+                    <div class="value"><span class="rank-badge" id="studentRank">5 / 32</span></div>
+                </div>
+            </div>
+
+            <!-- Summary Section -->
+            <div class="summary-section">
+                <div class="summary-item">
+                    <div class="icon green">&#127891;</div>
+                    <div class="value" id="avgNilai">84.2</div>
+                    <div class="label">Rata-rata Nilai</div>
+                </div>
+                <div class="summary-item">
+                    <div class="icon blue">&#128218;</div>
+                    <div class="value" id="totalMapel">8</div>
+                    <div class="label">Total Mapel</div>
+                </div>
+                <div class="summary-item">
+                    <div class="icon yellow">&#10004;</div>
+                    <div class="value" id="totalSudah">8</div>
+                    <div class="label">Sudah Dinilai</div>
+                </div>
+                <div class="summary-item">
+                    <div class="icon red">&#127942;</div>
+                    <div class="value" id="studentGrade">B</div>
+                    <div class="label">Predikat</div>
+                </div>
+            </div>
+
+            <!-- Rapot Table -->
+            <div class="rapot-table">
+                <h3>&#128218; Daftar Nilai Per Mata Pelajaran</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">NO</th>
+                            <th>MATA PELAJARAN</th>
+                            <th style="width: 120px;">NILAI</th>
+                            <th style="width: 100px;">GRADE</th>
+                            <th style="width: 200px;">KETERANGAN</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rapotTableBody">
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <button class="btn-print" onclick="printRapot()">
+                <span>&#128438;</span> Cetak Rapot
+            </button>
+        </div>
+    </main>
+
+    <script>
+        // Default rapot data for students
+        const defaultRapotSiswa = [
+            { mapel: 'Matematika', nilai: 85, grade: 'B', deskripsi: 'Baik - Perlu lebih teliti dalam perhitungan' },
+            { mapel: 'Bahasa Indonesia', nilai: 88, grade: 'A', deskripsi: 'Sangat Baik - Penguasaan bahasa baik' },
+            { mapel: 'Bahasa Inggris', nilai: 90, grade: 'A', deskripsi: 'Sangat Baik - Penguasaan vocabulary baik' },
+            { mapel: 'IPA', nilai: 82, grade: 'B', deskripsi: 'Baik - Perlu memahami konsep lebih dalam' },
+            { mapel: 'IPS', nilai: 79, grade: 'B', deskripsi: 'Baik - Perlu lebih aktif dalam diskusi' },
+            { mapel: 'Pendidikan Agama', nilai: 92, grade: 'A', deskripsi: 'Sangat Baik - Aktif dalam pembelajaran' },
+            { mapel: 'PKn', nilai: 85, grade: 'B', deskripsi: 'Baik - Pemahaman norma baik' },
+            { mapel: 'Seni Budaya', nilai: 88, grade: 'A', deskripsi: 'Sangat Baik - Kreativitas tinggi' },
+        ];
+
+        let currentSemester = 'ganjil';
+        let rapotData = [];
+
+        function loadUserData() {
+            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            if (currentUser.nama) {
+                document.getElementById('studentName').textContent = currentUser.nama;
+                document.getElementById('studentFullName').textContent = currentUser.nama;
+            }
+            if (currentUser.nisn) {
+                document.getElementById('studentNisn').textContent = currentUser.nisn;
+            }
+            if (currentUser.kelas) {
+                document.getElementById('studentClass').textContent = currentUser.kelas;
+                document.getElementById('studentKelas').textContent = currentUser.kelas;
+            }
+        }
+
+        function fetchRapot() {
+            if (window.isSupabaseConfigured && window.isSupabaseConfigured()) {
+                console.log("Mengambil data rapot dari Supabase...");
+            }
+
+            const stored = localStorage.getItem('sais_rapot_siswa');
+            rapotData = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(defaultRapotSiswa));
+            renderRapot();
+            updateSummary();
+        }
+
+        function renderRapot() {
+            const tableBody = document.getElementById('rapotTableBody');
+            tableBody.innerHTML = '';
+
+            rapotData.forEach((item, index) => {
+                const gradeClass = item.grade === 'A' ? 'grade-a' : item.grade === 'B' ? 'grade-b' : item.grade === 'C' ? 'grade-c' : 'grade-d';
+                const progressClass = item.nilai >= 90 ? 'excellent' : item.nilai >= 80 ? 'good' : item.nilai >= 70 ? 'average' : 'poor';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.mapel}</td>
+                    <td>
+                        <div class="nilai-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill ${progressClass}" style="width: ${item.nilai}%;"></div>
+                            </div>
+                            <span class="nilai-text">${item.nilai}</span>
+                        </div>
+                    </td>
+                    <td><span class="grade-badge ${gradeClass}">${item.grade}</span></td>
+                    <td style="font-size: 12px; color: var(--text-dim);">${item.deskripsi}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function updateSummary() {
+            const totalNilai = rapotData.reduce((sum, r) => sum + r.nilai, 0);
+            const avgNilai = rapotData.length > 0 ? (totalNilai / rapotData.length).toFixed(1) : 0;
+            const totalMapel = rapotData.length;
+            const totalSudah = rapotData.filter(r => r.nilai > 0).length;
+
+            let predikat = 'D';
+            if (avgNilai >= 90) predikat = 'A';
+            else if (avgNilai >= 80) predikat = 'B';
+            else if (avgNilai >= 70) predikat = 'C';
+
+            document.getElementById('avgNilai').textContent = avgNilai;
+            document.getElementById('totalMapel').textContent = totalMapel;
+            document.getElementById('totalSudah').textContent = totalSudah;
+            document.getElementById('studentGrade').textContent = predikat;
+        }
+
+        function switchSemester(semester) {
+            currentSemester = semester;
+
+            // Update tab active state
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update semester title
+            const semesterText = semester === 'ganjil'
+                ? 'Semester Ganjil Tahun Ajaran 2025/2026'
+                : 'Semester Genap Tahun Ajaran 2025/2026';
+            document.getElementById('semesterTitle').textContent = semesterText;
+
+            // In real app, fetch different data based on semester
+            renderRapot();
+        }
+
+        function printRapot() {
+            alert('Mencetak rapot...\n\nFitur cetak dalam pengembangan.\nAkan menghasilkan file PDF.');
+        }
+
+        // Initialize
+        loadUserData();
+        fetchRapot();
+    </script>
+</body>
+</html>

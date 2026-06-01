@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <script src="neon-config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Jadwal Ujian | SAIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body { background: var(--bg-main); color: var(--text-main); display: flex; min-height: 100vh; }
+
+        aside {
+            width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 24px; position: fixed; height: 100vh;
+        }
+
+        .logo-section { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+
+        .logo-box {
+            width: 32px; height: 32px; background: var(--primary); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-weight: 700;
+        }
+
+        nav { flex: 1; }
+        nav ul { list-style: none; }
+        nav li { margin-bottom: 8px; }
+
+        nav a {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            text-decoration: none; color: var(--text-dim); border-radius: 12px;
+            font-size: 14px; transition: all 0.3s;
+        }
+
+        nav a.active, nav a:hover { background: var(--primary); color: white; }
+        nav a.logout-link:hover { background: #ef4444; color: white; }
+
+        main { flex: 1; margin-left: 260px; padding: 40px; }
+
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+        }
+
+        h1 { font-size: 24px; font-weight: 600; }
+
+        .filters {
+            display: flex; gap: 12px; flex-wrap: wrap;
+        }
+
+        select, input {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+            padding: 10px 14px; color: white; font-size: 13px; outline: none;
+        }
+
+        select option { background: var(--bg-sidebar); }
+
+        .btn-primary {
+            background: var(--primary); color: white; border: none; padding: 10px 20px;
+            border-radius: 10px; cursor: pointer; font-weight: 500; font-size: 14px;
+        }
+
+        .btn-primary:hover { background: #1d4ed8; }
+
+        .btn-success {
+            background: #10b981; color: white; border: none; padding: 8px 16px;
+            border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 13px;
+        }
+
+        .btn-danger {
+            background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px;
+            border-radius: 8px; cursor: pointer; font-size: 13px;
+        }
+
+        .btn-danger:hover { background: #ef4444; color: white; }
+
+        .card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px;
+            padding: 24px; margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+        }
+
+        .card-title { font-size: 18px; font-weight: 600; }
+
+        .badge {
+            padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 500;
+        }
+
+        .badge-uts { background: rgba(37, 99, 235, 0.2); color: #3b82f6; }
+        .badge-uas { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge-tugas { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+
+        .exam-list { display: flex; flex-direction: column; gap: 16px; }
+
+        .exam-item {
+            background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border);
+            border-radius: 16px; padding: 20px; display: flex; justify-content: space-between;
+            align-items: center; transition: all 0.3s;
+        }
+
+        .exam-item:hover { border-color: var(--primary); transform: translateY(-2px); }
+
+        .exam-info h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+
+        .exam-meta {
+            display: flex; gap: 20px; font-size: 13px; color: var(--text-dim);
+        }
+
+        .exam-meta span { display: flex; align-items: center; gap: 6px; }
+
+        .exam-actions { display: flex; gap: 8px; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7); display: none; align-items: center;
+            justify-content: center; z-index: 1000; backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--bg-sidebar); border: 1px solid var(--border);
+            border-radius: 20px; padding: 32px; width: 100%; max-width: 500px;
+            max-height: 90vh; overflow-y: auto;
+        }
+
+        .modal-header { margin-bottom: 24px; }
+
+        .modal-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+
+        .form-group { margin-bottom: 16px; }
+
+        .form-group label {
+            display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px; color: white; outline: none; font-size: 14px;
+        }
+
+        .form-control:focus { border-color: var(--primary); }
+
+        .modal-footer {
+            margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            background: transparent; border: 1px solid var(--border); color: white;
+            padding: 10px 20px; border-radius: 10px; cursor: pointer;
+        }
+
+        .btn-save {
+            background: var(--primary); border: none; color: white; padding: 10px 20px;
+            border-radius: 10px; cursor: pointer; font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: var(--text-dim);
+        }
+
+        .empty-state h3 { font-size: 18px; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">S</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Admin</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="siswa.html">Manajemen Siswa</a></li>
+                <li><a href="guru.html">Manajemen Guru</a></li>
+                <li><a href="kelas.html">Manajemen Kelas</a></li>
+                <li><a href="pelajaran.html">Manajemen Pelajaran</a></li>
+                <li><a href="jadwal.html">Manajemen Jadwal</a></li>
+                <li><a href="rapot.html">Manajemen Rapot</a></li>
+                <li><a href="kenaikan_kelas.html">Kenaikan Kelas</a></li>
+                <li><a href="informasi.html">Manajemen Informasi</a></li>
+                <li><a href="pengaturan.html">Pengaturan</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1>Manajemen Jadwal Ujian</h1>
+                <p style="color: var(--text-dim); font-size: 14px;">Kelola jadwal ujian semester</p>
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <select id="filterSemester">
+                    <option value="">Semua Semester</option>
+                    <option value="Ganjil">Semester Ganjil</option>
+                    <option value="Genap">Semester Genap</option>
+                </select>
+                <select id="filterJenis">
+                    <option value="">Semua Jenis</option>
+                    <option value="UTS">UTS</option>
+                    <option value="UAS">UAS</option>
+                    <option value="Tugas">Tugas</option>
+                </select>
+                <button class="btn-primary" id="btnTambah">+ Tambah Jadwal</button>
+            </div>
+        </header>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Daftar Jadwal Ujian</h3>
+            </div>
+            <div id="examList" class="exam-list">
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Tambah/Edit -->
+    <div class="modal-overlay" id="modalUjian">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Tambah Jadwal Ujian</h2>
+            </div>
+            <form id="formUjian">
+                <div class="form-group">
+                    <label>Jenis Ujian</label>
+                    <select class="form-control" id="inputJenis" required>
+                        <option value="">-- Pilih Jenis Ujian --</option>
+                        <option value="UTS">Ujian Tengah Semester (UTS)</option>
+                        <option value="UAS">Ujian Akhir Semester (UAS)</option>
+                        <option value="Tugas">Tugas / Kuis</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Mata Pelajaran</label>
+                    <select class="form-control" id="inputMapel" required>
+                        <option value="">-- Pilih Mata Pelajaran --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kelas</label>
+                    <select class="form-control" id="inputKelas" required>
+                        <option value="">-- Pilih Kelas --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal</label>
+                    <input type="date" class="form-control" id="inputTanggal" required>
+                </div>
+                <div class="form-group">
+                    <label>Waktu Mulai</label>
+                    <input type="time" class="form-control" id="inputWaktuMulai" required>
+                </div>
+                <div class="form-group">
+                    <label>Waktu Selesai</label>
+                    <input type="time" class="form-control" id="inputWaktuSelesai" required>
+                </div>
+                <div class="form-group">
+                    <label>Ruang</label>
+                    <input type="text" class="form-control" id="inputRuang" placeholder="Contoh: Ruang 101" required>
+                </div>
+                <div class="form-group">
+                    <label>Keterangan</label>
+                    <input type="text" class="form-control" id="inputKeterangan" placeholder="Opsional">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" id="btnBatal">Batal</button>
+                    <button type="submit" class="btn-save">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data Mata Pelajaran
+        const mataPelajaran = [
+            'Matematika', 'Bahasa Indonesia', 'Bahasa Inggris', 'IPA', 'IPS',
+            'Fisika', 'Pendidikan Agama', 'PKn', 'Seni Budaya', 'PJOK', 'Prakarya'
+        ];
+
+        // Data Kelas
+        const kelasList = ['VII-A', 'VII-B', 'VIII-A', 'VIII-B', 'IX-A', 'IX-B'];
+
+        // Data Default
+        const defaultUjian = [
+            { id: 1, jenis: 'UTS', mapel: 'Matematika', kelas: 'VII-A', tanggal: '2026-06-10', waktuMulai: '08:00', waktuSelesai: '10:00', ruang: 'Ruang 101', keterangan: 'UTS Ganjil 2025/2026' },
+            { id: 2, jenis: 'UTS', mapel: 'Bahasa Indonesia', kelas: 'VII-A', tanggal: '2026-06-12', waktuMulai: '10:30', waktuSelesai: '12:30', ruang: 'Ruang 102', keterangan: 'UTS Ganjil 2025/2026' },
+            { id: 3, jenis: 'UAS', mapel: 'IPA', kelas: 'VII-A', tanggal: '2026-07-15', waktuMulai: '08:00', waktuSelesai: '10:30', ruang: 'Ruang 101', keterangan: 'UAS Ganjil 2025/2026' },
+            { id: 4, jenis: 'UTS', mapel: 'Matematika', kelas: 'VIII-A', tanggal: '2026-06-11', waktuMulai: '08:00', waktuSelesai: '10:00', ruang: 'Ruang 201', keterangan: 'UTS Ganjil 2025/2026' },
+            { id: 5, jenis: 'Tugas', mapel: 'Bahasa Inggris', kelas: 'VII-A', tanggal: '2026-05-30', waktuMulai: '13:00', waktuSelesai: '14:00', ruang: 'Ruang 101', keterangan: 'Kuis Harian' }
+        ];
+
+        let ujianData = [];
+        let currentEditId = null;
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            populateDropdowns();
+            fetchUjian();
+            setupEventListeners();
+        });
+
+        function populateDropdowns() {
+            const mapelSelect = document.getElementById('inputMapel');
+            const kelasSelect = document.getElementById('inputKelas');
+
+            mataPelajaran.forEach(mp => {
+                mapelSelect.innerHTML += `<option value="${mp}">${mp}</option>`;
+            });
+
+            kelasList.forEach(k => {
+                kelasSelect.innerHTML += `<option value="${k}">Kelas ${k}</option>`;
+            });
+        }
+
+        function fetchUjian() {
+            try {
+                const stored = localStorage.getItem('sais_jadwal_ujian');
+                if (stored) {
+                    ujianData = JSON.parse(stored);
+                } else {
+                    ujianData = [...defaultUjian];
+                    localStorage.setItem('sais_jadwal_ujian', JSON.stringify(defaultUjian));
+                }
+            } catch (e) {
+                ujianData = [...defaultUjian];
+            }
+            renderUjian();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('sais_jadwal_ujian', JSON.stringify(ujianData));
+            renderUjian();
+        }
+
+        function formatDate(dateStr) {
+            const parts = dateStr.split('-');
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        function renderUjian() {
+            const container = document.getElementById('examList');
+            const filterSemester = document.getElementById('filterSemester').value;
+            const filterJenis = document.getElementById('filterJenis').value;
+
+            let filtered = [...ujianData];
+
+            if (filterSemester) {
+                filtered = filtered.filter(u => {
+                    if (filterSemester === 'Ganjil') {
+                        return u.tanggal >= '2026-01-01' && u.tanggal <= '2026-06-30';
+                    } else {
+                        return u.tanggal >= '2026-07-01';
+                    }
+                });
+            }
+
+            if (filterJenis) {
+                filtered = filtered.filter(u => u.jenis === filterJenis);
+            }
+
+            filtered.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Belum ada jadwal ujian</h3>
+                        <p>Klik tombol "+ Tambah Jadwal" untuk menambahkan jadwal ujian baru.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(u => `
+                <div class="exam-item">
+                    <div class="exam-info">
+                        <h3>${u.mapel} <span class="badge badge-${u.jenis.toLowerCase()}">${u.jenis}</span></h3>
+                        <div class="exam-meta">
+                            <span>📅 ${formatDate(u.tanggal)}</span>
+                            <span>🕐 ${u.waktuMulai} - ${u.waktuSelesai}</span>
+                            <span>📍 ${u.ruang}</span>
+                            <span>👥 Kelas ${u.kelas}</span>
+                        </div>
+                        ${u.keterangan ? `<p style="font-size: 12px; color: var(--text-dim); margin-top: 8px;">${u.keterangan}</p>` : ''}
+                    </div>
+                    <div class="exam-actions">
+                        <button class="btn-success btn-edit" data-id="${u.id}">Edit</button>
+                        <button class="btn-danger btn-hapus" data-id="${u.id}">Hapus</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupEventListeners() {
+            document.getElementById('btnTambah').addEventListener('click', openAddModal);
+            document.getElementById('btnBatal').addEventListener('click', closeModal);
+            document.getElementById('modalUjian').addEventListener('click', (e) => {
+                if (e.target.id === 'modalUjian') closeModal();
+            });
+
+            document.getElementById('formUjian').addEventListener('submit', handleSubmit);
+
+            document.getElementById('examList').addEventListener('click', (e) => {
+                const id = parseInt(e.target.dataset.id);
+                if (e.target.classList.contains('btn-edit')) {
+                    openEditModal(id);
+                } else if (e.target.classList.contains('btn-hapus')) {
+                    if (confirm('Yakin ingin menghapus jadwal ujian ini?')) {
+                        ujianData = ujianData.filter(u => u.id !== id);
+                        saveAndRender();
+                        alert('Jadwal ujian berhasil dihapus!');
+                    }
+                }
+            });
+
+            document.getElementById('filterSemester').addEventListener('change', renderUjian);
+            document.getElementById('filterJenis').addEventListener('change', renderUjian);
+        }
+
+        function openAddModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = 'Tambah Jadwal Ujian';
+            document.getElementById('formUjian').reset();
+            document.getElementById('modalUjian').classList.add('active');
+        }
+
+        function openEditModal(id) {
+            currentEditId = id;
+            const ujian = ujianData.find(u => u.id === id);
+            if (!ujian) return;
+
+            document.getElementById('modalTitle').textContent = 'Edit Jadwal Ujian';
+            document.getElementById('inputJenis').value = ujian.jenis;
+            document.getElementById('inputMapel').value = ujian.mapel;
+            document.getElementById('inputKelas').value = ujian.kelas;
+            document.getElementById('inputTanggal').value = ujian.tanggal;
+            document.getElementById('inputWaktuMulai').value = ujian.waktuMulai;
+            document.getElementById('inputWaktuSelesai').value = ujian.waktuSelesai;
+            document.getElementById('inputRuang').value = ujian.ruang;
+            document.getElementById('inputKeterangan').value = ujian.keterangan || '';
+            document.getElementById('modalUjian').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalUjian').classList.remove('active');
+            currentEditId = null;
+        }
+
+        function handleSubmit(e) {
+            e.preventDefault();
+
+            const newData = {
+                id: currentEditId || Date.now(),
+                jenis: document.getElementById('inputJenis').value,
+                mapel: document.getElementById('inputMapel').value,
+                kelas: document.getElementById('inputKelas').value,
+                tanggal: document.getElementById('inputTanggal').value,
+                waktuMulai: document.getElementById('inputWaktuMulai').value,
+                waktuSelesai: document.getElementById('inputWaktuSelesai').value,
+                ruang: document.getElementById('inputRuang').value,
+                keterangan: document.getElementById('inputKeterangan').value
+            };
+
+            if (currentEditId) {
+                const index = ujianData.findIndex(u => u.id === currentEditId);
+                if (index !== -1) {
+                    ujianData[index] = newData;
+                }
+                alert('Jadwal ujian berhasil diperbarui!');
+            } else {
+                ujianData.push(newData);
+                alert('Jadwal ujian berhasil ditambahkan!');
+            }
+
+            saveAndRender();
+            closeModal();
+        }
+    </script>
+</body>
+</html>

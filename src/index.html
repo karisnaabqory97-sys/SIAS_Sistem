@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | SAIS - Sistem Informasi SMP</title>
+    <!-- Konfigurasi Database Neon -->
+    <script src="neon-config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: var(--text-main);
+        }
+
+        .shape {
+            position: absolute;
+            filter: blur(80px);
+            z-index: -1;
+            border-radius: 50%;
+        }
+        .shape-1 {
+            width: 300px;
+            height: 300px;
+            background: rgba(37, 99, 235, 0.2);
+            top: -100px;
+            right: -50px;
+        }
+        .shape-2 {
+            width: 400px;
+            height: 400px;
+            background: rgba(37, 99, 235, 0.15);
+            bottom: -150px;
+            left: -100px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-section { text-align: center; margin-bottom: 32px; }
+
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--primary);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+        }
+
+        h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
+        p.subtitle { color: var(--text-dim); font-size: 14px; margin-top: 4px; }
+
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            margin-left: 4px;
+        }
+
+        input, select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        select option { background: #1e293b; color: white; }
+
+        .input-wrapper { position: relative; }
+        input[type="password"] { padding-right: 44px; }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .toggle-password:hover { color: white; }
+
+        .options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+        }
+
+        .forgot-password {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .forgot-password:hover { color: white; }
+
+        button.login-btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button.login-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+
+        .loading .login-btn { pointer-events: none; opacity: 0.8; }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading .spinner { display: block; }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #ef4444;
+            display: none;
+        }
+
+        .error-message.show { display: block; }
+
+        .demo-info {
+            margin-top: 24px;
+            background: rgba(37, 99, 235, 0.05);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 11px;
+        }
+
+        .demo-info h4 {
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            color: var(--text-dim);
+        }
+
+        .demo-item b { color: var(--text-main); }
+    </style>
+</head>
+<body>
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+
+    <div class="login-container">
+        <div class="login-card" id="loginCard">
+            <div class="logo-section">
+                <div class="logo-icon">S</div>
+                <h1>SAIS</h1>
+                <p class="subtitle">Sistem Informasi SMP</p>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="role">Masuk Sebagai</label>
+                    <select id="role" required>
+                        <option value="siswa">Siswa / Orang Tua</option>
+                        <option value="guru">Guru Mapel / Wali Kelas</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username / NISN</label>
+                    <input type="text" id="username" placeholder="Masukkan username atau NISN" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Kata Sandi</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" placeholder="Masukkan kata sandi" required>
+                        <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+                    </div>
+                </div>
+
+                <div class="options">
+                    <label class="remember-me">
+                        <input type="checkbox">
+                        <span>Ingat Saya</span>
+                    </label>
+                    <a href="#" class="forgot-password">Lupa kata sandi?</a>
+                </div>
+
+                <button type="submit" class="login-btn" id="submitBtn">
+                    <div class="spinner"></div>
+                    <span id="btnText">Masuk ke Sistem</span>
+                </button>
+            </form>
+
+            <div class="demo-info">
+                <h4>Akun Demo</h4>
+                <div class="demo-grid">
+                    <div class="demo-item">
+                        <p><b>Admin:</b></p>
+                        <p>User: admin</p>
+                        <p>Pass: admin123</p>
+                    </div>
+                    <div class="demo-item">
+                        <p><b>Guru:</b></p>
+                        <p>User: heru.sujatmiko</p>
+                        <p>Pass: guru2024</p>
+                    </div>
+                    <div class="demo-item">
+                        <p><b>Siswa:</b></p>
+                        <p>User: ahmad.fauzi</p>
+                        <p>Pass: siswa2024</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <script>
+        // Toggle Password Visibility
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        // Show/Hide Error Message
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.remove('show');
+        }
+
+        // Login Form Handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideError();
+
+            const role = document.getElementById('role').value;
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const card = document.getElementById('loginCard');
+
+            card.classList.add('loading');
+            document.getElementById('btnText').innerText = 'Memverifikasi...';
+
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Login menggunakan Database Helper
+            let loginSuccess = false;
+            let userData = null;
+            let matchedRole = role;
+
+            try {
+                if (role === 'admin') {
+                    userData = await window.db.verifyAdminLogin(username, password);
+                    if (userData) {
+                        loginSuccess = true;
+                    }
+                } else if (role === 'guru') {
+                    userData = await window.db.verifyGuruLogin(username, password);
+                    if (userData) {
+                        loginSuccess = true;
+                    }
+                } else if (role === 'siswa') {
+                    userData = await window.db.verifySiswaLogin(username, password);
+                    if (userData) {
+                        loginSuccess = true;
+                    }
+                }
+            } catch (e) {
+                console.error('Login error:', e);
+            }
+
+            if (loginSuccess && userData) {
+                // Simpan session
+                window.Session.set(userData, role);
+                redirectByRole(role);
+            } else {
+                card.classList.remove('loading');
+                document.getElementById('btnText').innerText = 'Masuk ke Sistem';
+                showError('Username atau password salah!');
+            }
+        });
+
+        // Helper function untuk label role
+        function getRoleLabel(role) {
+            const labels = {
+                'admin': 'Administrator',
+                'guru': 'Guru',
+                'siswa': 'Siswa/Orang Tua'
+            };
+            return labels[role] || role;
+        }
+
+        function redirectByRole(role) {
+            if (role === 'siswa') {
+                window.location.href = 'dashboard_siswa.html';
+            } else if (role === 'guru') {
+                window.location.href = 'dashboard_guru.html';
+            } else if (role === 'admin') {
+                window.location.href = 'dashboard.html';
+            } else {
+                window.location.href = 'dashboard_siswa.html';
+            }
+        }
+    </script>
+</body>
+</html>
