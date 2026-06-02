@@ -49,8 +49,5 @@
       "source": "/((?!api/).*)",
       "destination": "/src/$1"
     }
-  ],
-  "env": {
-    "DATABASE_URL": "@database-url"
-  }
+  ]
 }
