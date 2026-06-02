@@ -574,8 +574,77 @@ console.log('='.repeat(50));
         }
     }
 
-    // Intercept clicks on any logout-link element to clear session
+    // Intercept clicks on any logout-link element to clear session and sync branding
     document.addEventListener('DOMContentLoaded', () => {
+        // Run global branding synchronization
+        try {
+            const appName = localStorage.getItem('sais_appName') || 'SAIS';
+            const schoolName = localStorage.getItem('sais_schoolName') || 'Sistem Informasi SMP';
+            const logo = localStorage.getItem('sais_logo');
+
+            // 1. If we are on the login page (index.html or /), update title, logo and headings
+            const pathname = window.location.pathname.toLowerCase();
+            const isLoginPage = pathname.endsWith('index.html') || pathname.endsWith('/') || pathname === '';
+            
+            if (isLoginPage && !pathname.includes('_')) {
+                document.title = `Login | ${appName} - ${schoolName}`;
+
+                const appNameHeading = document.querySelector('.logo-section h1');
+                if (appNameHeading) {
+                    appNameHeading.textContent = appName;
+                }
+
+                const schoolSubtitle = document.querySelector('.logo-section p.subtitle');
+                if (schoolSubtitle) {
+                    schoolSubtitle.textContent = schoolName;
+                }
+
+                const logoIcon = document.querySelector('.logo-icon');
+                if (logoIcon) {
+                    if (logo) {
+                        logoIcon.innerHTML = `<img src="${logo}" alt="Logo" style="max-width: 80%; max-height: 80%; object-fit: contain; border-radius: 12px;">`;
+                        logoIcon.style.background = 'transparent';
+                        logoIcon.style.boxShadow = 'none';
+                    } else {
+                        logoIcon.textContent = appName.charAt(0).toUpperCase();
+                        logoIcon.style.background = 'var(--primary)';
+                    }
+                }
+            }
+
+            // 2. Sync sidebar branding on all dashboard/admin/siswa/guru pages
+            if (!isLoginPage || pathname.includes('_')) {
+                const sidebarLogoSection = document.querySelector('aside .logo-section, .sidebar .sidebar-logo, .logo-section');
+                if (sidebarLogoSection) {
+                    // Update Logo Box
+                    const logoBox = sidebarLogoSection.querySelector('.logo-box, .avatar');
+                    if (logoBox) {
+                        if (logo) {
+                            logoBox.innerHTML = `<img src="${logo}" alt="Logo" style="max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 4px;">`;
+                            logoBox.style.background = 'transparent';
+                        } else {
+                            logoBox.textContent = appName.charAt(0).toUpperCase();
+                            logoBox.style.background = 'var(--primary)';
+                        }
+                    }
+
+                    // Update Brand Text
+                    const brandTextSpan = sidebarLogoSection.querySelector('span, .brand-text');
+                    if (brandTextSpan) {
+                        let suffix = '';
+                        const currentPage = pathname.split('/').pop() || '';
+                        if (currentPage.includes('guru')) suffix = ' Guru';
+                        else if (currentPage.includes('siswa')) suffix = ' Siswa';
+                        else if (currentPage && !currentPage.includes('guru') && !currentPage.includes('siswa')) suffix = ' Admin';
+                        
+                        brandTextSpan.textContent = appName + suffix;
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error synchronizing global branding:", e);
+        }
+
         document.addEventListener('click', (e) => {
             if (e.target.closest('.logout-link')) {
                 console.log('Logging out... clearing session.');
