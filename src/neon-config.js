@@ -259,7 +259,7 @@ window.db = {
             return data.map(k => k.nama);
         }
         const data = Storage.get('kelas_data');
-        return data || ['VII-A', 'VII-B', 'VIII-A', 'VIII-B', 'IX-A', 'IX-B'];
+        return data || [];
     },
 
     // ==================== MATA PELAJARAN ====================
@@ -269,18 +269,7 @@ window.db = {
             return await apiGet('mapel');
         }
         const data = Storage.get('mapel_data');
-        return data || [
-            { id: '1', nama: 'Pendidikan Agama Islam', singkatan: 'PAI' },
-            { id: '2', nama: 'Bahasa Indonesia', singkatan: 'B. Indo' },
-            { id: '3', nama: 'Matematika', singkatan: 'MTK' },
-            { id: '4', nama: 'Ilmu Pengetahuan Alam', singkatan: 'IPA' },
-            { id: '5', nama: 'Ilmu Pengetahuan Sosial', singkatan: 'IPS' },
-            { id: '6', nama: 'Bahasa Inggris', singkatan: 'B. Inggris' },
-            { id: '7', nama: 'Pendidikan Jasmani dan Olahraga', singkatan: 'PJOK' },
-            { id: '8', nama: 'Seni Budaya', singkatan: 'Senbud' },
-            { id: '9', nama: 'Prakarya', singkatan: 'Prakarya' },
-            { id: '10', nama: 'Informatika', singkatan: 'Informatika' }
-        ];
+        return data || [];
     },
 
     // ==================== ADMIN LOGIN ====================
@@ -290,11 +279,10 @@ window.db = {
             const result = await apiCall('login', 'verify', { username, password, role: 'admin' });
             return result && result.length > 0 ? result[0] : null;
         }
-        const demoAdmin = { username: 'admin', password: 'admin123', nama: 'Administrator' };
-        if (username === demoAdmin.username && password === demoAdmin.password) {
-            return demoAdmin;
-        }
-        return null;
+        // Development mode: cek dari localStorage
+        const data = Storage.get('admin_data');
+        if (!data) return null;
+        return data.username === username && data.password === password ? data : null;
     },
 
     async verifyGuruLogin(username, password) {
@@ -497,3 +485,65 @@ console.log(`${CONFIG.APP_NAME} v${CONFIG.VERSION}`);
 console.log('Mode:', isProduction ? 'Production (Neon)' : 'Development (LocalStorage)');
 console.log('API:', isProduction ? CONFIG.API_URL : 'Disabled');
 console.log('='.repeat(50));
+
+// ============================================
+// GLOBAL ROUTE PROTECTION & LOGOUT HANDLER
+// ============================================
+(function() {
+    const pathname = window.location.pathname;
+    const currentPage = pathname.split('/').pop() || 'index.html';
+    
+    // Pages that don't require login
+    const guestPages = ['index.html', ''];
+    
+    if (!guestPages.includes(currentPage)) {
+        const session = window.Session.get();
+        if (!session) {
+            console.warn('Unauthorized access! Redirecting to login...');
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        // Role-based restrictions
+        const role = session.type; // 'admin', 'guru', or 'siswa'
+        
+        if (role === 'siswa') {
+            // Students can only access student pages
+            if (!currentPage.includes('_siswa') && currentPage !== 'index.html') {
+                console.warn('Students are not allowed on admin/guru pages! Redirecting to student dashboard...');
+                window.location.href = 'dashboard_siswa.html';
+            }
+        } else if (role === 'guru') {
+            // Teachers can only access teacher pages
+            if (!currentPage.includes('_guru') && currentPage !== 'index.html') {
+                console.warn('Teachers are not allowed on admin/siswa pages! Redirecting to teacher dashboard...');
+                window.location.href = 'dashboard_guru.html';
+            }
+        } else if (role === 'admin') {
+            // Admins should not access student or teacher pages
+            if (currentPage.includes('_siswa') || currentPage.includes('_guru')) {
+                console.warn('Admins are redirected to admin dashboard...');
+                window.location.href = 'dashboard.html';
+            }
+        }
+    } else {
+        // If logged in and trying to access index.html, redirect to their respective dashboard
+        const session = window.Session.get();
+        if (session) {
+            const role = session.type;
+            if (role === 'siswa') window.location.href = 'dashboard_siswa.html';
+            else if (role === 'guru') window.location.href = 'dashboard_guru.html';
+            else if (role === 'admin') window.location.href = 'dashboard.html';
+        }
+    }
+
+    // Intercept clicks on any logout-link element to clear session
+    document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.logout-link')) {
+                console.log('Logging out... clearing session.');
+                window.Session.clear();
+            }
+        });
+    });
+})();
