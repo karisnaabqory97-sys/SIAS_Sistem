@@ -641,6 +641,51 @@ console.log('='.repeat(50));
                     }
                 }
             }
+
+            // 3. Register PWA Manifest and Service Worker dynamically
+            try {
+                const pwaIcon = localStorage.getItem('sais_pwa') || '';
+                
+                const manifest = {
+                    "name": `${appName} - ${schoolName}`,
+                    "short_name": appName,
+                    "start_url": "index.html",
+                    "display": "standalone",
+                    "background_color": "#0f172a",
+                    "theme_color": "#2563eb",
+                    "orientation": "any",
+                    "icons": [
+                        {
+                            "src": pwaIcon || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%232563eb'/%3E%3Ctext x='50%25' y='55%25' font-size='256' font-family='Poppins, sans-serif' font-weight='bold' fill='white' dominant-baseline='middle' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E",
+                            "sizes": "512x512",
+                            "type": "image/png",
+                            "purpose": "any maskable"
+                        }
+                    ]
+                };
+
+                const stringManifest = JSON.stringify(manifest);
+                const blob = new Blob([stringManifest], {type: 'application/json'});
+                const manifestURL = URL.createObjectURL(blob);
+
+                let manifestLink = document.querySelector('link[rel="manifest"]');
+                if (!manifestLink) {
+                    manifestLink = document.createElement('link');
+                    manifestLink.rel = 'manifest';
+                    document.head.appendChild(manifestLink);
+                }
+                manifestLink.href = manifestURL;
+
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('sw.js').then(reg => {
+                        console.log('Service Worker Registered successfully', reg.scope);
+                    }).catch(err => {
+                        console.warn('Service Worker registration failed:', err);
+                    });
+                }
+            } catch (errPwa) {
+                console.error("Error setting up PWA:", errPwa);
+            }
         } catch (e) {
             console.error("Error synchronizing global branding:", e);
         }
