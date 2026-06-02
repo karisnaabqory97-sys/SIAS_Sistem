@@ -439,12 +439,6 @@
             <div class="filter-group">
                 <select class="filter-select" id="filterKelas">
                     <option value="">Semua Kelas</option>
-                    <option value="VII-A">VII-A</option>
-                    <option value="VII-B">VII-B</option>
-                    <option value="VIII-A">VIII-A</option>
-                    <option value="VIII-B">VIII-B</option>
-                    <option value="IX-A">IX-A</option>
-                    <option value="IX-B">IX-B</option>
                 </select>
                 <select class="filter-select" id="filterSemester">
                     <option value="">Semua Semester</option>
@@ -526,18 +520,7 @@
 
     <script>
         // Default rapot data
-        const defaultRapotData = [
-            { id: 1, nisn: '0012345678', nama: 'Ahmad Fauzi', kelas: 'VII-A', mapel: 'Matematika', nilaiAkhir: 85, grade: 'A', status: 'Sudah' },
-            { id: 2, nisn: '0012345678', nama: 'Ahmad Fauzi', kelas: 'VII-A', mapel: 'Bahasa Indonesia', nilaiAkhir: 88, grade: 'A', status: 'Sudah' },
-            { id: 3, nisn: '0012345678', nama: 'Ahmad Fauzi', kelas: 'VII-A', mapel: 'IPA', nilaiAkhir: 82, grade: 'B', status: 'Sudah' },
-            { id: 4, nisn: '0012345678', nama: 'Ahmad Fauzi', kelas: 'VII-A', mapel: 'IPS', nilaiAkhir: 79, grade: 'B', status: 'Sudah' },
-            { id: 5, nisn: '0012345678', nama: 'Ahmad Fauzi', kelas: 'VII-A', mapel: 'Bahasa Inggris', nilaiAkhir: 90, grade: 'A', status: 'Sudah' },
-            { id: 6, nisn: '0023456789', nama: 'Citra Lestari', kelas: 'VIII-A', mapel: 'Matematika', nilaiAkhir: 92, grade: 'A', status: 'Sudah' },
-            { id: 7, nisn: '0023456789', nama: 'Citra Lestari', kelas: 'VIII-A', mapel: 'Bahasa Indonesia', nilaiAkhir: 87, grade: 'B', status: 'Sudah' },
-            { id: 8, nisn: '0023456789', nama: 'Citra Lestari', kelas: 'VIII-A', mapel: 'IPA', nilaiAkhir: 0, grade: '-', status: 'Belum' },
-            { id: 9, nisn: '0034567890', nama: 'Dewi Rahayu', kelas: 'IX-B', mapel: 'Matematika', nilaiAkhir: 0, grade: '-', status: 'Belum' },
-            { id: 10, nisn: '0034567890', nama: 'Dewi Rahayu', kelas: 'IX-B', mapel: 'Bahasa Indonesia', nilaiAkhir: 78, grade: 'B', status: 'Sudah' },
-        ];
+        const defaultRapotData = [];
 
         let rapotData = [];
 
@@ -708,6 +691,36 @@
         });
 
         // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            const filterKelas = document.getElementById('filterKelas');
+            
+            // Load Classes dynamically from Neon DB
+            try {
+                const kelasList = await window.db.getAllKelas();
+                filterKelas.innerHTML = '<option value="">Semua Kelas</option>';
+                
+                if (kelasList && kelasList.length > 0) {
+                    kelasList.forEach(kelasName => {
+                        const option = document.createElement('option');
+                        option.value = kelasName;
+                        option.textContent = kelasName;
+                        filterKelas.appendChild(option);
+                    });
+                }
+            } catch (err) {
+                console.error("Gagal memuat kelas dari DB:", err);
+                filterKelas.innerHTML = `
+                    <option value="">Semua Kelas</option>
+                    <option value="VII-A">VII-A</option>
+                    <option value="VII-B">VII-B</option>
+                    <option value="VIII-A">VIII-A</option>
+                    <option value="VIII-B">VIII-B</option>
+                    <option value="IX-A">IX-A</option>
+                    <option value="IX-B">IX-B</option>
+                `;
+            }
+        });
+
         fetchRapot();
     </script>
 </body>
