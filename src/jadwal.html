@@ -310,11 +310,8 @@
                     <option>Level VIII</option>
                     <option>Level IX</option>
                 </select>
-                <select id="classSelector" onchange="updateBuilderTitle(this.value)" style="background: var(--bg-sidebar); border: 1px solid var(--border); color: white; padding: 10px 16px; border-radius: 12px; font-size: 13px; outline: none; cursor: pointer;">
-                    <option value="VII-A">Pilih Kelas</option>
-                    <option value="VII-A">VII-A</option>
-                    <option value="VII-B">VII-B</option>
-                    <option value="VIII-A">VIII-A</option>
+                <select id="classSelector" style="background: var(--bg-sidebar); border: 1px solid var(--border); color: white; padding: 10px 16px; border-radius: 12px; font-size: 13px; outline: pointer; cursor: pointer;">
+                    <option value="">Pilih Kelas</option>
                 </select>
                 <button class="btn-secondary" onclick="resetJadwal()" style="border-color: #ef4444; color: #ef4444;">🔄 Reset Jadwal</button>
                 <button class="btn-success" onclick="simulateAction('Jadwal Berhasil Disimpan!')">💾 Simpan</button>
@@ -326,13 +323,7 @@
             <div style="width: 240px; background: rgba(0,0,0,0.2); border-radius: 24px; padding: 24px; border: 1px solid var(--border);">
                 <h4 style="font-size: 12px; color: var(--primary); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;">Mata Pelajaran</h4>
                 <div id="subjectList" style="display: flex; flex-direction: column; gap: 12px;">
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="Matematika">📐 Matematika</div>
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="IPA">🧪 IPA</div>
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="B. Indonesia">📖 B. Indonesia</div>
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="B. Inggris">🌍 B. Inggris</div>
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="IPS">🏛️ IPS</div>
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="PJOK">🏀 PJOK</div>
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="Seni Budaya">🎨 Seni Budaya</div>
+                    <!-- Will be loaded dynamically from DB -->
                 </div>
                 <button onclick="addSubject()" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='white'" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-dim)'" style="width: 100%; margin-top: 16px; background: transparent; border: 1px dashed var(--border); color: var(--text-dim); padding: 12px; border-radius: 12px; cursor: pointer; transition: 0.3s; font-size: 13px;">+ Tambah Mapel</button>
             </div>
@@ -482,7 +473,7 @@
             border: 1px solid transparent;
             color: white;
             border-radius: 4px;
-            width: 46px;
+            width: 80px;
             text-align: center;
             font-size: 12px;
             outline: none;
@@ -535,6 +526,91 @@
     </style>
 
     <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const classSelector = document.getElementById('classSelector');
+            const subjectList = document.getElementById('subjectList');
+
+            // Set up onchange for class selector
+            classSelector.addEventListener('change', function() {
+                updateBuilderTitle(this.value || 'Pilih Kelas');
+            });
+
+            // 1. Load Classes dynamically from Neon DB
+            try {
+                const kelasList = await window.db.getAllKelas();
+                classSelector.innerHTML = '<option value="">Pilih Kelas</option>';
+                
+                if (kelasList && kelasList.length > 0) {
+                    kelasList.forEach(kelasName => {
+                        const option = document.createElement('option');
+                        option.value = kelasName;
+                        option.textContent = kelasName;
+                        classSelector.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = "";
+                    option.textContent = "Belum ada kelas";
+                    classSelector.appendChild(option);
+                }
+            } catch (err) {
+                console.error("Gagal memuat kelas dari DB:", err);
+                classSelector.innerHTML = `
+                    <option value="">Pilih Kelas</option>
+                    <option value="VII-A">VII-A</option>
+                    <option value="VII-B">VII-B</option>
+                    <option value="VIII-A">VIII-A</option>
+                `;
+            }
+
+            // 2. Load Subjects dynamically from Neon DB
+            try {
+                const mapelList = await window.db.getAllMapel();
+                subjectList.innerHTML = '';
+
+                if (mapelList && mapelList.length > 0) {
+                    mapelList.forEach(mapel => {
+                        const name = mapel.nama || '';
+                        
+                        const item = document.createElement('div');
+                        item.className = 'drag-item';
+                        item.draggable = true;
+                        item.ondragstart = drag;
+                        item.setAttribute('data-name', name);
+                        
+                        // Map standard emojis based on subject name
+                        let emoji = '📚';
+                        const lowerName = name.toLowerCase();
+                        if (lowerName.includes('matematika') || lowerName.includes('mtk')) emoji = '📐';
+                        else if (lowerName.includes('ipa') || lowerName.includes('sains') || lowerName.includes('fisika') || lowerName.includes('biologi')) emoji = '🧪';
+                        else if (lowerName.includes('indonesia')) emoji = '📖';
+                        else if (lowerName.includes('inggris')) emoji = '🌍';
+                        else if (lowerName.includes('ips') || lowerName.includes('sejarah') || lowerName.includes('geografi')) emoji = '🏛️';
+                        else if (lowerName.includes('olahraga') || lowerName.includes('jasmani') || lowerName.includes('pjok')) emoji = '🏀';
+                        else if (lowerName.includes('seni') || lowerName.includes('musik') || lowerName.includes('budaya')) emoji = '🎨';
+                        else if (lowerName.includes('komputer') || lowerName.includes('informatika') || lowerName.includes('tik')) emoji = '💻';
+                        else if (lowerName.includes('agama')) emoji = '🕌';
+                        
+                        item.innerHTML = `${emoji} ${name}`;
+                        subjectList.appendChild(item);
+                    });
+                } else {
+                    subjectList.innerHTML = '<p style="color: var(--text-dim); font-size: 11px; text-align: center; padding: 10px;">Belum ada mapel. Silakan tambahkan di Manajemen Pelajaran.</p>';
+                }
+            } catch (err) {
+                console.error("Gagal memuat mapel dari DB:", err);
+                subjectList.innerHTML = `
+                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="Matematika">📐 Matematika</div>
+                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="IPA">🧪 IPA</div>
+                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="B. Indonesia">📖 B. Indonesia</div>
+                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="B. Inggris">🌍 B. Inggris</div>
+                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="IPS">🏛️ IPS</div>
+                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="PJOK">🏀 PJOK</div>
+                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="Seni Budaya">🎨 Seni Budaya</div>
+                `;
+            }
+        });
+
         function simulateAction(msg) {
             alert(msg);
         }
