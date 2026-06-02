@@ -272,6 +272,43 @@ window.db = {
         return data || [];
     },
 
+    async insertMapel(mapel) {
+        if (isProduction) {
+            return await apiCall('mapel', 'insert', mapel);
+        }
+        const data = Storage.get('mapel_data') || [];
+        if (!mapel.id) {
+            mapel.id = 'mapel_' + Date.now();
+        }
+        data.push(mapel);
+        Storage.set('mapel_data', data);
+        return mapel;
+    },
+
+    async updateMapel(id, mapel) {
+        if (isProduction) {
+            return await apiCall('mapel', 'update', { ...mapel, id });
+        }
+        const data = Storage.get('mapel_data') || [];
+        const index = data.findIndex(m => m.id === id);
+        if (index >= 0) {
+            data[index] = { ...data[index], ...mapel };
+            Storage.set('mapel_data', data);
+            return data[index];
+        }
+        return null;
+    },
+
+    async deleteMapel(id) {
+        if (isProduction) {
+            return await apiCall('mapel', 'delete', { id });
+        }
+        const data = Storage.get('mapel_data') || [];
+        const filtered = data.filter(m => m.id !== id);
+        Storage.set('mapel_data', filtered);
+        return true;
+    },
+
     // ==================== ADMIN LOGIN ====================
 
     async verifyAdminLogin(username, password) {

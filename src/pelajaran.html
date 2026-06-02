@@ -395,10 +395,11 @@
             try {
                 const data = await window.db.getAllMapel();
                 pelajaranData = data.map(m => ({
-                    id: m.id || m,
-                    nama: m.nama || m,
-                    singkatan: m.singkatan || '',
-                    deskripsi: m.deskripsi || ''
+                    id: m.id,
+                    kode: m.singkatan || '',
+                    nama: m.nama || '',
+                    kategori: m.deskripsi || '',
+                    guru: m.guru || 0
                 }));
             } catch (e) {
                 console.error("Gagal mengambil data:", e);
@@ -498,16 +499,24 @@
 
             try {
                 if (currentEditIndex !== null) {
-                    pelajaranData[currentEditIndex] = newData;
+                    const pel = pelajaranData[currentEditIndex];
+                    await window.db.updateMapel(pel.id, newData);
                     alert('Berhasil memperbarui pelajaran!');
                 } else {
-                    pelajaranData.push(newData);
+                    await window.db.insertMapel(newData);
                     alert('Berhasil menambahkan pelajaran baru!');
+                }
+                await fetchPelajaran();
+                closeModal();
+            } catch (err) {
+                console.error('Save error:', err);
+                if (currentEditIndex !== null) {
+                    pelajaranData[currentEditIndex] = newData;
+                } else {
+                    pelajaranData.push(newData);
                 }
                 saveAndRender();
                 closeModal();
-            } catch (err) {
-                alert('Gagal menyimpan: ' + err.message);
             }
         }
 
@@ -515,13 +524,23 @@
             const index = e.target.dataset.index;
             if (index === undefined) return;
 
+            const idx = parseInt(index, 10);
+            const pel = pelajaranData[idx];
+
             if (e.target.classList.contains('btn-edit')) {
-                openEditModal(parseInt(index));
+                openEditModal(idx);
             } else if (e.target.classList.contains('btn-hapus')) {
-                if (confirm(`Apakah Anda yakin ingin menghapus pelajaran "${pelajaranData[index].nama}"?`)) {
-                    pelajaranData.splice(parseInt(index), 1);
-                    saveAndRender();
-                    alert('Berhasil menghapus pelajaran!');
+                if (confirm(`Apakah Anda yakin ingin menghapus pelajaran "${pel.nama}"?`)) {
+                    try {
+                        await window.db.deleteMapel(pel.id);
+                        alert('Berhasil menghapus pelajaran!');
+                        await fetchPelajaran();
+                    } catch (err) {
+                        console.error('Delete error:', err);
+                        pelajaranData.splice(idx, 1);
+                        saveAndRender();
+                        alert('Berhasil menghapus pelajaran!');
+                    }
                 }
             }
         }

@@ -101,10 +101,11 @@ export async function POST(request) {
             case 'siswa':
                 if (action === 'insert') {
                     result = await sql`
-                        INSERT INTO siswa (nisn, nama, jk, kelas, ayah, pekerjaan_ayah, ibu, pekerjaan_ibu, status)
+                        INSERT INTO siswa (nisn, nama, jk, kelas, ayah, pekerjaan_ayah, ibu, pekerjaan_ibu, username, password, status)
                         VALUES (${data.nisn}, ${data.nama}, ${data.jk}, ${data.kelas},
- ${data.ayah || ''}, ${data.pekerjaanAyah || ''},
-                                ${data.ibu || ''}, ${data.pekerjaanIbu || ''}, ${data.status || 'Aktif'})
+                                ${data.ayah || ''}, ${data.pekerjaanAyah || ''},
+                                ${data.ibu || ''}, ${data.pekerjaanIbu || ''},
+                                ${data.username}, ${data.password}, ${data.status || 'Aktif'})
                         RETURNING *
                     `;
                 } else if (action === 'update') {
@@ -118,6 +119,8 @@ export async function POST(request) {
                             pekerjaan_ayah = ${data.pekerjaanAyah || ''},
                             ibu = ${data.ibu || ''},
                             pekerjaan_ibu = ${data.pekerjaanIbu || ''},
+                            username = ${data.username},
+                            password = ${data.password},
                             status = ${data.status || 'Aktif'},
                             updated_at = NOW()
                         WHERE id = ${data.id}
@@ -132,8 +135,8 @@ export async function POST(request) {
             case 'guru':
                 if (action === 'insert') {
                     result = await sql`
-                        INSERT INTO guru (nuptk, nama, mapel, status)
-                        VALUES (${data.nuptk}, ${data.nama}, ${data.mapel}, ${data.status || 'Aktif'})
+                        INSERT INTO guru (nuptk, nama, mapel, username, password, status)
+                        VALUES (${data.nuptk}, ${data.nama}, ${data.mapel}, ${data.username}, ${data.password}, ${data.status || 'Aktif'})
                         RETURNING *
                     `;
                 } else if (action === 'update') {
@@ -142,6 +145,8 @@ export async function POST(request) {
                             nuptk = ${data.nuptk},
                             nama = ${data.nama},
                             mapel = ${data.mapel},
+                            username = ${data.username},
+                            password = ${data.password},
                             status = ${data.status || 'Aktif'},
                             updated_at = NOW()
                         WHERE id = ${data.id}
@@ -149,6 +154,28 @@ export async function POST(request) {
                     `;
                 } else if (action === 'delete') {
                     await sql`DELETE FROM guru WHERE id = ${data.id}`;
+                    result = { deleted: true };
+                }
+                break;
+
+            case 'mapel':
+                if (action === 'insert') {
+                    result = await sql`
+                        INSERT INTO mata_pelajaran (nama, singkatan, deskripsi)
+                        VALUES (${data.nama}, ${data.kode || data.singkatan}, ${data.kategori || data.deskripsi || ''})
+                        RETURNING *
+                    `;
+                } else if (action === 'update') {
+                    result = await sql`
+                        UPDATE mata_pelajaran SET
+                            nama = ${data.nama},
+                            singkatan = ${data.kode || data.singkatan},
+                            deskripsi = ${data.kategori || data.deskripsi || ''}
+                        WHERE id = ${data.id}
+                        RETURNING *
+                    `;
+                } else if (action === 'delete') {
+                    await sql`DELETE FROM mata_pelajaran WHERE id = ${data.id}`;
                     result = { deleted: true };
                 }
                 break;
