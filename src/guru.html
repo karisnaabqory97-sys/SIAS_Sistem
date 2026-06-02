@@ -252,6 +252,11 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
+        .form-control option {
+            background: #1e293b;
+            color: white;
+        }
+
         .form-group.full-width { grid-column: 1 / -1; }
 
         .section-title {
@@ -394,16 +399,6 @@
                         <label>Mata Pelajaran <span class="required">*</span></label>
                         <select class="form-control" id="inputMapel" required>
                             <option value="">-- Pilih Mata Pelajaran --</option>
-                            <option value="Matematika">Matematika</option>
-                            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                            <option value="Bahasa Inggris">Bahasa Inggris</option>
-                            <option value="IPA / Fisika">IPA / Fisika</option>
-                            <option value="IPS">IPS</option>
-                            <option value="Pendidikan Agama">Pendidikan Agama</option>
-                            <option value="PKn">PKn</option>
-                            <option value="Seni Budaya">Seni Budaya</option>
-                            <option value="PJOK">PJOK</option>
-                            <option value="Prakarya">Prakarya</option>
                         </select>
                     </div>
                 </div>
@@ -457,32 +452,7 @@
 
     <script>
         // Data Default
-        const defaultGuruData = [
-            {
-                nuptk: '198501012010011001',
-                nama: 'Drs. Heru Sujatmiko',
-                mapel: 'Matematika',
-                username: 'heru.sujatmiko',
-                password: 'guru2024',
-                status: 'Aktif'
-            },
-            {
-                nuptk: '198805122015032002',
-                nama: 'Siti Aminah, S.Pd.',
-                mapel: 'Bahasa Indonesia',
-                username: 'siti.aminah',
-                password: 'guru2024',
-                status: 'Aktif'
-            },
-            {
-                nuptk: '199002202018011003',
-                nama: 'Rizky Pratama, M.Sc.',
-                mapel: 'IPA / Fisika',
-                username: 'rizky.pratama',
-                password: 'guru2024',
-                status: 'Aktif'
-            }
-        ];
+        const defaultGuruData = [];
 
         let guruData = [];
         const tableBody = document.getElementById('guruTableBody');
@@ -550,7 +520,49 @@
                 : `Total ${guruData.length} guru terdaftar`;
         }
 
-        fetchGuru();
+        async function fetchMapelOptions() {
+            const inputMapel = document.getElementById('inputMapel');
+            if (!inputMapel) return;
+            try {
+                const mapelList = await window.db.getAllMapel();
+                inputMapel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
+                if (mapelList && mapelList.length > 0) {
+                    mapelList.forEach(mapel => {
+                        const option = document.createElement('option');
+                        option.value = mapel.nama;
+                        option.textContent = mapel.nama;
+                        inputMapel.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = "";
+                    option.textContent = "Belum ada pelajaran (Tambahkan di Manajemen Pelajaran)";
+                    inputMapel.appendChild(option);
+                }
+            } catch (err) {
+                console.error("Gagal memuat mata pelajaran:", err);
+                inputMapel.innerHTML = `
+                    <option value="">-- Pilih Mata Pelajaran --</option>
+                    <option value="Matematika">Matematika</option>
+                    <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                    <option value="Bahasa Inggris">Bahasa Inggris</option>
+                    <option value="IPA / Fisika">IPA / Fisika</option>
+                    <option value="IPS">IPS</option>
+                    <option value="Pendidikan Agama">Pendidikan Agama</option>
+                    <option value="PKn">PKn</option>
+                    <option value="Seni Budaya">Seni Budaya</option>
+                    <option value="PJOK">PJOK</option>
+                    <option value="Prakarya">Prakarya</option>
+                `;
+            }
+        }
+
+        async function initPage() {
+            await fetchMapelOptions();
+            await fetchGuru();
+        }
+
+        initPage();
 
         // Template & Upload
         document.getElementById('btnTemplate').addEventListener('click', () => {

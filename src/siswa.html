@@ -507,24 +507,6 @@
 
     <script>
         // Data State Management
-        const defaultSiswaData = [
-            {
-                nisn: '0012345678', nama: 'Ahmad Fauzi', jk: 'L', kelas: 'VII-A',
-                ayah: 'Budi Santoso', pekerjaanAyah: 'PNS', ibu: 'Siti Aminah', pekerjaanIbu: 'Guru',
-                username: 'ahmad.fauzi', password: 'siswa2024', status: 'Aktif'
-            },
-            {
-                nisn: '0023456789', nama: 'Citra Lestari', jk: 'P', kelas: 'VIII-A',
-                ayah: 'Dedi Wijaya', pekerjaanAyah: 'Wiraswasta', ibu: 'Rina Hartati', pekerjaanIbu: 'Ibu Rumah Tangga',
-                username: 'citra.lestari', password: 'siswa2024', status: 'Aktif'
-            },
-            {
-                nisn: '0034567890', nama: 'Dewi Rahayu', jk: 'P', kelas: 'IX-B',
-                ayah: 'Hendra Kusuma', pekerjaanAyah: 'Petani', ibu: 'Sri Wahyuni', pekerjaanIbu: 'Pedagang',
-                username: 'dewi.rahayu', password: 'siswa2024', status: 'Aktif'
-            }
-        ];
-
         let siswaData = [];
         const tableBody = document.getElementById('siswaTableBody');
         const searchBar = document.querySelector('.search-bar');
@@ -534,20 +516,10 @@
         async function fetchSiswa() {
             try {
                 const data = await window.db.getAllSiswa();
-                siswaData = data;
+                siswaData = data || [];
             } catch (e) {
                 console.error("Gagal mengambil data:", e);
-                // Fallback ke localStorage
-                try {
-                    const stored = localStorage.getItem('sais_siswa_data');
-                    if (stored) {
-                        siswaData = JSON.parse(stored);
-                    } else {
-                        siswaData = JSON.parse(JSON.stringify(defaultSiswaData));
-                    }
-                } catch (e2) {
-                    siswaData = JSON.parse(JSON.stringify(defaultSiswaData));
-                }
+                siswaData = [];
             }
             renderTable(searchBar.value);
         }
