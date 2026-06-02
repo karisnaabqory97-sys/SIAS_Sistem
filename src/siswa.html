@@ -272,6 +272,11 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
+        .form-control option {
+            background: #1e293b;
+            color: white;
+        }
+
         .section-title {
             grid-column: 1 / -1;
             font-size: 14px;
@@ -421,12 +426,6 @@
                         <label>Kelas <span class="required">*</span></label>
                         <select class="form-control" id="inputKelas" required>
                             <option value="">-- Pilih Kelas --</option>
-                            <option value="VII-A">VII-A</option>
-                            <option value="VII-B">VII-B</option>
-                            <option value="VIII-A">VIII-A</option>
-                            <option value="VIII-B">VIII-B</option>
-                            <option value="IX-A">IX-A</option>
-                            <option value="IX-B">IX-B</option>
                         </select>
                     </div>
                 </div>
@@ -564,7 +563,46 @@
                 : `Total ${siswaData.length} siswa terdaftar`;
         }
 
-        fetchSiswa();
+        async function fetchKelasOptions() {
+            const inputKelas = document.getElementById('inputKelas');
+            if (!inputKelas) return;
+            try {
+                const kelasList = await window.db.getAllKelas();
+                inputKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+                if (kelasList && kelasList.length > 0) {
+                    kelasList.forEach(kelas => {
+                        const className = (typeof kelas === 'object') ? (kelas.nama || kelas.name || '') : kelas;
+                        const option = document.createElement('option');
+                        option.value = className;
+                        option.textContent = className;
+                        inputKelas.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = "";
+                    option.textContent = "Belum ada kelas (Tambahkan di Manajemen Kelas)";
+                    inputKelas.appendChild(option);
+                }
+            } catch (err) {
+                console.error("Gagal memuat kelas:", err);
+                inputKelas.innerHTML = `
+                    <option value="">-- Pilih Kelas --</option>
+                    <option value="VII-A">VII-A</option>
+                    <option value="VII-B">VII-B</option>
+                    <option value="VIII-A">VIII-A</option>
+                    <option value="VIII-B">VIII-B</option>
+                    <option value="IX-A">IX-A</option>
+                    <option value="IX-B">IX-B</option>
+                `;
+            }
+        }
+
+        async function initPage() {
+            await fetchKelasOptions();
+            await fetchSiswa();
+        }
+
+        initPage();
 
         // Template & Upload Logic
         document.getElementById('btnTemplate').addEventListener('click', () => {
