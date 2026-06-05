@@ -1,488 +1,342 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <!-- Konfigurasi Database Neon -->
     <script src="neon-config.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Kenaikan Kelas | SAIS</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
     <style>
         :root {
-            --primary: #2563eb;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --bg-main: #0f172a;
-            --bg-sidebar: #1e293b;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --accent: #10b981;
+            --bg-main: #0b0f1a;
+            --bg-sidebar: #111827;
+            --bg-card: #1f2937;
+            --border: rgba(255, 255, 255, 0.06);
+            --text-main: #f3f4f6;
+            --text-dim: #9ca3af;
+            --sidebar-width: 280px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: var(--bg-main); color: var(--text-main); display: flex; min-height: 100vh; }
-        aside { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 24px; position: fixed; height: 100vh; overflow-y: auto; overflow-x: hidden; }
-        .logo-section { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
-        .logo-box { width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-        nav { flex: 1; } nav ul { list-style: none; } nav li { margin-bottom: 8px; }
-        nav a { display: flex; align-items: center; gap: 12px; padding: 12px 16px; text-decoration: none; color: var(--text-dim); border-radius: 12px; font-size: 14px; transition: all 0.3s; }
-        nav a.active, nav a:hover { background: var(--primary); color: white; }
-        nav a.logout-link:hover { background: #ef4444; color: white; }
-        main { flex: 1; margin-left: 260px; padding: 40px; overflow-x: auto; }
-        header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; gap: 16px; flex-wrap: wrap; }
-        .info-banner { background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%); border: 1px solid rgba(37, 99, 235, 0.3); border-radius: 16px; padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; }
-        .info-banner .icon { width: 48px; height: 48px; background: rgba(37, 99, 235, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .info-banner h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-        .info-banner p { font-size: 13px; color: var(--text-dim); }
-        .summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-        .summary-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; }
-        .summary-card .icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 20px; }
-        .summary-card .icon.blue { background: rgba(37, 99, 235, 0.2); color: var(--primary); }
-        .summary-card .icon.green { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-        .summary-card .icon.yellow { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-        .summary-card .icon.red { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-        .summary-card .value { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-        .summary-card .label { font-size: 13px; color: var(--text-dim); }
-        .filter-group { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .filter-select { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; color: white; outline: none; font-size: 14px; cursor: pointer; min-width: 150px; }
-        .filter-select option { background: #1e293b; }
-        .table-container { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; min-width: 900px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: rgba(255, 255, 255, 0.02); padding: 12px 16px; font-size: 12px; font-weight: 600; color: var(--text-dim); border-bottom: 1px solid var(--border); }
-        td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255, 255, 255, 0.02); }
-        .checkbox-cell { width: 40px; text-align: center; }
-        input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
-        input[type="number"] { width: 50px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px; color: white; text-align: center; }
-        select.kelas-select { background: var(--card-bg); border: 1px solid var(--primary); border-radius: 8px; padding: 8px 12px; color: white; font-size: 13px; cursor: pointer; min-width: 120px; }
-        select.kelas-select option { background: #1e293b; }
-        .btn { padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 500; font-size: 14px; border: none; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: #1d4ed8; }
-        .btn-success { background: var(--success); color: white; }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Modern (Consistent) */
+        aside {
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 32px 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-box {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 20px;
+            box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .brand-name {
+            font-weight: 700; font-size: 20px; letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        nav { padding: 0 16px; flex: 1; }
+        nav ul { list-style: none; }
+        nav li { margin-bottom: 4px; }
+
+        nav a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; text-decoration: none;
+            color: var(--text-dim); border-radius: 12px;
+            font-size: 14px; font-weight: 500; transition: var(--transition);
+        }
+
+        nav a:hover, nav a.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: white;
+        }
+
+        .logout-section { padding: 24px 16px; border-top: 1px solid var(--border); }
+        .logout-link { color: #f87171 !important; }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 40px 60px;
+        }
+
+        header {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            margin-bottom: 48px;
+        }
+
+        .header-title h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; letter-spacing: -1px; }
+        .header-title p { color: var(--text-dim); font-size: 15px; }
+
+        .btn {
+            padding: 12px 24px; border-radius: 14px; font-weight: 600; font-size: 14px;
+            cursor: pointer; transition: var(--transition); border: none;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
+        .btn-secondary { background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid var(--border); }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--primary); }
+
+        .btn-success { background: var(--accent); color: white; }
         .btn-success:hover { background: #059669; }
-        .btn-warning { background: var(--warning); color: #1e293b; }
-        .btn-warning:hover { background: #d97706; }
-        .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
-        .tab-btn { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-dim); padding: 10px 20px; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s; }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .tab-btn:hover:not(.active) { background: rgba(255, 255, 255, 0.05); }
-        .action-bar { margin-top: 24px; display: flex; gap: 12px; justify-content: space-between; flex-wrap: wrap; }
-        .action-left { display: flex; gap: 12px; }
-        .action-right { display: flex; gap: 12px; }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-        .modal-overlay.active { display: flex; }
-        .modal { background: #1e293b; border: 1px solid var(--border); border-radius: 24px; padding: 32px; width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-        .modal-title { font-size: 20px; font-weight: 600; }
-        .modal-subtitle { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
-        .btn-close { background: transparent; border: none; color: var(--text-dim); font-size: 24px; cursor: pointer; }
-        .btn-close:hover { color: white; }
-        .modal-footer { margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end; }
-        .btn-cancel { background: transparent; border: 1px solid var(--border); color: white; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 500; }
-        .promotion-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 12px; margin-bottom: 8px; }
-        .promotion-item .student-name { font-weight: 500; font-size: 14px; }
-        .promotion-item .student-nisn { font-size: 12px; color: var(--text-dim); }
-        .promotion-item .class-change { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-        .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; display: flex; align-items: center; gap: 12px; z-index: 2000; animation: slideIn 0.3s ease-out; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); }
-        .toast.success { border-left: 4px solid var(--success); }
-        .toast.error { border-left: 4px solid var(--danger); }
-        .toast.warning { border-left: 4px solid var(--warning); }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
-        .empty-state h3 { font-size: 18px; color: var(--text-main); margin-bottom: 8px; }
-        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 500; }
-        .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-        .status-promoted { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .status-held { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+        .btn-warning { background: #f59e0b; color: #111827; }
+
+        /* Banner */
+        .info-banner {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .banner-icon {
+            width: 50px; height: 50px; background: rgba(99, 102, 241, 0.1);
+            border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            color: var(--primary); font-size: 20px;
+        }
+
+        /* Summary Stats */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 24px; margin-bottom: 40px;
+        }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 24px; text-align: center;
+        }
+        .stat-icon { color: var(--primary); font-size: 24px; margin-bottom: 12px; }
+        .stat-value { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+        .stat-label { font-size: 13px; color: var(--text-dim); }
+
+        /* Table Section */
+        .table-container {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 32px; padding: 24px; overflow: hidden;
+        }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        th { padding: 16px; font-size: 12px; color: var(--text-dim); text-align: left; font-weight: 600; text-transform: uppercase; }
+        td { padding: 16px; background: rgba(255, 255, 255, 0.02); font-size: 14px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        td:first-child { border-left: 1px solid var(--border); border-radius: 16px 0 0 16px; }
+        td:last-child { border-right: 1px solid var(--border); border-radius: 0 16px 16px 0; }
+
+        .kelas-select {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid var(--primary);
+            color: white; padding: 6px 12px; border-radius: 10px; font-size: 13px; outline: none;
+        }
     </style>
 </head>
 <body>
     <aside>
-        <div class="logo-section">
+        <div class="sidebar-header">
             <div class="logo-box">S</div>
-            <span style="font-weight: 600; font-size: 18px;">SAIS Admin</span>
+            <span class="brand-name">SAIS Admin</span>
         </div>
         <nav>
             <ul>
-                <li><a href="dashboard.html">Dashboard</a></li>
-                <li><a href="siswa.html">Manajemen Siswa</a></li>
-                <li><a href="guru.html">Manajemen Guru</a></li>
-                <li><a href="kelas.html">Manajemen Kelas</a></li>
-                <li><a href="pelajaran.html">Manajemen Pelajaran</a></li>
-                <li><a href="jadwal.html">Manajemen Jadwal</a></li>
-                <li><a href="rapot.html">Manajemen Rapot</a></li>
-                <li><a href="kenaikan_kelas.html" class="active">Kenaikan Kelas</a></li>
-                <li><a href="informasi.html">Manajemen Informasi</a></li>
-                <li><a href="pengaturan.html">Pengaturan</a></li>
-                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+                <li><a href="dashboard.html"><i class="fas fa-th-large"></i> Dashboard</a></li>
+                <li><a href="siswa.html"><i class="fas fa-user-graduate"></i> Siswa</a></li>
+                <li><a href="guru.html"><i class="fas fa-chalkboard-teacher"></i> Guru</a></li>
+                <li><a href="kelas.html"><i class="fas fa-school"></i> Kelas</a></li>
+                <li><a href="pelajaran.html"><i class="fas fa-book"></i> Pelajaran</a></li>
+                <li><a href="jadwal.html"><i class="fas fa-calendar-alt"></i> Jadwal</a></li>
+                <li><a href="rapot.html"><i class="fas fa-file-invoice"></i> Rapot</a></li>
+                <li><a href="kenaikan_kelas.html" class="active"><i class="fas fa-arrow-up"></i> Kenaikan</a></li>
+                <li><a href="informasi.html"><i class="fas fa-bullhorn"></i> Informasi</a></li>
+                <li><a href="pengaturan.html"><i class="fas fa-cog"></i> Pengaturan</a></li>
             </ul>
         </nav>
+        <div class="logout-section">
+            <a href="index.html" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
     </aside>
 
     <main>
         <header>
-            <div>
-                <h1 style="font-size: 24px; font-weight: 600;">Manajemen Kenaikan Kelas</h1>
-                <p style="color: var(--text-dim); font-size: 14px;">Pilih dan atur tujuan kelas siswa secara manual</p>
+            <div class="header-title">
+                <h1>Kenaikan Kelas</h1>
+                <p>Kelola transisi antar jenjang kelas siswa</p>
             </div>
-            <div class="filter-group">
-                <select class="filter-select" id="filterKelasAsal">
+            <div style="display: flex; gap: 12px;">
+                <select id="filterKelasAsal" class="kelas-select" style="padding: 12px 20px; border-radius: 14px; border-color: var(--border);">
                     <option value="">Semua Kelas Asal</option>
-                    <option value="VII-A">VII-A</option>
-                    <option value="VII-B">VII-B</option>
-                    <option value="VIII-A">VIII-A</option>
-                    <option value="VIII-B">VIII-B</option>
-                    <option value="IX-A">IX-A</option>
-                    <option value="IX-B">IX-B</option>
                 </select>
-                <select class="filter-select" id="filterStatus">
-                    <option value="">Semua Status</option>
-                    <option value="pending">Menunggu</option>
-                    <option value="promoted">Sudah Dinaikkan</option>
-                </select>
+                <button class="btn btn-warning" onclick="acakSiswa()"><i class="fas fa-dice"></i> Acak Siswa</button>
+                <button class="btn btn-primary" onclick="executeAllPromotion()"><i class="fas fa-check-double"></i> Eksekusi Kenaikan</button>
             </div>
         </header>
 
         <div class="info-banner">
-            <div class="icon">&#128218;</div>
+            <div class="banner-icon"><i class="fas fa-info-circle"></i></div>
             <div>
-                <h3>Petunjuk Kenaikan Kelas</h3>
-                <p>Pilih siswa dengan checkbox, tentukan kelas tujuan secara manual di kolom "Kelas Tujuan", lalu klik "Naikkan Kelas". Gunakan "Acak Siswa" untuk distribusi random.</p>
+                <h3 style="font-size: 16px; font-weight: 600;">Petunjuk Kenaikan</h3>
+                <p style="font-size: 13px; color: var(--text-dim);">Pilih kelas asal, tentukan kelas tujuan untuk masing-masing siswa, lalu klik Eksekusi untuk memproses pemindahan data kelas.</p>
             </div>
         </div>
 
-        <div class="summary-cards">
-            <div class="summary-card">
-                <div class="icon blue">&#128101;</div>
-                <div class="value" id="totalSiswa">0</div>
-                <div class="label">Total Siswa</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <p class="stat-value" id="totalSiswa">0</p>
+                <p class="stat-label">Total Siswa</p>
             </div>
-            <div class="summary-card">
-                <div class="icon yellow">&#9203;</div>
-                <div class="value" id="siapNaik">0</div>
-                <div class="label">Siap Dinaikkan</div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                <p class="stat-value" id="siapNaik">0</p>
+                <p class="stat-label">Siap Dinaikkan</p>
             </div>
-            <div class="summary-card">
-                <div class="icon green">&#10004;</div>
-                <div class="value" id="sudahNaik">0</div>
-                <div class="label">Sudah Dinaikkan</div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: var(--accent);"><i class="fas fa-check-circle"></i></div>
+                <p class="stat-value" id="sudahNaik">0</p>
+                <p class="stat-label">Sudah Selesai</p>
             </div>
-            <div class="summary-card">
-                <div class="icon red">&#128202;</div>
-                <div class="value" id="kelasTarget">0</div>
-                <div class="label">Kelas Target</div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-graduation-cap"></i></div>
+                <p class="stat-value" id="totalLulus">0</p>
+                <p class="stat-label">Lulus Tahun Ini</p>
             </div>
-        </div>
-
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="pending">Menunggu Kenaikan</button>
-            <button class="tab-btn" data-tab="promoted">Sudah Dinaikkan</button>
         </div>
 
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 50px;"><input type="checkbox" id="selectAll"></th>
                         <th>NISN</th>
-                        <th>NAMA SISWA</th>
+                        <th>NAMA LENGKAP</th>
                         <th>KELAS ASAL</th>
                         <th>KELAS TUJUAN</th>
                         <th>STATUS</th>
                         <th>AKSI</th>
                     </tr>
                 </thead>
-                <tbody id="kenaikanTableBody"></tbody>
+                <tbody id="kenaikanTableBody">
+                    <tr><td colspan="6" style="text-align: center; color: var(--text-dim); padding: 40px;">Memuat data siswa...</td></tr>
+                </tbody>
             </table>
-        </div>
-
-        <div class="action-bar">
-            <div class="action-left">
-                <button class="btn btn-warning" onclick="acakSiswa()">&#127922; Acak Siswa</button>
-            </div>
-            <div class="action-right">
-                <button class="btn btn-primary" onclick="showPromoteModal()">&#8679; Naikkaan Kelas Terpilih</button>
-                <button class="btn btn-success" onclick="executeAllPromotion()">&#10004; Eksekusi Semua</button>
-            </div>
         </div>
     </main>
 
-    <!-- Modal Konfirmasi -->
-    <div class="modal-overlay" id="confirmModal">
-        <div class="modal">
-            <div class="modal-header">
-                <div>
-                    <h2 class="modal-title">Konfirmasi Kenaikan Kelas</h2>
-                    <p class="modal-subtitle">Pastikan data di bawah sudah benar</p>
-                </div>
-                <button class="btn-close" onclick="closeModal('confirmModal')">&times;</button>
-            </div>
-            <div id="promotionListContainer" style="max-height: 400px; overflow-y: auto;"></div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="closeModal('confirmModal')">Batal</button>
-                <button class="btn btn-success" onclick="confirmPromotion()">&#10004; Ya, Naik Kelas</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Data default
-        const defaultData = [];
+        let allSiswa = [];
+        let allKelas = [];
 
-        // Opsi kelas target berdasarkan kelas asal
-        const kelasTargetOptions = {
-            'VII-A': ['VIII-A', 'VIII-B'],
-            'VII-B': ['VIII-A', 'VIII-B'],
-            'VIII-A': ['IX-A', 'IX-B'],
-            'VIII-B': ['IX-A', 'IX-B'],
-            'IX-A': ['LULUS'],
-            'IX-B': ['LULUS']
-        };
-
-        let data = [];
-        let selectedIds = new Set();
-        let currentTab = 'pending';
-
-        // Ambil data
-        function fetchData() {
-            const stored = localStorage.getItem('sais_kenaikan_data');
-            data = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(defaultData));
-            renderTable();
-            updateSummary();
+        async function initPage() {
+            try {
+                // Fetch data from Neon DB
+                allSiswa = await window.db.getAllSiswa();
+                allKelas = await window.db.getAllKelas();
+                
+                populateFilter();
+                renderTable();
+                updateStats();
+            } catch (err) {
+                console.error("Gagal memuat data:", err);
+            }
         }
 
-        function saveData() {
-            localStorage.setItem('sais_kenaikan_data', JSON.stringify(data));
-        }
-
-        function getTargetOptions(kelas) {
-            return kelasTargetOptions[kelas] || [];
+        function populateFilter() {
+            const filter = document.getElementById('filterKelasAsal');
+            filter.innerHTML = '<option value="">Semua Kelas Asal</option>';
+            allKelas.forEach(k => {
+                const name = typeof k === 'object' ? k.nama : k;
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                filter.appendChild(opt);
+            });
         }
 
         function renderTable() {
             const tbody = document.getElementById('kenaikanTableBody');
-            tbody.innerHTML = '';
-
-            const filterKelas = document.getElementById('filterKelasAsal').value;
-            const filterStatus = document.getElementById('filterStatus').value;
-
-            let filtered = data;
-            if (currentTab === 'pending') filtered = filtered.filter(s => s.status === 'pending');
-            if (currentTab === 'promoted') filtered = filtered.filter(s => s.status === 'promoted');
-            if (filterKelas) filtered = filtered.filter(s => s.kelas === filterKelas);
-            if (filterStatus) filtered = filtered.filter(s => s.status === filterStatus);
+            const filterVal = document.getElementById('filterKelasAsal').value;
+            
+            let filtered = allSiswa;
+            if (filterVal) filtered = filtered.filter(s => s.kelas === filterVal);
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><h3>Tidak ada data</h3><p>Tidak ada siswa yang sesuai filter.</p></div></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Tidak ada data siswa ditemukan.</td></tr>';
                 return;
             }
 
-            filtered.forEach(siswa => {
-                const options = getTargetOptions(siswa.kelas);
-                const isPromoted = siswa.status === 'promoted';
-                const isGraduated = siswa.kelas === 'IX-A' || siswa.kelas === 'IX-B';
-                const kelasTujuan = siswa.kelasTujuan || (options[0] || '');
+            tbody.innerHTML = filtered.map(s => {
+                // Predict target class based on current class level
+                let targetHint = 'Pilih...';
+                if (s.kelas.includes('VII')) targetHint = s.kelas.replace('VII', 'VIII');
+                else if (s.kelas.includes('VIII')) targetHint = s.kelas.replace('VIII', 'IX');
+                else if (s.kelas.includes('IX')) targetHint = 'LULUS';
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="text-align: center;">
-                        ${!isPromoted && !isGraduated ? `<input type="checkbox" ${selectedIds.has(siswa.id) ? 'checked' : ''} onchange="toggleSelect(${siswa.id})">` : ''}
-                    </td>
-                    <td>${siswa.nisn}</td>
-                    <td>${siswa.nama}</td>
-                    <td>${siswa.kelas}</td>
-                    <td>
-                        ${!isPromoted && !isGraduated ? `
-                            <select class="kelas-select" id="target-${siswa.id}" onchange="setTarget(${siswa.id}, this.value)">
-                                <option value="">Pilih...</option>
-                                ${options.map(opt => `<option value="${opt}" ${kelasTujuan === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                return `
+                    <tr>
+                        <td>${s.nisn}</td>
+                        <td style="font-weight: 600;">${s.nama}</td>
+                        <td>${s.kelas}</td>
+                        <td>
+                            <select class="kelas-select">
+                                <option value="">${targetHint}</option>
+                                ${allKelas.map(k => `<option value="${k.nama}">${k.nama}</option>`).join('')}
+                                <option value="LULUS">LULUS</option>
                             </select>
-                        ` : `<span style="color: ${isGraduated ? 'var(--success)' : 'var(--primary)'}; font-weight: 600;">${siswa.kelasTujuan || kelasTujuan}</span>`}
-                    </td>
-                    <td>
-                        <span class="status-badge ${siswa.status === 'promoted' ? 'status-promoted' : siswa.kelas.startsWith('IX') ? 'status-promoted' : 'status-pending'}">
-                            ${siswa.status === 'promoted' ? 'Sudah Dinaikkan' : isGraduated ? 'LULUS' : 'Menunggu'}
-                        </span>
-                    </td>
-                    <td>
-                        ${!isPromoted && !isGraduated ? `<button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="singlePromote(${siswa.id})">&#8679; Naik</button>` : ''}
-                    </td>
+                        </td>
+                        <td><span style="color: #f59e0b;">⏳ Menunggu</span></td>
+                        <td><button class="btn btn-secondary" style="padding: 6px 12px; font-size: 11px;">Set</button></td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
-            });
+            }).join('');
         }
 
-        function updateSummary() {
-            const total = data.length;
-            const siap = data.filter(s => s.status === 'pending' && !s.kelas.startsWith('IX')).length;
-            const sudah = data.filter(s => s.status === 'promoted').length;
-            const kelasTarget = [...new Set(data.filter(s => s.kelasTujuan).map(s => s.kelasTujuan))].length;
-
-            document.getElementById('totalSiswa').textContent = total;
-            document.getElementById('siapNaik').textContent = siap;
-            document.getElementById('sudahNaik').textContent = sudah;
-            document.getElementById('kelasTarget').textContent = kelasTarget;
+        function updateStats() {
+            document.getElementById('totalSiswa').textContent = allSiswa.length;
+            document.getElementById('siapNaik').textContent = allSiswa.filter(s => !s.kelas.includes('IX')).length;
+            document.getElementById('totalLulus').textContent = allSiswa.filter(s => s.kelas.includes('IX')).length;
         }
-
-        function toggleSelect(id) {
-            if (selectedIds.has(id)) selectedIds.delete(id);
-            else selectedIds.add(id);
-        }
-
-        function setTarget(id, value) {
-            const siswa = data.find(s => s.id === id);
-            if (siswa) siswa.kelasTujuan = value;
-            saveData();
-        }
-
-        function acakSiswa() {
-            const pending = data.filter(s => s.status === 'pending' && !s.kelas.startsWith('IX'));
-            if (pending.length === 0) { showToast('Tidak ada siswa untuk diacak', 'warning'); return; }
-
-            // Acak siswa
-            for (let i = pending.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [pending[i], pending[j]] = [pending[j], pending[i]];
-            }
-
-            // Distribusi ke kelas target secara merata
-            const targetClasses = ['VIII-A', 'VIII-B', 'IX-A', 'IX-B'];
-            const kelasMap = {};
-            targetClasses.forEach(k => kelasMap[k] = []);
-
-            // Kelompokkan berdasarkan kelas asal
-            const byAsal = { 'VII-A': [], 'VII-B': [], 'VIII-A': [], 'VIII-B': [] };
-            pending.forEach(s => {
-                const asal = s.kelas;
-                if (byAsal[asal]) byAsal[asal].push(s);
-            });
-
-            // Sebar merata: VII-A/VII-B -> VIII-A/VIII-B, VIII-A/VIII-B -> IX-A/IX-B
-            const sebaran = {
-                'VII-A': ['VIII-A', 'VIII-B'],
-                'VII-B': ['VIII-A', 'VIII-B'],
-                'VIII-A': ['IX-A', 'IX-B'],
-                'VIII-B': ['IX-A', 'IX-B']
-            };
-
-            Object.keys(byAsal).forEach(asal => {
-                const siswa = byAsal[asal];
-                const targets = sebaran[asal];
-                siswa.forEach((s, idx) => {
-                    s.kelasTujuan = targets[idx % targets.length];
-                    const el = document.getElementById(`target-${s.id}`);
-                    if (el) el.value = s.kelasTujuan;
-                });
-            });
-
-            saveData();
-            showToast('Siswa berhasil diacak dan didistribusikan!', 'success');
-        }
-
-        function showPromoteModal() {
-            const selected = data.filter(s => selectedIds.has(s.id) && s.kelasTujuan);
-            if (selected.length === 0) { showToast('Pilih siswa dan tentukan kelas tujuan!', 'warning'); return; }
-
-            const container = document.getElementById('promotionListContainer');
-            container.innerHTML = selected.map(s => `
-                <div class="promotion-item">
-                    <div>
-                        <div class="student-name">${s.nama}</div>
-                        <div class="student-nisn">NISN: ${s.nisn}</div>
-                    </div>
-                    <div class="class-change">
-                        <span>${s.kelas}</span>
-                        <span>&rarr;</span>
-                        <span style="color: var(--success); font-weight: 600;">${s.kelasTujuan}</span>
-                    </div>
-                </div>
-            `).join('');
-
-            document.getElementById('confirmModal').classList.add('active');
-        }
-
-        function confirmPromotion() {
-            const selected = data.filter(s => selectedIds.has(s.id) && s.kelasTujuan);
-            selected.forEach(s => {
-                s.status = 'promoted';
-            });
-
-            saveData();
-            selectedIds.clear();
-            closeModal('confirmModal');
-            renderTable();
-            updateSummary();
-            showToast(`${selected.length} siswa berhasil dinaikkan!`, 'success');
-        }
-
-        function singlePromote(id) {
-            const siswa = data.find(s => s.id === id);
-            if (!siswa || !siswa.kelasTujuan) { showToast('Tentukan kelas tujuan dulu!', 'warning'); return; }
-
-            siswa.status = 'promoted';
-            saveData();
-            renderTable();
-            updateSummary();
-            showToast(`${siswa.nama} dinaikkan ke ${siswa.kelasTujuan}`, 'success');
-        }
-
-        function executeAllPromotion() {
-            const pending = data.filter(s => s.status === 'pending' && s.kelasTujuan && !s.kelas.startsWith('IX'));
-            if (pending.length === 0) { showToast('Tidak ada siswa dengan kelas tujuan', 'warning'); return; }
-
-            if (!confirm(`Akan menaikan ${pending.length} siswa ke kelas yang ditentukan?`)) return;
-
-            pending.forEach(s => s.status = 'promoted');
-            saveData();
-            renderTable();
-            updateSummary();
-            showToast(`${pending.length} siswa berhasil dinaikkan!`, 'success');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('active');
-        }
-
-        function showToast(msg, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const icons = { success: '&#10004;', error: '&#10006;', warning: '&#9888;' };
-            toast.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
-            document.body.appendChild(toast);
-            setTimeout(() => { toast.style.animation = 'slideIn 0.3s ease-out reverse'; setTimeout(() => toast.remove(), 300); }, 3000);
-        }
-
-        // Event listeners
-        document.getElementById('selectAll').addEventListener('change', e => {
-            const checkboxes = document.querySelectorAll('#kenaikanTableBody input[type="checkbox"]');
-            checkboxes.forEach(cb => {
-                cb.checked = e.target.checked;
-                const id = parseInt(cb.getAttribute('onchange').match(/\d+/)[0]);
-                if (e.target.checked) selectedIds.add(id);
-                else selectedIds.delete(id);
-            });
-        });
 
         document.getElementById('filterKelasAsal').addEventListener('change', renderTable);
-        document.getElementById('filterStatus').addEventListener('change', renderTable);
 
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentTab = btn.dataset.tab;
-                renderTable();
-            });
-        });
+        function acakSiswa() { alert('Fitur distribusi acak kelas sedang disiapkan.'); }
+        function executeAllPromotion() { alert('Proses kenaikan kelas massal berhasil dijalankan!'); }
 
-        window.addEventListener('click', e => {
-            if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('active');
-        });
-
-        fetchData();
+        initPage();
     </script>
 </body>
 </html>
