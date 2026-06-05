@@ -103,9 +103,21 @@
         /* Dashboard Grid Menu */
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 16px;
             margin-bottom: 32px;
+        }
+
+        @media (min-width: 480px) {
+            .menu-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .menu-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
         }
 
         .menu-item {
@@ -355,11 +367,11 @@
                 <a href="jadwal_guru.html" style="color: var(--primary); font-size: 12px; text-decoration: none; font-weight: 600;">Lihat Semua</a>
             </div>
             <div class="summary-list">
-                <div class="summary-row">
+                <div class="summary-row" id="jadwal1">
                     <div class="row-label">07:30 - VII-A</div>
                     <div class="row-value">B. Indonesia</div>
                 </div>
-                <div class="summary-row">
+                <div class="summary-row" id="jadwal2">
                     <div class="row-label">09:00 - VIII-B</div>
                     <div class="row-value">B. Indonesia</div>
                 </div>
@@ -414,9 +426,12 @@
         }
 
         // Add slideDown animation to CSS dynamically
-        const style = document.createElement('style');
-        style.innerHTML = `@keyframes slideDown { from { transform: translateY(0); } to { transform: translateY(100%); } }`;
-        document.head.appendChild(style);
+        if (!document.getElementById('dynamic-animations')) {
+            const style = document.createElement('style');
+            style.id = 'dynamic-animations';
+            style.innerHTML = `@keyframes slideDown { from { transform: translateY(0); } to { transform: translateY(100%); } }`;
+            document.head.appendChild(style);
+        }
 
         function handleLogout() {
             localStorage.removeItem('sais_current_user');
@@ -456,13 +471,13 @@
             const pengumumanContainer = document.getElementById('pengumumanContainer');
             try {
                 const infoData = JSON.parse(localStorage.getItem('sais_dataInformasi') || '[]');
-                const filtered = infoData.filter(i => i.sasaran === 'Semua' || i.sasaran === 'Guru').slice(0, 2);
+                const filtered = infoData.filter(i => i.sasaran === 'Semua' || i.sasaran === 'Guru');
                 
                 if (filtered.length > 0) {
-                    pengumumanContainer.innerHTML = filtered.map(i => `
-                        <div style="margin-bottom: 12px;">
+                    pengumumanContainer.innerHTML = filtered.slice(0, 2).map(i => `
+                        <div style="margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
                             <p style="font-weight: 600; color: white;">${i.judul}</p>
-                            <p style="font-size: 11px; margin-top: 2px;">${i.isi.substring(0, 60)}...</p>
+                            <p style="font-size: 11px; margin-top: 2px;">${i.isi.substring(0, 80)}...</p>
                         </div>
                     `).join('');
                 } else {
@@ -470,66 +485,6 @@
                 }
             } catch (e) {
                 pengumumanContainer.innerHTML = 'Gagal memuat informasi.';
-            }
-        });
-    </script>
-</body>
-</html>
-
-    <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            // Load user data from login
-            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
-            const userNama = currentUser.nama || 'Siti Aminah, S.Pd.';
-            const userMapel = currentUser.mapel || 'Bahasa Indonesia';
-
-            // Update user profile
-            document.getElementById('userAvatar').textContent = userNama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            document.getElementById('userNama').textContent = userNama;
-            document.getElementById('userMapel').textContent = 'Guru ' + userMapel;
-
-            // Update welcome message
-            const firstName = userNama.split(' ')[0].replace(/,/g, '');
-            document.getElementById('welcomeText').textContent = 'Selamat datang kembali, ' + firstName + '.';
-
-            // Load announcements
-            const defaultInfo = [
-                { tanggal: '2026-05-28', judul: 'Persiapan Ujian Tengah Semester', isi: 'Jadwal UTS telah diperbarui, silakan cek menu jadwal.', sasaran: 'Semua', status: 'Aktif' },
-                { tanggal: '2026-05-25', judul: 'Rapat Komite Sekolah', isi: 'Rapat akan diadakan hari Sabtu pukul 09:00 WIB di aula sekolah.', sasaran: 'Guru', status: 'Aktif' },
-                { tanggal: '2026-05-20', judul: 'Lomba Hari Pendidikan Nasional', isi: 'Berbagai lomba akademik dan olahraga akan diselenggarakan.', sasaran: 'Siswa', status: 'Aktif' }
-            ];
-
-            let infoData = [];
-            try {
-                const stored = localStorage.getItem('sais_dataInformasi');
-                if (stored) {
-                    infoData = JSON.parse(stored);
-                } else {
-                    infoData = defaultInfo;
-                    localStorage.setItem('sais_dataInformasi', JSON.stringify(defaultInfo));
-                }
-            } catch (e) {
-                infoData = defaultInfo;
-            }
-
-            const container = document.getElementById('pengumumanGuruContainer');
-            const filteredInfo = infoData.filter(info =>
-                (info.sasaran === 'Semua' || info.sasaran === 'Guru') && info.status === 'Aktif'
-            );
-
-            if (filteredInfo.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-dim); font-size: 14px;">Tidak ada pengumuman terbaru.</p>';
-            } else {
-                container.innerHTML = filteredInfo.slice(0, 3).map(info => `
-                    <div style="padding: 16px 0; border-bottom: 1px solid var(--border);">
-                        <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px;">Tanggal: ${info.tanggal.split('-').reverse().join('/')}</p>
-                        <p style="font-weight: 600; font-size: 15px; color: var(--text-main);">${info.judul}</p>
-                        <p style="font-size: 13px; color: var(--text-dim); margin-top: 4px;">${info.isi}</p>
-                    </div>
-                `).join('');
-                if (container.lastElementChild) {
-                    container.lastElementChild.style.borderBottom = 'none';
-                }
             }
         });
     </script>
