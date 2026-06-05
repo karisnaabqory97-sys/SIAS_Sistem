@@ -7,271 +7,474 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Guru | SAIS</title>
+    <!-- PWA Support -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2940/2940651.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #10b981;
-            --primary-hover: #059669;
-            --bg-main: #0f172a;
-            --bg-sidebar: #1e293b;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --accent: #10b981;
+            --bg-main: #0b0f1a;
+            --bg-card: #111827;
+            --glass-bg: rgba(31, 41, 55, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-dim: #9ca3af;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
         body {
-            background: var(--bg-main);
+            background-color: var(--bg-main);
             color: var(--text-main);
-            display: flex;
             min-height: 100vh;
-        }
-
-        /* Sidebar */
-        aside {
-            width: 260px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            padding: 24px;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
             overflow-x: hidden;
+            padding-bottom: 80px; /* Space for bottom bar */
         }
 
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 40px;
-        }
-
-        .logo-box {
-            width: 32px;
-            height: 32px;
-            background: var(--primary);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            color: white;
-        }
-
-        nav {
-            flex: 1;
-        }
-
-        nav ul {
-            list-style: none;
-        }
-
-        nav li {
-            margin-bottom: 8px;
-        }
-
-        nav a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            text-decoration: none;
-            color: var(--text-dim);
-            border-radius: 12px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        nav a.active, nav a:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        nav a.logout-link:hover {
-            background: #ef4444;
-            color: white;
-        }
-
-        .user-profile {
-            margin-top: auto;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
-            background: #334155;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 600;
-            color: white;
-        }
-
-        /* Main Content */
-        main {
-            flex: 1;
-            margin-left: 260px;
-            padding: 40px;
-        }
-
-        header {
+        /* Top Bar */
+        .top-bar {
+            background: var(--bg-card);
+            padding: 16px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 24px;
-            border-radius: 20px;
-        }
-
-        .content-section {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 24px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th {
-            text-align: left;
+        .notif-btn {
+            width: 44px; height: 44px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
             color: var(--text-dim);
-            font-size: 13px;
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
+            position: relative;
+            cursor: pointer;
         }
 
-        td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
+        .notif-badge {
+            width: 10px; height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px; right: 12px;
+            border: 2px solid var(--bg-card);
+        }
+
+        .user-top-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: right;
+        }
+
+        .user-top-text h4 { font-size: 14px; font-weight: 600; line-height: 1.2; }
+        .user-top-text p { font-size: 11px; color: var(--text-dim); }
+
+        .user-top-avatar {
+            width: 40px; height: 40px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; color: white;
             font-size: 14px;
+        }
+
+        /* Main Content */
+        main { padding: 24px; flex: 1; }
+
+        .welcome-section { margin-bottom: 32px; }
+        .welcome-section h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+        .welcome-section p { color: var(--text-dim); font-size: 14px; }
+
+        /* Dashboard Grid Menu */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .menu-item {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .menu-item:active { transform: scale(0.95); }
+
+        .menu-icon {
+            width: 54px; height: 54px;
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 12px;
+            font-size: 20px;
+        }
+
+        .menu-item span { font-size: 12px; font-weight: 600; line-height: 1.2; }
+
+        /* Specific Menu Icon Colors */
+        .icon-blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .icon-green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .icon-purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+        .icon-orange { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .icon-red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .icon-indigo { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+
+        /* Summary Stats */
+        .summary-card {
+            background: linear-gradient(135deg, #1e293b 0%, #111827 100%);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .summary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .summary-header h3 { font-size: 16px; font-weight: 600; }
+
+        .summary-list { display: flex; flex-direction: column; gap: 12px; }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .summary-row:last-child { border-bottom: none; }
+        .row-label { color: var(--text-dim); }
+        .row-value { font-weight: 600; }
+
+        /* Bottom Navigation Bar */
+        .bottom-bar {
+            background: var(--bg-card);
+            border-top: 1px solid var(--glass-border);
+            height: 72px;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: var(--text-dim);
+            transition: var(--transition);
+            flex: 1;
+        }
+
+        .nav-link.active { color: var(--primary); }
+        .nav-link i { font-size: 20px; }
+        .nav-link span { font-size: 10px; font-weight: 500; }
+
+        /* Profile Overlay Page */
+        .profile-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-main);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            padding: 24px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .overlay-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .back-btn {
+            width: 44px; height: 44px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            margin-right: 16px;
+        }
+
+        .profile-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .big-avatar {
+            width: 100px; height: 100px;
+            background: var(--primary);
+            border-radius: 32px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px; font-weight: 700; color: white;
+            margin-bottom: 24px;
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .profile-info h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .profile-info p { color: var(--text-dim); font-size: 14px; margin-bottom: 32px; }
+
+        .btn-logout {
+            width: 100%;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        /* Desktop Adjustments */
+        @media (min-width: 1024px) {
+            body { padding-bottom: 0; }
+            .login-container { max-width: 900px; margin: 0 auto; }
+            .menu-grid { grid-template-columns: repeat(6, 1fr); }
+            .bottom-bar { display: none; }
+            .top-bar { padding: 20px 60px; }
+            main { padding: 40px 60px; max-width: 1200px; margin: 0 auto; width: 100%; }
         }
     </style>
 </head>
 <body>
-    <aside>
-        <div class="logo-section">
-            <div class="logo-box">S</div>
-            <span style="font-weight: 600; font-size: 18px;">SAIS Guru</span>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="notif-btn">
+            <i class="fas fa-bell"></i>
+            <div class="notif-badge"></div>
         </div>
-        <nav>
-            <ul>
-                <li><a href="dashboard_guru.html" class="active">Dashboard</a></li>
-                <li><a href="rapot_guru.html">Input Nilai Rapot</a></li>
-                <li><a href="kenaikan_guru.html">Murid Baru</a></li>
-                <li><a href="jadwal_guru.html">Jadwal Mengajar</a></li>
-                <li><a href="jadwal_ujian_guru.html">Jadwal Ujian</a></li>
-                <li><a href="informasi_guru.html">Informasi</a></li>
-                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
-            </ul>
-        </nav>
-        <div class="user-profile">
-            <div class="avatar" id="userAvatar">-</div>
-            <div>
-                <p style="font-size: 14px; font-weight: 600;" id="userNama">Memuat...</p>
-                <p style="font-size: 12px; color: var(--text-dim);" id="userMapel">-</p>
+        <div class="user-top-info">
+            <div class="user-top-text">
+                <h4 id="userNamaTop">Nama Guru</h4>
+                <p id="userNuptkTop">NUPTK: -</p>
             </div>
+            <div class="user-top-avatar" id="userAvatarTop">G</div>
         </div>
-    </aside>
+    </div>
+
+    <!-- Profile Overlay -->
+    <div class="profile-overlay" id="profileOverlay">
+        <div class="overlay-header">
+            <div class="back-btn" onclick="toggleProfile()"><i class="fas fa-arrow-left"></i></div>
+            <h3 style="font-size: 18px; font-weight: 700;">Profil Saya</h3>
+        </div>
+        <div class="profile-content">
+            <div class="big-avatar" id="bigAvatar">G</div>
+            <div class="profile-info">
+                <h2 id="fullNama">Nama Lengkap Guru</h2>
+                <p id="fullNuptk">NUPTK: 198501012010011001</p>
+                <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 20px; text-align: left; margin-top: 10px;">
+                    <p style="font-size: 12px; margin-bottom: 4px;">Mata Pelajaran Utama:</p>
+                    <p style="font-weight: 600; color: white;" id="fullMapel">-</p>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="handleLogout()">
+                <i class="fas fa-sign-out-alt"></i> Keluar dari Sistem
+            </button>
+        </div>
+    </div>
 
     <main>
-        <header>
-            <div>
-                <h1>Dashboard Guru</h1>
-                <p style="color: var(--text-dim);" id="welcomeText">Selamat datang kembali.</p>
-            </div>
-        </header>
+        <div class="welcome-section">
+            <h1 id="welcomeText">Selamat Pagi, Guru!</h1>
+            <p>Kelola data sekolah Anda hari ini.</p>
+        </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <p style="color: var(--text-dim); font-size: 14px;">Total Kelas</p>
-                <p style="font-size: 24px; font-weight: 700;">6 Kelas</p>
+        <!-- Main Menu Grid -->
+        <div class="menu-grid">
+            <a href="rapot_guru.html" class="menu-item">
+                <div class="menu-icon icon-blue"><i class="fas fa-file-invoice"></i></div>
+                <span>Input Nilai</span>
+            </a>
+            <a href="jadwal_guru.html" class="menu-item">
+                <div class="menu-icon icon-green"><i class="fas fa-calendar-alt"></i></div>
+                <span>Jadwal Mengajar</span>
+            </a>
+            <a href="jadwal_ujian_guru.html" class="menu-item">
+                <div class="menu-icon icon-purple"><i class="fas fa-clock"></i></div>
+                <span>Jadwal Ujian</span>
+            </a>
+            <a href="kenaikan_guru.html" class="menu-item">
+                <div class="menu-icon icon-orange"><i class="fas fa-user-plus"></i></div>
+                <span>Murid Baru</span>
+            </a>
+            <a href="informasi_guru.html" class="menu-item">
+                <div class="menu-icon icon-indigo"><i class="fas fa-bullhorn"></i></div>
+                <span>Informasi</span>
+            </a>
+            <a href="pengaturan.html" class="menu-item">
+                <div class="menu-icon icon-red"><i class="fas fa-cog"></i></div>
+                <span>Pengaturan</span>
+            </a>
+        </div>
+
+        <!-- Schedule Summary -->
+        <div class="summary-card">
+            <div class="summary-header">
+                <h3>Jadwal Terdekat</h3>
+                <a href="jadwal_guru.html" style="color: var(--primary); font-size: 12px; text-decoration: none; font-weight: 600;">Lihat Semua</a>
             </div>
-            <div class="stat-card">
-                <p style="color: var(--text-dim); font-size: 14px;">Total Siswa</p>
-                <p style="font-size: 24px; font-weight: 700;">210 Siswa</p>
-            </div>
-            <div class="stat-card">
-                <p style="color: var(--text-dim); font-size: 14px;">Tugas Belum Dinilai</p>
-                <p style="font-size: 24px; font-weight: 700; color: #fbbf24;">12 Tugas</p>
+            <div class="summary-list">
+                <div class="summary-row">
+                    <div class="row-label">07:30 - VII-A</div>
+                    <div class="row-value">B. Indonesia</div>
+                </div>
+                <div class="summary-row">
+                    <div class="row-label">09:00 - VIII-B</div>
+                    <div class="row-value">B. Indonesia</div>
+                </div>
             </div>
         </div>
 
-        <div class="content-section">
-            <h3>Jadwal Mengajar Hari Ini</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Jam</th>
-                        <th>Kelas</th>
-                        <th>Mata Pelajaran</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>07:30 - 09:00</td>
-                        <td>VII-A</td>
-                        <td>Bahasa Indonesia</td>
-                        <td style="color: #10b981;">Selesai</td>
-                    </tr>
-                    <tr>
-                        <td>09:00 - 10:30</td>
-                        <td>VIII-B</td>
-                        <td>Bahasa Indonesia</td>
-                        <td style="color: #fbbf24;">Sedang Berlangsung</td>
-                    </tr>
-                    <tr>
-                        <td>10:45 - 12:15</td>
-                        <td>IX-C</td>
-                        <td>Bahasa Indonesia</td>
-                        <td>Mendatang</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="content-section" style="margin-top: 24px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center;">
-                <h3>Pengumuman Sekolah</h3>
-                <a href="informasi_guru.html" style="color: var(--primary); font-size: 13px; text-decoration: none;">Lihat Semua</a>
+        <!-- Announcements -->
+        <div class="summary-card" style="margin-bottom: 0;">
+            <div class="summary-header">
+                <h3>Pengumuman Baru</h3>
             </div>
-            <div id="pengumumanGuruContainer">
-                <!-- Dynamic announcements will be loaded here -->
+            <div id="pengumumanContainer" style="font-size: 13px; color: var(--text-dim);">
+                Memuat pengumuman...
             </div>
         </div>
     </main>
+
+    <!-- Bottom Bar -->
+    <div class="bottom-bar">
+        <a href="dashboard_guru.html" class="nav-link active">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="jadwal_guru.html" class="nav-link">
+            <i class="fas fa-calendar-day"></i>
+            <span>Jadwal</span>
+        </a>
+        <a href="rapot_guru.html" class="nav-link">
+            <i class="fas fa-star"></i>
+            <span>Nilai</span>
+        </a>
+        <div class="nav-link" onclick="toggleProfile()" style="cursor: pointer;">
+            <i class="fas fa-user-circle"></i>
+            <span>Profil</span>
+        </div>
+    </div>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <script>
+        function toggleProfile() {
+            const overlay = document.getElementById('profileOverlay');
+            if (overlay.style.display === 'flex') {
+                overlay.style.animation = 'slideDown 0.3s ease-in forwards';
+                setTimeout(() => { 
+                    overlay.style.display = 'none';
+                    overlay.style.animation = 'slideUp 0.3s ease-out';
+                }, 300);
+            } else {
+                overlay.style.display = 'flex';
+            }
+        }
+
+        // Add slideDown animation to CSS dynamically
+        const style = document.createElement('style');
+        style.innerHTML = `@keyframes slideDown { from { transform: translateY(0); } to { transform: translateY(100%); } }`;
+        document.head.appendChild(style);
+
+        function handleLogout() {
+            localStorage.removeItem('sais_current_user');
+            window.location.href = 'index.html';
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            const userNama = currentUser.nama || 'Guru SAIS';
+            const userNuptk = currentUser.nuptk || '-';
+            const userMapel = currentUser.mapel || 'Guru Pengajar';
+
+            // Initial Avatar
+            const initial = userNama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            
+            // Update UI Elements
+            document.getElementById('userNamaTop').textContent = userNama;
+            document.getElementById('userNuptkTop').textContent = 'NUPTK: ' + userNuptk;
+            document.getElementById('userAvatarTop').textContent = initial;
+            
+            // Update Profile Overlay
+            document.getElementById('bigAvatar').textContent = initial;
+            document.getElementById('fullNama').textContent = userNama;
+            document.getElementById('fullNuptk').textContent = 'NUPTK: ' + userNuptk;
+            document.getElementById('fullMapel').textContent = userMapel;
+
+            // Welcome Text
+            const hours = new Date().getHours();
+            let greeting = "Selamat Malam";
+            if (hours < 12) greeting = "Selamat Pagi";
+            else if (hours < 15) greeting = "Selamat Siang";
+            else if (hours < 18) greeting = "Selamat Sore";
+            
+            document.getElementById('welcomeText').textContent = `${greeting}, ${userNama.split(' ')[0]}!`;
+
+            // Load announcements (simplified)
+            const pengumumanContainer = document.getElementById('pengumumanContainer');
+            try {
+                const infoData = JSON.parse(localStorage.getItem('sais_dataInformasi') || '[]');
+                const filtered = infoData.filter(i => i.sasaran === 'Semua' || i.sasaran === 'Guru').slice(0, 2);
+                
+                if (filtered.length > 0) {
+                    pengumumanContainer.innerHTML = filtered.map(i => `
+                        <div style="margin-bottom: 12px;">
+                            <p style="font-weight: 600; color: white;">${i.judul}</p>
+                            <p style="font-size: 11px; margin-top: 2px;">${i.isi.substring(0, 60)}...</p>
+                        </div>
+                    `).join('');
+                } else {
+                    pengumumanContainer.innerHTML = 'Belum ada pengumuman terbaru.';
+                }
+            } catch (e) {
+                pengumumanContainer.innerHTML = 'Gagal memuat informasi.';
+            }
+        });
+    </script>
+</body>
+</html>
 
     <script>
         window.addEventListener('DOMContentLoaded', () => {

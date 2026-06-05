@@ -576,7 +576,17 @@ console.log('='.repeat(50));
 // ============================================
 // GLOBAL ROUTE PROTECTION & LOGOUT HANDLER
 // ============================================
+
 (function() {
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('SW Registered!', reg.scope))
+                .catch(err => console.log('SW Register Error:', err));
+        });
+    }
+
     const pathname = window.location.pathname;
     const currentPage = pathname.split('/').pop() || 'index.html';
     

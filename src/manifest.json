@@ -1,0 +1,24 @@
+{
+  "name": "SAIS - Sistem Informasi Sekolah",
+  "short_name": "SAIS",
+  "description": "Sistem Informasi Manajemen Sekolah Modern",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0b0f1a",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2940/2940651.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2940/2940651.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}
