@@ -1,0 +1,112 @@
+<style>
+    :root {
+        --bg-body: #0F1117;
+        --bg-card: #1A1D2E;
+        --accent: #6C63FF;
+        --accent-hover: #5A52E5;
+        --text-main: #FFFFFF;
+        --text-dim: #94A3B8;
+        --border: rgba(255, 255, 255, 0.05);
+        --sidebar-width: 260px;
+        --header-height: 70px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Sidebar Styling */
+    #sidebar {
+        width: var(--sidebar-width);
+        background: var(--bg-card);
+        border-right: 1px solid var(--border);
+        height: 100vh;
+        position: fixed;
+        left: 0; top: 0;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        transition: var(--transition);
+    }
+
+    .sidebar-header {
+        height: var(--header-height);
+        padding: 0 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .logo-box {
+        width: 35px; height: 35px;
+        background: var(--accent);
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 18px; color: white;
+    }
+
+    .brand-name { font-weight: 700; font-size: 18px; letter-spacing: -0.5px; color: white; }
+
+    .sidebar-nav { flex: 1; padding: 24px 16px; overflow-y: auto; }
+    .sidebar-nav ul { list-style: none; padding: 0; margin: 0; }
+    .sidebar-nav li { margin-bottom: 8px; }
+
+    .sidebar-nav a {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 16px; text-decoration: none;
+        color: var(--text-dim); border-radius: 12px;
+        font-size: 14px; font-weight: 500; transition: var(--transition);
+    }
+
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+        background: rgba(108, 99, 255, 0.1);
+        color: var(--accent);
+    }
+
+    .sidebar-nav a.active { font-weight: 600; }
+
+    .sidebar-footer {
+        padding: 16px; border-top: 1px solid var(--border);
+    }
+
+    .logout-btn {
+        width: 100%; padding: 12px;
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444; border: none; border-radius: 12px;
+        cursor: pointer; font-weight: 600; font-size: 14px;
+        transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .logout-btn:hover { background: #ef4444; color: white; }
+
+    /* Mobile Responsive */
+    @media (max-width: 1024px) {
+        #sidebar { transform: translateX(-100%); }
+        #sidebar.active { transform: translateX(0); }
+    }
+</style>
+
+<aside id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo-box">S</div>
+        <span class="brand-name">SAIS Admin</span>
+    </div>
+    
+    <nav class="sidebar-nav">
+        <ul>
+            <li><a href="dashboard.html" data-page="dashboard"><i class="fas fa-th-large"></i> Dashboard</a></li>
+            <li><a href="siswa.html" data-page="siswa"><i class="fas fa-user-graduate"></i> Siswa</a></li>
+            <li><a href="guru.html" data-page="guru"><i class="fas fa-chalkboard-teacher"></i> Guru</a></li>
+            <li><a href="kelas.html" data-page="kelas"><i class="fas fa-school"></i> Kelas</a></li>
+            <li><a href="pelajaran.html" data-page="pelajaran"><i class="fas fa-book"></i> Pelajaran</a></li>
+            <li><a href="jadwal.html" data-page="jadwal"><i class="fas fa-calendar-alt"></i> Jadwal</a></li>
+            <li><a href="rapot.html" data-page="rapot"><i class="fas fa-file-invoice"></i> Rapot</a></li>
+            <li><a href="kenaikan_kelas.html" data-page="kenaikan"><i class="fas fa-arrow-up"></i> Kenaikan</a></li>
+            <li><a href="informasi.html" data-page="informasi"><i class="fas fa-bullhorn"></i> Informasi</a></li>
+            <li><a href="pengaturan.html" data-page="pengaturan"><i class="fas fa-cog"></i> Pengaturan</a></li>
+        </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+        <button class="logout-btn" id="sidebarLogoutBtn">
+            <i class="fas fa-sign-out-alt"></i> Keluar
+        </button>
+    </div>
+</aside>

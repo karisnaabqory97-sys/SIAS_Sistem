@@ -43,70 +43,6 @@
             overflow-x: hidden;
         }
 
-        /* Sidebar Styling */
-        aside {
-            width: var(--sidebar-width);
-            background: var(--bg-card);
-            border-right: 1px solid var(--border);
-            height: 100vh;
-            position: fixed;
-            left: 0; top: 0;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            transition: var(--transition);
-        }
-
-        .sidebar-header {
-            height: var(--header-height);
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .logo-box {
-            width: 35px; height: 35px;
-            background: var(--accent);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 18px; color: white;
-        }
-
-        .brand-name { font-weight: 700; font-size: 18px; letter-spacing: -0.5px; }
-
-        nav { flex: 1; padding: 24px 16px; overflow-y: auto; }
-        nav ul { list-style: none; }
-        nav li { margin-bottom: 8px; }
-
-        nav a {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 16px; text-decoration: none;
-            color: var(--text-dim); border-radius: 12px;
-            font-size: 14px; font-weight: 500; transition: var(--transition);
-        }
-
-        nav a:hover, nav a.active {
-            background: rgba(108, 99, 255, 0.1);
-            color: var(--accent);
-        }
-
-        nav a.active { font-weight: 600; }
-
-        .sidebar-footer {
-            padding: 16px; border-top: 1px solid var(--border);
-        }
-
-        .logout-btn {
-            width: 100%; padding: 12px;
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444; border: none; border-radius: 12px;
-            cursor: pointer; font-weight: 600; font-size: 14px;
-            transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .logout-btn:hover { background: #ef4444; color: white; }
-
         /* Main Area */
         .wrapper {
             flex: 1;
@@ -260,30 +196,8 @@
         }
     </style>
 </head>
-<body>
-    <aside id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-box">S</div>
-            <span class="brand-name">SAIS Admin</span>
-        </div>
-        
-        <nav>
-            <ul>
-                <li><a href="dashboard.html" class="active"><i class="fas fa-grid-2"></i> Dashboard</a></li>
-                <li><a href="siswa.html"><i class="fas fa-users"></i> Users</a></li>
-                <li><a href="rapot.html"><i class="fas fa-star"></i> Nilai</a></li>
-                <li><a href="jadwal.html"><i class="fas fa-calendar-alt"></i> Jadwal</a></li>
-                <li><a href="informasi.html"><i class="fas fa-file-alt"></i> Reports</a></li>
-                <li><a href="pengaturan.html"><i class="fas fa-cog"></i> Settings</a></li>
-            </ul>
-        </nav>
-
-        <div class="sidebar-footer">
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i> Keluar
-            </button>
-        </div>
-    </aside>
+<body data-page="dashboard">
+    <div id="sidebar-container"></div>
 
     <div class="wrapper">
         <header>
@@ -477,5 +391,6 @@
             }
         });
     </script>
+    <script src="js/load-sidebar.js"></script>
 </body>
 </html>

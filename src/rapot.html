@@ -31,61 +31,7 @@
             min-height: 100vh;
         }
 
-        aside {
-            width: 260px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            padding: 24px;
-            position: fixed;
-            height: 100vh;
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 40px;
-        }
-
-        .logo-box {
-            width: 32px;
-            height: 32px;
-            background: var(--primary);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-        }
-
-        nav { flex: 1; }
-        nav ul { list-style: none; }
-        nav li { margin-bottom: 8px; }
-
-        nav a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            text-decoration: none;
-            color: var(--text-dim);
-            border-radius: 12px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        nav a.active, nav a:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        nav a.logout-link:hover {
-            background: #ef4444;
-            color: white;
-        }
-
+        /* Main Content */
         main {
             flex: 1;
             margin-left: 260px;
@@ -407,28 +353,8 @@
         .summary-card .label { font-size: 13px; color: var(--text-dim); }
     </style>
 </head>
-<body>
-    <aside>
-        <div class="logo-section">
-            <div class="logo-box">S</div>
-            <span style="font-weight: 600; font-size: 18px;">SAIS Admin</span>
-        </div>
-        <nav>
-            <ul>
-                <li><a href="dashboard.html">Dashboard</a></li>
-                <li><a href="siswa.html">Manajemen Siswa</a></li>
-                <li><a href="guru.html">Manajemen Guru</a></li>
-                <li><a href="kelas.html">Manajemen Kelas</a></li>
-                <li><a href="pelajaran.html">Manajemen Pelajaran</a></li>
-                <li><a href="jadwal.html">Manajemen Jadwal</a></li>
-                <li><a href="rapot.html" class="active">Manajemen Rapot</a></li>
-                <li><a href="kenaikan_kelas.html">Kenaikan Kelas</a></li>
-                <li><a href="informasi.html">Manajemen Informasi</a></li>
-                <li><a href="pengaturan.html">Pengaturan</a></li>
-                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
-            </ul>
-        </nav>
-    </aside>
+<body data-page="rapot">
+    <div id="sidebar-container"></div>
 
     <main>
         <header>
@@ -724,5 +650,6 @@
 
         fetchRapot();
     </script>
+    <script src="js/load-sidebar.js"></script>
 </body>
 </html>
