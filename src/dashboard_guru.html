@@ -277,6 +277,86 @@
             margin-top: auto;
         }
 
+        /* Input Nilai Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            width: 100%;
+            max-width: 500px;
+            padding: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h3 { font-size: 20px; font-weight: 700; }
+        .close-modal { cursor: pointer; color: var(--text-dim); font-size: 24px; transition: 0.3s; }
+        .close-modal:hover { color: white; }
+
+        .modal-form-group { margin-bottom: 20px; }
+        .modal-form-group label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
+        
+        .modal-input, .modal-select, .modal-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .modal-input:focus, .modal-select:focus { border-color: var(--primary); }
+        .modal-input[readonly] { opacity: 0.6; cursor: not-allowed; border-style: dashed; }
+        
+        .modal-textarea { resize: vertical; min-height: 80px; }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn-save-nilai {
+            flex: 2;
+            background: var(--primary);
+            color: white; border: none; padding: 14px;
+            border-radius: 14px; font-weight: 600; cursor: pointer;
+        }
+
+        .btn-cancel-nilai {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            color: white; border: 1px solid var(--glass-border);
+            border-radius: 14px; font-weight: 600; cursor: pointer;
+        }
+
         /* Desktop Adjustments */
         @media (min-width: 1024px) {
             body { padding-bottom: 0; }
@@ -326,6 +406,46 @@
         </div>
     </div>
 
+    <!-- Input Nilai Modal -->
+    <div class="modal-overlay" id="nilaiModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Input Nilai Siswa</h3>
+                <div class="close-modal" onclick="toggleNilaiModal()">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="modal-form-group">
+                    <label>Mata Pelajaran</label>
+                    <input type="text" id="modalMapel" class="modal-input" readonly>
+                </div>
+                <div class="modal-form-group">
+                    <label>Pilih Kelas</label>
+                    <select id="modalKelas" class="modal-select" onchange="loadSiswaByKelas(this.value)">
+                        <option value="">-- Pilih Kelas --</option>
+                    </select>
+                </div>
+                <div class="modal-form-group">
+                    <label>Pilih Siswa</label>
+                    <select id="modalSiswa" class="modal-select">
+                        <option value="">-- Pilih Siswa --</option>
+                    </select>
+                </div>
+                <div class="modal-form-group">
+                    <label>Nilai Akhir (0-100)</label>
+                    <input type="number" id="modalNilai" class="modal-input" min="0" max="100" placeholder="Masukkan angka">
+                </div>
+                <div class="modal-form-group">
+                    <label>Catatan Guru</label>
+                    <textarea id="modalCatatan" class="modal-textarea" placeholder="Opsional..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel-nilai" onclick="toggleNilaiModal()">Batal</button>
+                <button class="btn-save-nilai" onclick="saveNilai()">Simpan Nilai</button>
+            </div>
+        </div>
+    </div>
+
     <main>
         <div class="welcome-section">
             <h1 id="welcomeText">Selamat Pagi, Guru!</h1>
@@ -334,30 +454,30 @@
 
         <!-- Main Menu Grid -->
         <div class="menu-grid">
-            <a href="rapot_guru.html" class="menu-item">
+            <div onclick="toggleNilaiModal()" class="menu-item" style="cursor: pointer;">
                 <div class="menu-icon icon-blue"><i class="fas fa-file-invoice"></i></div>
                 <span>Input Nilai</span>
-            </a>
-            <a href="jadwal_guru.html" class="menu-item">
+            </div>
+            <div onclick="toggleNilaiModal()" class="menu-item" style="cursor: pointer;">
                 <div class="menu-icon icon-green"><i class="fas fa-calendar-alt"></i></div>
                 <span>Jadwal Mengajar</span>
-            </a>
-            <a href="jadwal_ujian_guru.html" class="menu-item">
+            </div>
+            <div onclick="toggleNilaiModal()" class="menu-item" style="cursor: pointer;">
                 <div class="menu-icon icon-purple"><i class="fas fa-clock"></i></div>
                 <span>Jadwal Ujian</span>
-            </a>
-            <a href="kenaikan_guru.html" class="menu-item">
+            </div>
+            <div onclick="toggleNilaiModal()" class="menu-item" style="cursor: pointer;">
                 <div class="menu-icon icon-orange"><i class="fas fa-user-plus"></i></div>
                 <span>Murid Baru</span>
-            </a>
-            <a href="informasi_guru.html" class="menu-item">
+            </div>
+            <div onclick="toggleNilaiModal()" class="menu-item" style="cursor: pointer;">
                 <div class="menu-icon icon-indigo"><i class="fas fa-bullhorn"></i></div>
                 <span>Informasi</span>
-            </a>
-            <a href="pengaturan.html" class="menu-item">
+            </div>
+            <div onclick="toggleNilaiModal()" class="menu-item" style="cursor: pointer;">
                 <div class="menu-icon icon-red"><i class="fas fa-cog"></i></div>
                 <span>Pengaturan</span>
-            </a>
+            </div>
         </div>
 
         <!-- Schedule Summary -->
