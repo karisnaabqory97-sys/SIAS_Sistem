@@ -310,6 +310,55 @@
         .info-box strong { color: var(--primary); }
 
         .info-box.hidden { display: none; }
+
+        /* Progress Modal */
+        .progress-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(6px);
+        }
+        .progress-overlay.active { display: flex; }
+        .progress-box {
+            background: #1e293b;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            width: 380px;
+            text-align: center;
+        }
+        .progress-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .progress-sub {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+        .progress-bar-wrap {
+            background: rgba(255,255,255,0.08);
+            border-radius: 99px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #10b981);
+            border-radius: 99px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .progress-count {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
     </style>
 </head>
 <body>
@@ -350,6 +399,18 @@
                 <button class="btn-add" id="openAddModal">+ Tambah Guru</button>
             </div>
         </header>
+
+        <!-- Progress Upload Modal -->
+        <div class="progress-overlay" id="progressOverlay">
+            <div class="progress-box">
+                <div class="progress-title">⏳ Mengimpor Data...</div>
+                <div class="progress-sub" id="progressSub">Menyiapkan data...</div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-count" id="progressCount">0 / 0</div>
+            </div>
+        </div>
 
         <div class="table-container">
             <table>
@@ -588,65 +649,77 @@
                     const parsedData = parseCSV(csvText);
 
                     if (parsedData.length === 0) {
-                        alert('Format CSV tidak valid atau tidak ada data!');
+                        alert('Format CSV tidak valid atau tidak ada data!\n\nPastikan file menggunakan format:\nNUPTK,Nama,Mata Pelajaran,Username,Password');
                         return;
                     }
 
-                    // Konfirmasi sebelum import
-                    const confirmImport = confirm(`Ditemukan ${parsedData.length} data. Apakah ingin mengimpor semua data?`);
+                    const confirmImport = confirm(`Ditemukan ${parsedData.length} data guru.\nApakah ingin mengimpor semua data ke database?`);
 
                     if (confirmImport) {
                         async function importData() {
-                            let importedCount = 0;
-                            let skippedCount = 0;
+                            const progressOverlay = document.getElementById('progressOverlay');
+                            const progressFill = document.getElementById('progressFill');
+                            const progressSub = document.getElementById('progressSub');
+                            const progressCount = document.getElementById('progressCount');
 
-                            for (const row of parsedData) {
-                                // Validasi format minimum
+                            progressOverlay.classList.add('active');
+
+                            let importedCount = 0;
+                            let updatedCount = 0;
+                            let skippedCount = 0;
+                            let errorCount = 0;
+                            const total = parsedData.length;
+
+                            for (let i = 0; i < parsedData.length; i++) {
+                                const row = parsedData[i];
+                                const pct = Math.round(((i + 1) / total) * 100);
+                                progressFill.style.width = pct + '%';
+                                progressCount.textContent = `${i + 1} / ${total}`;
+                                progressSub.textContent = `Mengimpor: ${row.Nama || row.NUPTK || 'baris ' + (i + 1)}`;
+
                                 if (!row.NUPTK || !row.Nama) {
                                     skippedCount++;
                                     continue;
                                 }
 
-                                // Generate username dan password jika tidak ada
                                 const namaLower = (row.Nama || '').toLowerCase().replace(/\s+/g, '.').replace(/[^a-z.]/g, '');
                                 const username = row.Username || namaLower;
-                                const password = row.Password || 'guru' + Date.now().toString().slice(-4);
+                                const password = row.Password || 'guru' + (row.NUPTK ? String(row.NUPTK).slice(-4) : Date.now().toString().slice(-4));
 
                                 const newGuru = {
-                                    nuptk: row.NUPTK || '',
-                                    nama: row.Nama || '',
-                                    mapel: row['Mata Pelajaran'] || row.Mapel || '',
-                                    username: username,
-                                    password: password,
-                                    status: row.Status || 'Aktif'
+                                    nuptk: String(row.NUPTK).trim(),
+                                    nama: String(row.Nama).trim(),
+                                    mapel: (row['Mata Pelajaran'] || row.Mapel || '').trim(),
+                                    username: username.trim(),
+                                    password: password.trim(),
+                                    status: (row.Status || 'Aktif').trim()
                                 };
 
                                 try {
                                     const existing = guruData.find(g => g.nuptk === newGuru.nuptk);
                                     if (existing) {
                                         await window.db.updateGuru(existing.id, newGuru);
+                                        updatedCount++;
                                     } else {
                                         await window.db.insertGuru(newGuru);
+                                        importedCount++;
                                     }
-                                    importedCount++;
                                 } catch (err) {
-                                    console.error("Gagal mengimpor guru ke DB:", err);
-                                    const existingIndex = guruData.findIndex(g => g.nuptk === newGuru.nuptk);
-                                    if (existingIndex >= 0) {
-                                        guruData[existingIndex] = newGuru;
-                                    } else {
-                                        guruData.push(newGuru);
-                                    }
-                                    importedCount++;
+                                    console.error(`Gagal mengimpor baris ${i + 1} (${newGuru.nuptk}):`, err.message || err);
+                                    errorCount++;
                                 }
                             }
 
-                            try {
-                                await fetchGuru();
-                            } catch (errFetch) {
-                                saveAndRender();
-                            }
-                            alert(`Import selesai!\nBerhasil: ${importedCount} data\nDilewati: ${skippedCount} data (format tidak lengkap)`);
+                            progressOverlay.classList.remove('active');
+
+                            await fetchGuru();
+                            alert(
+                                `✅ Import Selesai!\n` +
+                                `➕ Baru ditambahkan : ${importedCount} data\n` +
+                                `✏️ Diperbarui       : ${updatedCount} data\n` +
+                                `⏭️ Dilewati         : ${skippedCount} data (NUPTK/Nama kosong)\n` +
+                                `❌ Gagal ke DB      : ${errorCount} data`
+                            );
                         }
                         importData();
                     }
@@ -698,12 +771,13 @@
             return result;
         }
 
-        document.getElementById('btnSimpan').addEventListener('click', () => {
-            if (window.isSupabaseConfigured && window.isSupabaseConfigured()) {
-                alert('Data tersinkronisasi ke Supabase!');
-            } else {
+        document.getElementById('btnSimpan').addEventListener('click', async () => {
+            try {
+                await fetchGuru();
+                alert('✅ Data guru berhasil disinkronkan dari database!');
+            } catch (e) {
                 saveAndRender();
-                alert('Seluruh data guru berhasil disimpan!');
+                alert('Data disimpan ke penyimpanan lokal.');
             }
         });
 
