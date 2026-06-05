@@ -301,113 +301,145 @@
                 `;
             }
 
-            // Load data dan render dashboard
-            loadDashboardData();
-        });
+        // Load data dan render dashboard
+        loadDashboardData();
+    });
 
-        // Fungsi untuk memuat data dari localStorage
-        function loadDashboardData() {
-            // Ambil data siswa
-            const siswaData = JSON.parse(localStorage.getItem('sais_siswa_data') || '[]');
-            const totalSiswa = siswaData.length;
+    // Fungsi untuk memuat data dari database (Neon) atau localStorage
+    async function loadDashboardData() {
+        let totalSiswa = 0;
+        let totalGuru = 0;
+        let totalKelas = 0;
+        let lkCount = 0;
+        let prCount = 0;
+        let dataKelas = {};
+        let siswaData = [];
 
-            // Ambil data guru
-            const guruData = JSON.parse(localStorage.getItem('sais_dataGuru') || '[]');
-            const totalGuru = guruData.length;
+        try {
+            // Gunakan helper db yang sudah kita buat di neon-config.js
+            const stats = await window.db.getDashboardStats();
+            totalSiswa = stats.totalSiswa;
+            totalGuru = stats.totalGuru;
+            totalKelas = stats.totalKelas;
 
-            // Ambil data kelas (dari localStorage atau hitung unik dari siswa)
-            const kelasSet = new Set(siswaData.map(s => s.kelas).filter(k => k));
-            const totalKelas = kelasSet.size || 0;
-
+            // Ambil data detail untuk chart
+            siswaData = await window.db.getAllSiswa();
+            
             // Hitung distribusi gender
-            const lkCount = siswaData.filter(s => s.jk === 'L').length;
-            const prCount = siswaData.filter(s => s.jk === 'P').length;
+            lkCount = siswaData.filter(s => s.jk === 'L').length;
+            prCount = siswaData.filter(s => s.jk === 'P').length;
 
             // Hitung siswa per kelas
-            const dataKelas = {};
             siswaData.forEach(s => {
                 if (s.kelas) {
                     dataKelas[s.kelas] = (dataKelas[s.kelas] || 0) + 1;
                 }
             });
 
-            // Update statistik
-            document.getElementById('statSiswa').textContent = totalSiswa.toLocaleString('id-ID');
-            document.getElementById('statGuru').textContent = totalGuru.toLocaleString('id-ID');
-            document.getElementById('statKelas').textContent = totalKelas.toLocaleString('id-ID');
-
-            // Update stat absensi (placeholder - bisa dikembangkan dengan data presensi)
-            const statAbsensi = document.getElementById('statAbsensi');
-            if (totalSiswa > 0) {
-                // Asumsikan 95% jika ada data siswa
-                statAbsensi.textContent = '95%';
-            } else {
-                statAbsensi.textContent = '-';
-            }
-
-            // Render Chart Bar - Siswa per Kelas
-            const labelsKelas = Object.keys(dataKelas);
-            const dataSiswa = Object.values(dataKelas);
-
-            const ctxBar = document.getElementById('siswaChart').getContext('2d');
-            new Chart(ctxBar, {
-                type: 'bar',
-                data: {
-                    labels: labelsKelas.length ? labelsKelas : ['Belum Ada Data'],
-                    datasets: [{
-                        label: 'Jumlah Siswa',
-                        data: dataSiswa.length ? dataSiswa : [0],
-                        backgroundColor: 'rgba(37, 99, 235, 0.6)',
-                        borderColor: 'rgba(37, 99, 235, 1)',
-                        borderWidth: 1,
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                            ticks: { color: '#94a3b8' }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#94a3b8' }
-                        }
-                    }
-                }
-            });
-
-            // Render Chart Doughnut - Distribusi Gender
-            const ctxDoughnut = document.getElementById('genderChart').getContext('2d');
-            new Chart(ctxDoughnut, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Laki-laki', 'Perempuan'],
-                    datasets: [{
-                        data: [lkCount, prCount],
-                        backgroundColor: ['rgba(37, 99, 235, 0.8)', 'rgba(16, 185, 129, 0.8)'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { color: '#94a3b8', padding: 20 }
-                        }
-                    },
-                    cutout: '60%'
+        } catch (error) {
+            console.error('Gagal memuat data dashboard dari database:', error);
+            // Fallback ke localStorage jika API gagal
+            siswaData = JSON.parse(localStorage.getItem('sais_siswa_data') || '[]');
+            totalSiswa = siswaData.length;
+            const localGuru = JSON.parse(localStorage.getItem('sais_dataGuru') || '[]');
+            totalGuru = localGuru.length;
+            const kelasSet = new Set(siswaData.map(s => s.kelas).filter(k => k));
+            totalKelas = kelasSet.size || 0;
+            
+            lkCount = siswaData.filter(s => s.jk === 'L').length;
+            prCount = siswaData.filter(s => s.jk === 'P').length;
+            siswaData.forEach(s => {
+                if (s.kelas) {
+                    dataKelas[s.kelas] = (dataKelas[s.kelas] || 0) + 1;
                 }
             });
         }
+
+        // Update statistik di UI
+        document.getElementById('statSiswa').textContent = totalSiswa.toLocaleString('id-ID');
+        document.getElementById('statGuru').textContent = totalGuru.toLocaleString('id-ID');
+        document.getElementById('statKelas').textContent = totalKelas.toLocaleString('id-ID');
+
+        // Update stat absensi (placeholder)
+        const statAbsensi = document.getElementById('statAbsensi');
+        statAbsensi.textContent = totalSiswa > 0 ? '95%' : '-';
+
+        // Render Chart Bar - Siswa per Kelas
+        renderSiswaChart(dataKelas);
+
+        // Render Chart Doughnut - Distribusi Gender
+        renderGenderChart(lkCount, prCount);
+    }
+
+    function renderSiswaChart(dataKelas) {
+        const labelsKelas = Object.keys(dataKelas);
+        const dataSiswa = Object.values(dataKelas);
+
+        const ctxBar = document.getElementById('siswaChart').getContext('2d');
+        // Hapus chart lama jika ada (untuk menghindari tumpang tindih saat refresh)
+        if (window.myBarChart) window.myBarChart.destroy();
+        
+        window.myBarChart = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: labelsKelas.length ? labelsKelas : ['Belum Ada Data'],
+                datasets: [{
+                    label: 'Jumlah Siswa',
+                    data: dataSiswa.length ? dataSiswa : [0],
+                    backgroundColor: 'rgba(37, 99, 235, 0.6)',
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    borderWidth: 1,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8' }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderGenderChart(lkCount, prCount) {
+        const ctxDoughnut = document.getElementById('genderChart').getContext('2d');
+        if (window.myPieChart) window.myPieChart.destroy();
+
+        window.myPieChart = new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Laki-laki', 'Perempuan'],
+                datasets: [{
+                    data: [lkCount, prCount],
+                    backgroundColor: ['rgba(37, 99, 235, 0.8)', 'rgba(16, 185, 129, 0.8)'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#94a3b8', padding: 20 }
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+    }
 
         // Logout handler
         document.addEventListener('DOMContentLoaded', function() {
