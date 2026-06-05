@@ -151,13 +151,34 @@ Dokumen ini berisi panduan step-by-step untuk deploy aplikasi SAIS ke Vercel den
 |------|-------|
 | `DATABASE_URL` | `postgresql://username:password@ep-xxx.neon.tech/sais_db?sslmode=require` |
 | `NEON_CONNECTION_STRING` | (copy paste dari connection string) |
+| `API_SECRET_KEY` | `pilih_password_api_anda_disini` (Bebas, contoh: `SAIS_SECRET_2026`) |
 
 3. Klik **Save**
 4. Untuk apply ke deployment existing, klik **Redeploy**
 
 ---
 
-## 💻 Bagian 4: Update Kode Aplikasi
+## 🔒 Bagian 4: Keamanan API (Opsional tapi Disarankan)
+
+Untuk mencegah orang asing mengakses database Anda secara langsung melalui URL API Vercel, sistem ini dilengkapi dengan proteksi **API Key**.
+
+### 4.1 Setup di Server (Vercel)
+Pastikan Anda sudah menambahkan `API_SECRET_KEY` di Environment Variables Vercel (Step 3.3).
+
+### 4.2 Setup di Frontend (Browser)
+Agar aplikasi bisa berkomunikasi dengan API yang sudah dikunci, Anda perlu memasukkan API Key tersebut ke LocalStorage browser:
+
+1. Buka aplikasi Anda di browser.
+2. Tekan **F12** (Console).
+3. Jalankan perintah:
+   ```javascript
+   localStorage.setItem('sais_api_key', 'isi_dengan_API_SECRET_KEY_anda');
+   ```
+4. Refresh halaman.
+
+---
+
+## 💻 Bagian 5: Update Kode Aplikasi
 
 ### Step 4.1: File yang Sudah Disiapkan
 

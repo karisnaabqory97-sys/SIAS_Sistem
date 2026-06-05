@@ -13,7 +13,10 @@ const CONFIG = {
     APP_NAME: 'SAIS - Sistem Informasi Sekolah',
     VERSION: '2.0.0',
     STORAGE_PREFIX: 'sais_',
-    API_URL: '/api/db'
+    API_URL: '/api/db',
+    // API_KEY: Digunakan untuk autentikasi ke Vercel Serverless Function
+    // Kosongkan jika tidak menggunakan proteksi API Key di sisi server
+    API_KEY: window.localStorage.getItem('sais_api_key') || '' 
 };
 
 // Cek apakah menggunakan Vercel Production
@@ -77,9 +80,14 @@ const Storage = {
 
 async function apiCall(table, action, data = null) {
     try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (CONFIG.API_KEY) {
+            headers['x-api-key'] = CONFIG.API_KEY;
+        }
+
         const response = await fetch(CONFIG.API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: JSON.stringify({ table, action, data })
         });
         const result = await response.json();
@@ -100,7 +108,13 @@ async function apiGet(table, params = {}) {
         Object.entries(params).forEach(([key, value]) => {
             url.searchParams.set(key, value);
         });
-        const response = await fetch(url);
+
+        const headers = {};
+        if (CONFIG.API_KEY) {
+            headers['x-api-key'] = CONFIG.API_KEY;
+        }
+
+        const response = await fetch(url, { headers });
         const result = await response.json();
         if (!result.success) {
             throw new Error(result.error);

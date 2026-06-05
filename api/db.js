@@ -9,14 +9,32 @@ import { neon } from '@neondatabase/serverless';
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-api-key',
 };
+
+// Helper untuk validasi API Key
+function isValidApiKey(request) {
+    const apiKey = request.headers.get('x-api-key');
+    const secret = process.env.API_SECRET_KEY;
+    // Jika di environment tidak diset, maka sementara bypass (untuk dev)
+    // Namun untuk produksi, ini wajib.
+    if (!secret) return true; 
+    return apiKey === secret;
+}
 
 // Handler untuk request
 export async function GET(request) {
     const url = new URL(request.url);
     const table = url.searchParams.get('table') || 'siswa';
     const action = url.searchParams.get('action') || 'list';
+
+    // Proteksi data sensitif pada GET
+    if (['siswa', 'guru', 'kelas'].includes(table) && !isValidApiKey(request)) {
+        return new Response(JSON.stringify({ success: false, error: 'Unauthorized: Invalid API Key' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
 
     try {
         const sql = neon(process.env.DATABASE_URL);
@@ -90,6 +108,14 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+    // Validasi API Key untuk semua operasi POST
+    if (!isValidApiKey(request)) {
+        return new Response(JSON.stringify({ success: false, error: 'Unauthorized: Invalid API Key' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+    }
+
     try {
         const body = await request.json();
         const { table, action, data } = body;
