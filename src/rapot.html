@@ -700,7 +700,8 @@
                 filterKelas.innerHTML = '<option value="">Semua Kelas</option>';
                 
                 if (kelasList && kelasList.length > 0) {
-                    kelasList.forEach(kelasName => {
+                    kelasList.forEach(kelas => {
+                        const kelasName = (typeof kelas === 'object') ? (kelas.nama || '') : kelas;
                         const option = document.createElement('option');
                         option.value = kelasName;
                         option.textContent = kelasName;

@@ -636,47 +636,64 @@
                     const confirmImport = confirm(`Ditemukan ${parsedData.length} data. Apakah ingin mengimpor semua data?`);
 
                     if (confirmImport) {
-                        let importedCount = 0;
-                        let skippedCount = 0;
+                        async function importData() {
+                            let importedCount = 0;
+                            let skippedCount = 0;
 
-                        parsedData.forEach(row => {
-                            // Validasi format minimum
-                            if (!row.NISN || !row.Nama) {
-                                skippedCount++;
-                                return;
+                            for (const row of parsedData) {
+                                // Validasi format minimum
+                                if (!row.NISN || !row.Nama) {
+                                    skippedCount++;
+                                    continue;
+                                }
+
+                                // Generate username dan password jika tidak ada
+                                const namaLower = (row.Nama || '').toLowerCase().replace(/\s+/g, '.').replace(/[^a-z.]/g, '');
+                                const username = row.Username || namaLower;
+                                const password = row.Password || 'siswa' + Date.now().toString().slice(-4);
+
+                                const newSiswa = {
+                                    nisn: row.NISN || '',
+                                    nama: row.Nama || '',
+                                    jk: row['Jenis Kelamin'] || row.JK || 'L',
+                                    kelas: row.Kelas || '',
+                                    ayah: row['Nama Ayah'] || row.Ayah || '',
+                                    pekerjaanAyah: row['Pekerjaan Ayah'] || '',
+                                    ibu: row['Nama Ibu'] || row.Ibu || '',
+                                    pekerjaanIbu: row['Pekerjaan Ibu'] || '',
+                                    username: username,
+                                    password: password,
+                                    status: row.Status || 'Aktif'
+                                };
+
+                                try {
+                                    const existing = siswaData.find(s => s.nisn === newSiswa.nisn);
+                                    if (existing) {
+                                        await window.db.updateSiswa(existing.id, newSiswa);
+                                    } else {
+                                        await window.db.insertSiswa(newSiswa);
+                                    }
+                                    importedCount++;
+                                } catch (err) {
+                                    console.error("Gagal mengimpor siswa ke DB:", err);
+                                    const existingIndex = siswaData.findIndex(s => s.nisn === newSiswa.nisn);
+                                    if (existingIndex >= 0) {
+                                        siswaData[existingIndex] = newSiswa;
+                                    } else {
+                                        siswaData.push(newSiswa);
+                                    }
+                                    importedCount++;
+                                }
                             }
 
-                            // Generate username dan password jika tidak ada
-                            const namaLower = (row.Nama || '').toLowerCase().replace(/\s+/g, '.').replace(/[^a-z.]/g, '');
-                            const username = row.Username || namaLower;
-                            const password = row.Password || 'siswa' + Date.now().toString().slice(-4);
-
-                            const newSiswa = {
-                                nisn: row.NISN || '',
-                                nama: row.Nama || '',
-                                jk: row['Jenis Kelamin'] || row.JK || 'L',
-                                kelas: row.Kelas || '',
-                                ayah: row['Nama Ayah'] || row.Ayah || '',
-                                pekerjaanAyah: row['Pekerjaan Ayah'] || '',
-                                ibu: row['Nama Ibu'] || row.Ibu || '',
-                                pekerjaanIbu: row['Pekerjaan Ibu'] || '',
-                                username: username,
-                                password: password,
-                                status: row.Status || 'Aktif'
-                            };
-
-                            // Cek apakah NISN sudah ada (update atau skip)
-                            const existingIndex = siswaData.findIndex(s => s.nisn === newSiswa.nisn);
-                            if (existingIndex >= 0) {
-                                siswaData[existingIndex] = newSiswa;
-                            } else {
-                                siswaData.push(newSiswa);
+                            try {
+                                await fetchSiswa();
+                            } catch (errFetch) {
+                                saveAndRender();
                             }
-                            importedCount++;
-                        });
-
-                        saveAndRender();
-                        alert(`Import selesai!\nBerhasil: ${importedCount} data\nDilewati: ${skippedCount} data (format tidak lengkap)`);
+                            alert(`Import selesai!\nBerhasil: ${importedCount} data\nDilewati: ${skippedCount} data (format tidak lengkap)`);
+                        }
+                        importData();
                     }
                 };
 

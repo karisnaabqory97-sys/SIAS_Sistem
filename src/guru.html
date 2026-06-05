@@ -596,42 +596,59 @@
                     const confirmImport = confirm(`Ditemukan ${parsedData.length} data. Apakah ingin mengimpor semua data?`);
 
                     if (confirmImport) {
-                        let importedCount = 0;
-                        let skippedCount = 0;
+                        async function importData() {
+                            let importedCount = 0;
+                            let skippedCount = 0;
 
-                        parsedData.forEach(row => {
-                            // Validasi format minimum
-                            if (!row.NUPTK || !row.Nama) {
-                                skippedCount++;
-                                return;
+                            for (const row of parsedData) {
+                                // Validasi format minimum
+                                if (!row.NUPTK || !row.Nama) {
+                                    skippedCount++;
+                                    continue;
+                                }
+
+                                // Generate username dan password jika tidak ada
+                                const namaLower = (row.Nama || '').toLowerCase().replace(/\s+/g, '.').replace(/[^a-z.]/g, '');
+                                const username = row.Username || namaLower;
+                                const password = row.Password || 'guru' + Date.now().toString().slice(-4);
+
+                                const newGuru = {
+                                    nuptk: row.NUPTK || '',
+                                    nama: row.Nama || '',
+                                    mapel: row['Mata Pelajaran'] || row.Mapel || '',
+                                    username: username,
+                                    password: password,
+                                    status: row.Status || 'Aktif'
+                                };
+
+                                try {
+                                    const existing = guruData.find(g => g.nuptk === newGuru.nuptk);
+                                    if (existing) {
+                                        await window.db.updateGuru(existing.id, newGuru);
+                                    } else {
+                                        await window.db.insertGuru(newGuru);
+                                    }
+                                    importedCount++;
+                                } catch (err) {
+                                    console.error("Gagal mengimpor guru ke DB:", err);
+                                    const existingIndex = guruData.findIndex(g => g.nuptk === newGuru.nuptk);
+                                    if (existingIndex >= 0) {
+                                        guruData[existingIndex] = newGuru;
+                                    } else {
+                                        guruData.push(newGuru);
+                                    }
+                                    importedCount++;
+                                }
                             }
 
-                            // Generate username dan password jika tidak ada
-                            const namaLower = (row.Nama || '').toLowerCase().replace(/\s+/g, '.').replace(/[^a-z.]/g, '');
-                            const username = row.Username || namaLower;
-                            const password = row.Password || 'guru' + Date.now().toString().slice(-4);
-
-                            const newGuru = {
-                                nuptk: row.NUPTK || '',
-                                nama: row.Nama || '',
-                                mapel: row['Mata Pelajaran'] || row.Mapel || '',
-                                username: username,
-                                password: password,
-                                status: row.Status || 'Aktif'
-                            };
-
-                            // Cek apakah NUPTK sudah ada (update atau skip)
-                            const existingIndex = guruData.findIndex(g => g.nuptk === newGuru.nuptk);
-                            if (existingIndex >= 0) {
-                                guruData[existingIndex] = newGuru;
-                            } else {
-                                guruData.push(newGuru);
+                            try {
+                                await fetchGuru();
+                            } catch (errFetch) {
+                                saveAndRender();
                             }
-                            importedCount++;
-                        });
-
-                        saveAndRender();
-                        alert(`Import selesai!\nBerhasil: ${importedCount} data\nDilewati: ${skippedCount} data (format tidak lengkap)`);
+                            alert(`Import selesai!\nBerhasil: ${importedCount} data\nDilewati: ${skippedCount} data (format tidak lengkap)`);
+                        }
+                        importData();
                     }
                 };
 

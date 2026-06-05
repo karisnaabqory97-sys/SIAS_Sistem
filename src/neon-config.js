@@ -255,11 +255,47 @@ window.db = {
 
     async getAllKelas() {
         if (isProduction) {
-            const data = await apiGet('kelas');
-            return data.map(k => k.nama);
+            return await apiGet('kelas');
         }
         const data = Storage.get('kelas_data');
         return data || [];
+    },
+
+    async insertKelas(kelas) {
+        if (isProduction) {
+            return await apiCall('kelas', 'insert', kelas);
+        }
+        const data = Storage.get('kelas_data') || [];
+        if (!kelas.id) {
+            kelas.id = 'kelas_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        data.push(kelas);
+        Storage.set('kelas_data', data);
+        return kelas;
+    },
+
+    async updateKelas(id, kelas) {
+        if (isProduction) {
+            return await apiCall('kelas', 'update', { ...kelas, id });
+        }
+        const data = Storage.get('kelas_data') || [];
+        const index = data.findIndex(k => k.id === id);
+        if (index >= 0) {
+            data[index] = { ...data[index], ...kelas };
+            Storage.set('kelas_data', data);
+            return data[index];
+        }
+        return null;
+    },
+
+    async deleteKelas(id) {
+        if (isProduction) {
+            return await apiCall('kelas', 'delete', { id });
+        }
+        const data = Storage.get('kelas_data') || [];
+        const filtered = data.filter(k => k.id !== id);
+        Storage.set('kelas_data', filtered);
+        return true;
     },
 
     // ==================== MATA PELAJARAN ====================

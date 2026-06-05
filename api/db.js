@@ -42,7 +42,7 @@ export async function GET(request) {
                 break;
 
             case 'kelas':
-                result = await sql`SELECT DISTINCT nama FROM kelas ORDER BY nama`;
+                result = await sql`SELECT * FROM kelas ORDER BY nama`;
                 break;
 
             case 'mapel':
@@ -200,6 +200,30 @@ export async function POST(request) {
                     `;
                 } else if (action === 'delete') {
                     await sql`DELETE FROM informasi WHERE id = ${data.id}`;
+                    result = { deleted: true };
+                }
+                break;
+
+            case 'kelas':
+                if (action === 'insert') {
+                    result = await sql`
+                        INSERT INTO kelas (nama, kode, ruang, wali, siswa_count)
+                        VALUES (${data.nama}, ${data.kode}, ${data.ruang}, ${data.wali}, ${parseInt(data.siswa) || 0})
+                        RETURNING *
+                    `;
+                } else if (action === 'update') {
+                    result = await sql`
+                        UPDATE kelas SET
+                            nama = ${data.nama},
+                            kode = ${data.kode},
+                            ruang = ${data.ruang},
+                            wali = ${data.wali},
+                            siswa_count = ${parseInt(data.siswa) || 0}
+                        WHERE id = ${data.id}
+                        RETURNING *
+                    `;
+                } else if (action === 'delete') {
+                    await sql`DELETE FROM kelas WHERE id = ${data.id}`;
                     result = { deleted: true };
                 }
                 break;
