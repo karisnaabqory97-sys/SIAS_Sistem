@@ -326,6 +326,55 @@
         }
 
         .info-box strong { color: var(--primary); }
+
+        /* Progress Modal */
+        .progress-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(6px);
+        }
+        .progress-overlay.active { display: flex; }
+        .progress-box {
+            background: #1e293b;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            width: 380px;
+            text-align: center;
+        }
+        .progress-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .progress-sub {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+        .progress-bar-wrap {
+            background: rgba(255,255,255,0.08);
+            border-radius: 99px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #10b981);
+            border-radius: 99px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .progress-count {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
     </style>
 </head>
 <body>
@@ -366,6 +415,18 @@
                 <button class="btn-add" id="openAddModal">+ Tambah Siswa</button>
             </div>
         </header>
+
+        <!-- Progress Upload Modal -->
+        <div class="progress-overlay" id="progressOverlay">
+            <div class="progress-box">
+                <div class="progress-title">⏳ Mengimpor Data...</div>
+                <div class="progress-sub" id="progressSub">Menyiapkan data...</div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-count" id="progressCount">0 / 0</div>
+            </div>
+        </div>
 
         <div class="table-container">
             <table>
@@ -628,70 +689,83 @@
                     const parsedData = parseCSV(csvText);
 
                     if (parsedData.length === 0) {
-                        alert('Format CSV tidak valid atau tidak ada data!');
+                        alert('Format CSV tidak valid atau tidak ada data!\n\nPastikan file menggunakan format:\nNISN,Nama,Jenis Kelamin,Kelas,Nama Ayah,Pekerjaan Ayah,Nama Ibu,Pekerjaan Ibu,Username,Password');
                         return;
                     }
 
-                    // Konfirmasi sebelum import
-                    const confirmImport = confirm(`Ditemukan ${parsedData.length} data. Apakah ingin mengimpor semua data?`);
+                    const confirmImport = confirm(`Ditemukan ${parsedData.length} data siswa.\nApakah ingin mengimpor semua data ke database?`);
 
                     if (confirmImport) {
                         async function importData() {
-                            let importedCount = 0;
-                            let skippedCount = 0;
+                            const progressOverlay = document.getElementById('progressOverlay');
+                            const progressFill = document.getElementById('progressFill');
+                            const progressSub = document.getElementById('progressSub');
+                            const progressCount = document.getElementById('progressCount');
 
-                            for (const row of parsedData) {
-                                // Validasi format minimum
+                            progressOverlay.classList.add('active');
+
+                            let importedCount = 0;
+                            let updatedCount = 0;
+                            let skippedCount = 0;
+                            let errorCount = 0;
+                            const total = parsedData.length;
+
+                            for (let i = 0; i < parsedData.length; i++) {
+                                const row = parsedData[i];
+                                const pct = Math.round(((i + 1) / total) * 100);
+                                progressFill.style.width = pct + '%';
+                                progressCount.textContent = `${i + 1} / ${total}`;
+                                progressSub.textContent = `Mengimpor: ${row.Nama || row.NISN || 'baris ' + (i + 1)}`;
+
                                 if (!row.NISN || !row.Nama) {
                                     skippedCount++;
                                     continue;
                                 }
 
-                                // Generate username dan password jika tidak ada
                                 const namaLower = (row.Nama || '').toLowerCase().replace(/\s+/g, '.').replace(/[^a-z.]/g, '');
                                 const username = row.Username || namaLower;
-                                const password = row.Password || 'siswa' + Date.now().toString().slice(-4);
+                                const password = row.Password || 'siswa' + (row.NISN ? row.NISN.slice(-4) : Date.now().toString().slice(-4));
 
                                 const newSiswa = {
-                                    nisn: row.NISN || '',
-                                    nama: row.Nama || '',
-                                    jk: row['Jenis Kelamin'] || row.JK || 'L',
-                                    kelas: row.Kelas || '',
-                                    ayah: row['Nama Ayah'] || row.Ayah || '',
-                                    pekerjaanAyah: row['Pekerjaan Ayah'] || '',
-                                    ibu: row['Nama Ibu'] || row.Ibu || '',
-                                    pekerjaanIbu: row['Pekerjaan Ibu'] || '',
-                                    username: username,
-                                    password: password,
-                                    status: row.Status || 'Aktif'
+                                    nisn: String(row.NISN).trim(),
+                                    nama: String(row.Nama).trim(),
+                                    jk: (row['Jenis Kelamin'] || row.JK || 'L').trim(),
+                                    kelas: (row.Kelas || '').trim(),
+                                    ayah: (row['Nama Ayah'] || row.Ayah || '').trim(),
+                                    pekerjaanAyah: (row['Pekerjaan Ayah'] || '').trim(),
+                                    ibu: (row['Nama Ibu'] || row.Ibu || '').trim(),
+                                    pekerjaanIbu: (row['Pekerjaan Ibu'] || '').trim(),
+                                    username: username.trim(),
+                                    password: password.trim(),
+                                    status: (row.Status || 'Aktif').trim()
                                 };
 
                                 try {
+                                    // Refresh current data to check duplicates
                                     const existing = siswaData.find(s => s.nisn === newSiswa.nisn);
                                     if (existing) {
                                         await window.db.updateSiswa(existing.id, newSiswa);
+                                        updatedCount++;
                                     } else {
                                         await window.db.insertSiswa(newSiswa);
+                                        importedCount++;
                                     }
-                                    importedCount++;
                                 } catch (err) {
-                                    console.error("Gagal mengimpor siswa ke DB:", err);
-                                    const existingIndex = siswaData.findIndex(s => s.nisn === newSiswa.nisn);
-                                    if (existingIndex >= 0) {
-                                        siswaData[existingIndex] = newSiswa;
-                                    } else {
-                                        siswaData.push(newSiswa);
-                                    }
-                                    importedCount++;
+                                    console.error(`Gagal mengimpor baris ${i + 1} (${newSiswa.nisn}):`, err.message || err);
+                                    errorCount++;
                                 }
                             }
 
-                            try {
-                                await fetchSiswa();
-                            } catch (errFetch) {
-                                saveAndRender();
-                            }
-                            alert(`Import selesai!\nBerhasil: ${importedCount} data\nDilewati: ${skippedCount} data (format tidak lengkap)`);
+                            progressOverlay.classList.remove('active');
+
+                            await fetchSiswa();
+                            alert(
+                                `✅ Import Selesai!\n` +
+                                `➕ Baru ditambahkan : ${importedCount} data\n` +
+                                `✏️ Diperbarui       : ${updatedCount} data\n` +
+                                `⏭️ Dilewati         : ${skippedCount} data (NISN/Nama kosong)\n` +
+                                `❌ Gagal ke DB      : ${errorCount} data`
+                            );
                         }
                         importData();
                     }
@@ -743,12 +817,13 @@
             return result;
         }
 
-        document.getElementById('btnSimpan').addEventListener('click', () => {
-            if (window.isSupabaseConfigured && window.isSupabaseConfigured()) {
-                alert('Data tersinkronisasi ke Supabase!');
-            } else {
+        document.getElementById('btnSimpan').addEventListener('click', async () => {
+            try {
+                await fetchSiswa();
+                alert('✅ Data siswa berhasil disinkronkan dari database!');
+            } catch (e) {
                 saveAndRender();
-                alert('Seluruh data siswa berhasil disimpan!');
+                alert('Data disimpan ke penyimpanan lokal.');
             }
         });
 
