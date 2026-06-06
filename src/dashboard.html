@@ -19,189 +19,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-    <style>
-        :root {
-            --bg-body: #0F1117;
-            --bg-card: #1A1D2E;
-            --accent: #6C63FF;
-            --accent-hover: #5A52E5;
-            --text-main: #FFFFFF;
-            --text-dim: #94A3B8;
-            --border: rgba(255, 255, 255, 0.05);
-            --sidebar-width: 260px;
-            --header-height: 70px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-
-        body {
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            overflow-x: hidden;
-        }
-
-        /* Main Area */
-        .wrapper {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            display: flex;
-            flex-direction: column;
-            transition: var(--transition);
-        }
-
-        /* Header Styling */
-        header {
-            height: var(--header-height);
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
-            padding: 0 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky; top: 0; z-index: 900;
-        }
-
-        .search-container {
-            position: relative; width: 400px;
-        }
-        .search-container i {
-            position: absolute; left: 16px; top: 50%;
-            transform: translateY(-50%); color: var(--text-dim); font-size: 14px;
-        }
-        .search-input {
-            width: 100%; background: var(--bg-body); border: 1px solid var(--border);
-            border-radius: 12px; padding: 10px 16px 10px 44px;
-            color: white; font-size: 14px; outline: none; transition: 0.3s;
-        }
-        .search-input:focus { border-color: var(--accent); }
-
-        .header-actions {
-            display: flex; align-items: center; gap: 24px;
-        }
-
-        .user-profile {
-            display: flex; align-items: center; gap: 12px; cursor: pointer;
-        }
-        .user-info { text-align: right; }
-        .user-name { font-size: 14px; font-weight: 600; display: block; }
-        .user-role { font-size: 11px; color: var(--text-dim); }
-        .user-avatar {
-            width: 40px; height: 40px; border-radius: 12px;
-            background: var(--accent); display: flex; align-items: center;
-            justify-content: center; font-weight: 700; color: white;
-        }
-
-        /* Content Area */
-        main { padding: 40px; }
-
-        .page-header { margin-bottom: 32px; }
-        .page-header h1 { font-size: 24px; font-weight: 700; }
-        .page-header p { color: var(--text-dim); font-size: 14px; }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 24px; margin-bottom: 32px;
-        }
-
-        .stat-card {
-            background: var(--bg-card); border-radius: 20px;
-            padding: 24px; border: 1px solid var(--border);
-            transition: var(--transition);
-        }
-        .stat-card:hover { border-color: var(--accent); transform: translateY(-5px); }
-        
-        .stat-icon {
-            width: 45px; height: 45px; border-radius: 12px;
-            background: rgba(108, 99, 255, 0.1);
-            display: flex; align-items: center; justify-content: center;
-            color: var(--accent); font-size: 18px; margin-bottom: 16px;
-        }
-        .stat-label { color: var(--text-dim); font-size: 13px; font-weight: 500; }
-        .stat-value { font-size: 28px; font-weight: 700; margin: 4px 0; }
-        .stat-change { font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-        .up { color: #10b981; }
-
-        /* Table Section */
-        .content-card {
-            background: var(--bg-card); border-radius: 24px;
-            border: 1px solid var(--border); padding: 32px;
-        }
-
-        .card-title-row {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 24px;
-        }
-        .card-title-row h2 { font-size: 18px; font-weight: 600; }
-
-        table { width: 100%; border-collapse: collapse; }
-        th {
-            text-align: left; padding: 16px; font-size: 12px;
-            color: var(--text-dim); font-weight: 600; text-transform: uppercase;
-            border-bottom: 1px solid var(--border);
-        }
-        td {
-            padding: 16px; font-size: 14px; border-bottom: 1px solid var(--border);
-        }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255,255,255,0.01); }
-
-        .badge {
-            padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;
-        }
-        .badge-purple { background: rgba(108, 99, 255, 0.1); color: var(--accent); }
-
-        /* Pagination */
-        .pagination {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-top: 32px;
-        }
-        .page-info { font-size: 13px; color: var(--text-dim); }
-        .page-controls { display: flex; gap: 8px; }
-        .page-btn {
-            background: var(--bg-body); border: 1px solid var(--border);
-            color: white; padding: 8px 16px; border-radius: 10px;
-            cursor: pointer; font-size: 13px; transition: 0.3s;
-        }
-        .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* Mobile Responsive */
-        @media (max-width: 1024px) {
-            aside { transform: translateX(-100%); }
-            .wrapper { margin-left: 0; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            header { padding: 0 20px; }
-            .search-container { display: none; }
-        }
-
-        @media (max-width: 640px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            main { padding: 24px; }
-            .content-card { padding: 20px; }
-            .stat-card { padding: 20px; }
-        }
-
-        /* Mobile Menu Toggle */
-        #menuToggle { display: none; }
-        @media (max-width: 1024px) {
-            #menuToggle {
-                display: block; background: none; border: none;
-                color: white; font-size: 20px; cursor: pointer;
-            }
-            aside.active { transform: translateX(0); }
-        }
-    </style>
+    <link rel="stylesheet" href="style_admin_shared.css">
 </head>
 <body data-page="dashboard">
     <div id="sidebar-container"></div>
 
     <div class="wrapper">
-        <header>
-            <div style="display: flex; align-items: center; gap: 16px;">
+        <header class="global-header">
+            <div class="top-bar-left">
                 <button id="menuToggle"><i class="fas fa-bars"></i></button>
                 <div class="search-container">
                     <i class="fas fa-search"></i>
@@ -222,8 +47,10 @@
 
         <main>
             <div class="page-header">
-                <h1>Dashboard Admin</h1>
-                <p>Ringkasan data operasional sistem hari ini.</p>
+                <div class="header-title">
+                    <h1>Dashboard Admin</h1>
+                    <p>Ringkasan data operasional sistem hari ini.</p>
+                </div>
             </div>
 
             <div class="stats-grid">
@@ -246,12 +73,40 @@
                     <p class="stat-change"><span style="color:var(--text-dim); font-weight:400">Level: </span> VII - IX</p>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-pulse"></i></div>
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
                     <p class="stat-label">Aktivitas</p>
-                    <p class="stat-value" id="statAktivitas">98%</p>
+                    <p class="stat-value" id="statAktivitas">0</p>
                     <p class="stat-change up"><i class="fas fa-check-circle"></i> Sistem Sehat</p>
                 </div>
             </div>
+
+            <style>
+                /* Specific styles for dashboard stats grid that aren't in shared yet */
+                .stats-grid {
+                    display: grid; grid-template-columns: repeat(4, 1fr);
+                    gap: 24px; margin-bottom: 32px;
+                }
+                .stat-card {
+                    background: var(--bg-card); border-radius: 20px;
+                    padding: 24px; border: 1px solid var(--border);
+                    transition: var(--transition);
+                }
+                .stat-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+                .stat-icon {
+                    width: 45px; height: 45px; border-radius: 12px;
+                    background: rgba(108, 99, 255, 0.1);
+                    display: flex; align-items: center; justify-content: center;
+                    color: var(--accent); font-size: 18px; margin-bottom: 16px;
+                }
+                .stat-label { color: var(--text-dim); font-size: 13px; font-weight: 500; }
+                .stat-value { font-size: 28px; font-weight: 700; margin: 4px 0; }
+                .stat-change { font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+                .up { color: #10b981; }
+                .card-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+                .card-title-row h2 { font-size: 18px; font-weight: 600; }
+                @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+                @media (max-width: 640px) { .stats-grid { grid-template-columns: 1fr; } }
+            </style>
 
             <div class="content-card">
                 <div class="card-title-row">
@@ -305,18 +160,8 @@
             document.getElementById('userName').textContent = user.nama || 'Administrator';
             document.getElementById('userInitial').textContent = (user.nama || 'A').charAt(0).toUpperCase();
 
-            // Mobile Menu Toggle
-            const sidebar = document.getElementById('sidebar');
-            const menuToggle = document.getElementById('menuToggle');
-            menuToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-            });
-
-            // Logout
-            document.getElementById('logoutBtn').addEventListener('click', () => {
-                localStorage.removeItem('sais_current_user');
-                window.location.href = 'index.html';
-            });
+            // Mobile Menu Toggle is handled by load-sidebar.js
+            // Logout is handled by load-sidebar.js
 
             // Load Data
             await loadDashboardData();
@@ -329,6 +174,7 @@
                 document.getElementById('statSiswa').textContent = stats.totalSiswa.toLocaleString('id-ID');
                 document.getElementById('statGuru').textContent = stats.totalGuru.toLocaleString('id-ID');
                 document.getElementById('statKelas').textContent = stats.totalKelas.toLocaleString('id-ID');
+                document.getElementById('statAktivitas').textContent = stats.aktivitas ? stats.aktivitas.toLocaleString('id-ID') : 'N/A';
 
                 // Fetch All Siswa for Activity Table
                 allSiswa = await window.db.getAllSiswa();

@@ -1,0 +1,130 @@
+/* SAIS - Shared Admin Styles */
+:root {
+    --bg-body: #0F1117;
+    --bg-card: #1A1D2E;
+    --accent: #6C63FF;
+    --accent-hover: #5A52E5;
+    --text-main: #FFFFFF;
+    --text-dim: #94A3B8;
+    --border: rgba(255, 255, 255, 0.05);
+    --sidebar-width: 260px;
+    --header-height: 70px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+body {
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+}
+
+/* Layout Structure */
+.wrapper {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition);
+    min-width: 0;
+}
+
+@media (max-width: 1024px) {
+    .wrapper { margin-left: 0; }
+}
+
+/* Global Top Bar Styling */
+.global-header {
+    height: var(--header-height);
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 900;
+}
+
+.top-bar-left { display: flex; align-items: center; gap: 16px; }
+
+#menuToggle {
+    display: none; background: none; border: none;
+    color: white; font-size: 20px; cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+    #menuToggle { display: block; }
+    .global-header { padding: 0 20px; }
+}
+
+.search-container { position: relative; width: 350px; }
+@media (max-width: 640px) { .search-container { display: none; } }
+
+.search-container i {
+    position: absolute; left: 16px; top: 50%;
+    transform: translateY(-50%); color: var(--text-dim); font-size: 14px;
+}
+.search-input {
+    width: 100%; background: var(--bg-body); border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px 16px 10px 44px;
+    color: white; font-size: 14px; outline: none; transition: 0.3s;
+}
+.search-input:focus { border-color: var(--accent); }
+
+.header-actions { display: flex; align-items: center; gap: 24px; }
+
+.user-profile { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.user-info { text-align: right; }
+@media (max-width: 480px) { .user-info { display: none; } }
+
+.user-name { font-size: 14px; font-weight: 600; display: block; }
+.user-role { font-size: 11px; color: var(--text-dim); }
+.user-avatar {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: var(--accent); display: flex; align-items: center;
+    justify-content: center; font-weight: 700; color: white;
+}
+
+/* Page Content Area */
+main { padding: 40px; }
+@media (max-width: 640px) { main { padding: 24px; } }
+
+.page-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 32px; flex-wrap: wrap; gap: 20px;
+}
+
+.header-title h1 { font-size: 24px; font-weight: 700; }
+.header-title p { color: var(--text-dim); font-size: 14px; }
+
+/* Components: Cards, Tables, Buttons (Unified) */
+.content-card {
+    background: var(--bg-card); border-radius: 24px;
+    border: 1px solid var(--border); padding: 32px;
+}
+@media (max-width: 640px) { .content-card { padding: 20px; } }
+
+.btn {
+    padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: 13px;
+    cursor: pointer; transition: var(--transition); border: none;
+    display: flex; align-items: center; gap: 8px;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px); }
+.btn-secondary { background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid var(--border); }
+.btn-success { background: #10b981; color: white; }
+
+table { width: 100%; border-collapse: collapse; }
+th {
+    text-align: left; padding: 16px; font-size: 11px;
+    color: var(--text-dim); font-weight: 600; text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+}
+td { padding: 16px; font-size: 13px; border-bottom: 1px solid var(--border); }
+
+.badge { padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.badge-purple { background: rgba(108, 99, 255, 0.1); color: var(--accent); }
+.badge-success { background: rgba(16, 185, 129, 0.1); color: #10b981; }

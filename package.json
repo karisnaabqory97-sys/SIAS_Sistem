@@ -4,7 +4,7 @@
   "description": "Sistem Informasi Sekolah (SAIS) - Aplikasi web manajemen sekolah dengan database Neon",
   "private": true,
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "echo 'Starting Vercel Dev...'",
     "build": "echo 'No build required for static HTML'",
     "start": "vercel"
   },

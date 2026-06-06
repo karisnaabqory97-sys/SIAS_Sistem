@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <script src="neon-config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Mengajar | SAIS Guru</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body { background: var(--bg-main); color: var(--text-main); display: flex; min-height: 100vh; }
+
+        aside {
+            width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 24px; position: fixed; height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo-section { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+        .logo-box {
+            width: 32px; height: 32px; background: var(--primary); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;
+        }
+
+        nav { flex: 1; }
+        nav ul { list-style: none; }
+        nav li { margin-bottom: 8px; }
+        nav a {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            text-decoration: none; color: var(--text-dim); border-radius: 12px;
+            font-size: 14px; transition: all 0.3s;
+        }
+        nav a.active, nav a:hover { background: var(--primary); color: white; }
+        nav a.logout-link:hover { background: #ef4444; color: white; }
+
+        .user-profile {
+            margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .avatar {
+            width: 40px; height: 40px; background: #334155; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 600; color: white;
+        }
+
+        main { flex: 1; margin-left: 260px; padding: 40px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        h1 { font-size: 24px; font-weight: 600; }
+
+        .content-card {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 24px; padding: 32px;
+        }
+
+        .schedule-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .schedule-table th {
+            padding: 16px; font-size: 14px; color: var(--text-dim);
+            border-bottom: 1px solid var(--border); font-weight: 600; text-align: center;
+        }
+        .schedule-table td {
+            padding: 16px; border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border); text-align: center; vertical-align: top;
+        }
+        .schedule-table td:last-child { border-right: none; }
+
+        .time-col {
+            font-weight: 600; color: var(--primary); width: 100px;
+            border-right: 1px solid var(--border) !important;
+        }
+
+        .subject-block {
+            background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px; padding: 12px; margin-bottom: 8px; color: #818cf8;
+            text-align: left;
+        }
+        .subject-block.istirahat {
+            background: rgba(255, 255, 255, 0.05); border-color: var(--border);
+            color: var(--text-dim); font-size: 12px; padding: 8px; text-align: center;
+        }
+        .subject-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; color: white; }
+        .subject-info { font-size: 11px; color: var(--text-dim); }
+        .no-class { color: var(--text-dim); font-size: 13px; padding: 20px 0; }
+
+        @media (max-width: 1024px) {
+            aside { display: none; }
+            main { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-section">
+            <div class="logo-box">G</div>
+            <span style="font-weight: 600; font-size: 18px;">SAIS Guru</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard_guru.html">Dashboard</a></li>
+                <li><a href="jadwal_guru.html" class="active">Jadwal Mengajar</a></li>
+                <li><a href="jadwal_ujian_guru.html">Jadwal Ujian</a></li>
+                <li><a href="rapot_guru.html">Input Nilai</a></li>
+                <li><a href="kenaikan_guru.html">Murid Baru</a></li>
+                <li><a href="informasi_guru.html">Informasi</a></li>
+                <li><a href="pengaturan.html">Pengaturan</a></li>
+                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
+            </ul>
+        </nav>
+        <div class="user-profile">
+            <div class="avatar" id="userAvatar">-</div>
+            <div>
+                <p style="font-size: 14px; font-weight: 600;" id="userNama">Memuat...</p>
+                <p style="font-size: 11px; color: var(--text-dim);" id="userMapel">-</p>
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <h1>Jadwal Mengajar Mingguan</h1>
+                <p style="color: var(--text-dim); font-size: 14px;" id="scheduleInfo">Memuat jadwal guru...</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button onclick="window.location.href='dashboard_guru.html'" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--border); padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 500;">
+                    Kembali
+                </button>
+                <button style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 500;">
+                    Unduh Jadwal
+                </button>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th class="time-col">Waktu</th>
+                        <th>Senin</th>
+                        <th>Selasa</th>
+                        <th>Rabu</th>
+                        <th>Kamis</th>
+                        <th>Jumat</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleBody">
+                    <!-- Jadwal akan dimuat di sini -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="js/utils_guru_siswa.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            if (!currentUser || currentUser.type !== 'guru') {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const userNama = currentUser.nama || 'Guru SAIS';
+            const userMapel = currentUser.mapel || 'Mata Pelajaran';
+
+            document.getElementById('userAvatar').textContent = userNama.charAt(0).toUpperCase();
+            document.getElementById('userNama').textContent = userNama;
+            document.getElementById('userMapel').textContent = userMapel;
+            document.getElementById('scheduleInfo').textContent = `Jadwal Mengajar: ${userMapel} | Tahun Ajaran 2025/2026`;
+
+            renderSchedule();
+        });
+
+        function renderSchedule() {
+            const tbody = document.getElementById('scheduleBody');
+            tbody.innerHTML = '';
+
+            const waktuSlots = ['07:30-09:00', '09:00-10:30', '10:45-12:15'];
+            const hariList = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
+
+            // Dummy data jadwal guru
+            const dummyJadwal = {
+                '07:30-09:00': { 'senin': { kelas: 'VII-A', ruang: 'R.101' }, 'rabu': { kelas: 'VIII-B', ruang: 'R.202' } },
+                '09:00-10:30': { 'selasa': { kelas: 'IX-C', ruang: 'R.303' }, 'kamis': { kelas: 'VII-A', ruang: 'R.101' } },
+                '10:45-12:15': { 'rabu': { kelas: 'VIII-A', ruang: 'R.201' }, 'jumat': { kelas: 'IX-B', ruang: 'R.302' } }
+            };
+
+            waktuSlots.forEach(waktu => {
+                const tr = document.createElement('tr');
+                const timeTd = document.createElement('td');
+                timeTd.className = 'time-col';
+                timeTd.textContent = waktu.replace('-', ' - ');
+                tr.appendChild(timeTd);
+
+                hariList.forEach(hari => {
+                    const td = document.createElement('td');
+                    const schedule = dummyJadwal[waktu] && dummyJadwal[waktu][hari];
+
+                    if (schedule) {
+                        td.innerHTML = `
+                            <div class="subject-block">
+                                <div class="subject-name">${schedule.kelas}</div>
+                                <div class="subject-info"><i class="fas fa-door-open"></i> ${schedule.ruang}</div>
+                            </div>
+                        `;
+                    } else {
+                        td.innerHTML = '<div class="no-class">-</div>';
+                    }
+                    tr.appendChild(td);
+                });
+
+                tbody.appendChild(tr);
+
+                if (waktu === '09:00-10:30') {
+                    const breakTr = document.createElement('tr');
+                    breakTr.innerHTML = `
+                        <td class="time-col" style="color: var(--text-dim);">10:30 - 10:45</td>
+                        <td colspan="5">
+                            <div class="subject-block istirahat">ISTIRAHAT</div>
+                        </td>
+                    `;
+                    tbody.appendChild(breakTr);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
