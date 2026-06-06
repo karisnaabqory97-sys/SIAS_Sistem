@@ -496,6 +496,38 @@ window.db = {
         return data.filter(j => j.kelas === kelas);
     },
 
+    async upsertJadwal(kelas, semester, jadwalItems) {
+        if (isProduction) {
+            return await apiCall('jadwal', 'upsert', { kelas, semester, items: jadwalItems });
+        }
+        
+        let allJadwal = Storage.get('jadwal_data') || [];
+        // Remove old schedule for this class and semester
+        allJadwal = allJadwal.filter(j => !(j.kelas === kelas && j.semester === semester));
+        
+        // Add new items
+        const newEntries = jadwalItems.map(item => ({
+            id: 'jdw_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+            kelas,
+            semester,
+            ...item,
+            updated_at: new Date().toISOString()
+        }));
+        
+        allJadwal.push(...newEntries);
+        Storage.set('jadwal_data', allJadwal);
+        return true;
+    },
+
+    async getJadwalByGuru(namaGuru) {
+        if (isProduction) {
+            return await apiGet('jadwal', { guru: namaGuru });
+        }
+        const allJadwal = Storage.get('jadwal_data') || [];
+        // In this logic, guru info comes from the 'pengampu' assignment saved in the schedule item
+        return allJadwal.filter(j => j.guru === namaGuru);
+    },
+
     // ==================== NILAI ====================
 
     async getAllNilai() {

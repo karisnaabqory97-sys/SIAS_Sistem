@@ -81,7 +81,7 @@
                 <table class="schedule-table">
                     <thead>
                         <tr>
-                            <th style="width: 100px;">Waktu</th>
+                            <th style="width: 110px;">Waktu</th>
                             <th>Senin</th>
                             <th>Selasa</th>
                             <th>Rabu</th>
@@ -98,31 +98,57 @@
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
             document.getElementById('userNama').textContent = currentUser.nama || 'Siswa';
             document.getElementById('userKelas').textContent = 'Kelas ' + (currentUser.kelas || '-');
             document.getElementById('scheduleSubtitle').textContent = 'Jadwal mingguan Kelas ' + (currentUser.kelas || '-');
 
-            renderSchedule();
+            await renderSchedule(currentUser.kelas);
         });
 
-        function renderSchedule() {
+        async function renderSchedule(kelas) {
             const tbody = document.getElementById('scheduleBody');
-            const times = ['07:30-09:00', '09:00-10:30', '10:30-10:45', '10:45-12:15'];
-            
-            tbody.innerHTML = times.map(time => {
-                if (time === '10:30-10:45') {
-                    return `<tr><td class="time-col">10:30 - 10:45</td><td colspan="5" class="istirahat">ISTIRAHAT</td></tr>`;
-                }
-                
-                const cols = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'].map(day => {
-                    // Logic dummy or fetch from DB
-                    return `<td><div class="subject-block"><div class="subject-name">Matematika</div><div class="subject-info">Ruang 101</div></div></td>`;
-                }).join('');
+            if (!kelas) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">Data kelas tidak ditemukan.</td></tr>';
+                return;
+            }
 
-                return `<tr><td class="time-col">${time.replace('-', ' - ')}</td>${cols}</tr>`;
-            }).join('');
+            try {
+                const data = await window.db.getJadwalByKelas(kelas);
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-dim);">Belum ada jadwal yang diatur oleh Admin untuk kelas ini.</td></tr>';
+                    return;
+                }
+
+                // Group by time range
+                const slots = {};
+                data.forEach(s => {
+                    const key = `${s.jam_mulai}-${s.jam_selesai}`;
+                    if (!slots[key]) slots[key] = { start: s.jam_mulai, end: s.jam_selesai, days: {} };
+                    slots[key].days[s.hari.toLowerCase()] = { mapel: s.mapel, guru: s.guru };
+                });
+
+                // Sort slots by start time
+                const sortedSlots = Object.values(slots).sort((a, b) => a.start.localeCompare(b.start));
+
+                tbody.innerHTML = sortedSlots.map(slot => {
+                    const days = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
+                    const dayCells = days.map(day => {
+                        const item = slot.days[day];
+                        if (item) {
+                            return `<td><div class="subject-block"><div class="subject-name">${item.mapel}</div><div class="subject-info">${item.guru}</div></div></td>`;
+                        }
+                        return '<td>-</td>';
+                    }).join('');
+
+                    return `<tr><td class="time-col">${slot.start} - ${slot.end}</td>${dayCells}</tr>`;
+                }).join('');
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px; color:#ef4444;">Gagal memuat jadwal.</td></tr>';
+            }
         }
     </script>
 </body>
