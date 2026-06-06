@@ -6,63 +6,12 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Kelas | SAIS</title>
+    <title>Manajemen Kelas | SAIS Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style_admin_shared.css">
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --accent: #10b981;
-            --bg-main: #0b0f1a;
-            --bg-sidebar: #111827;
-            --bg-card: #1f2937;
-            --border: rgba(255, 255, 255, 0.06);
-            --text-main: #f3f4f6;
-            --text-dim: #9ca3af;
-            --sidebar-width: 280px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-
-        body {
-            background: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Main Content */
-        main {
-            flex: 1;
-            margin-left: 260px;
-            padding: 40px 60px;
-        }
-
-        header {
-            display: flex; justify-content: space-between; align-items: flex-end;
-            margin-bottom: 48px;
-        }
-
-        .header-title h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; letter-spacing: -1px; }
-        .header-title p { color: var(--text-dim); font-size: 15px; }
-
-        .btn {
-            padding: 12px 24px; border-radius: 14px; font-weight: 600; font-size: 14px;
-            cursor: pointer; transition: var(--transition); border: none;
-            display: flex; align-items: center; gap: 8px;
-        }
-
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
-
-        .btn-secondary { background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid var(--border); }
-        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--primary); }
-
-        .btn-success { background: var(--accent); color: white; }
-        .btn-success:hover { background: #059669; }
-
-        /* Kelas Grid Redesign */
+        /* Specific management styles for Kelas */
         .kelas-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -82,14 +31,14 @@
             overflow: hidden;
         }
 
-        .kelas-card:hover { border-color: rgba(99, 102, 241, 0.4); transform: translateY(-8px); }
+        .kelas-card:hover { border-color: var(--accent); transform: translateY(-8px); }
 
         .kelas-icon {
             width: 56px; height: 56px;
-            background: rgba(99, 102, 241, 0.1);
+            background: rgba(108, 99, 255, 0.1);
             border-radius: 18px;
             display: flex; align-items: center; justify-content: center;
-            color: var(--primary); font-size: 24px; font-weight: 700;
+            color: var(--accent); font-size: 24px; font-weight: 700;
             margin-bottom: 24px;
         }
 
@@ -114,110 +63,125 @@
             font-weight: 500; cursor: pointer; transition: 0.3s;
         }
 
-        .btn-action:hover { background: rgba(99, 102, 241, 0.1); color: white; border-color: var(--primary); }
+        .btn-action:hover { background: rgba(108, 99, 255, 0.1); color: white; border-color: var(--accent); }
 
-        /* Modal Styles Redesign */
+        /* Modal Styles */
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000;
+            backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000;
         }
-
         .modal-overlay.active { display: flex; }
-
         .modal-content {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 32px; padding: 40px; width: 100%; max-width: 540px;
         }
-
-        .modal-header h2 { font-size: 24px; font-weight: 700; }
         .form-control {
             width: 100%; padding: 14px 18px; border-radius: 16px;
             background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
             color: white; font-size: 14px; outline: none; transition: 0.3s;
         }
-        .form-control:focus { border-color: var(--primary); background: rgba(255, 255, 255, 0.07); }
+        .form-control:focus { border-color: var(--accent); background: rgba(255, 255, 255, 0.07); }
     </style>
-    </head>
-    <body data-page="kelas">
+</head>
+<body data-page="kelas">
     <div id="sidebar-container"></div>
 
-    <main>
-        <header>
-            <div class="header-title">
-                <h1>Manajemen Kelas</h1>
-                <p>Total 0 rombongan belajar aktif</p>
+    <div class="wrapper">
+        <header class="global-header">
+            <div class="top-bar-left">
+                <button id="menuToggle"><i class="fas fa-bars"></i></button>
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" placeholder="Cari data, menu, atau bantuan...">
+                </div>
             </div>
-            <div style="display: flex; gap: 12px;">
-                <button class="btn btn-secondary" id="btnTemplate" title="Unduh format excel"><i class="fas fa-download"></i> Template</button>
-                <input type="file" id="fileUpload" accept=".xls,.xlsx,.csv" style="display: none;">
-                <button class="btn btn-secondary" id="btnUpload" title="Upload data dari excel"><i class="fas fa-upload"></i> Upload</button>
-                <button class="btn btn-success" id="btnSimpan"><i class="fas fa-sync"></i> Sinkron</button>
-                <button class="btn btn-primary" id="btnTambahKelas" style="margin-left: 12px;"><i class="fas fa-plus"></i> Tambah Kelas</button>
+
+            <div class="header-actions">
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Admin</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                    <div class="user-avatar" id="userInitial">A</div>
+                </div>
             </div>
         </header>
 
+        <main>
+            <div class="page-header">
+                <div class="header-title">
+                    <h1>Manajemen Kelas</h1>
+                    <p id="totalKelasText">Total 0 rombongan belajar aktif</p>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-secondary" id="btnTemplate" title="Unduh format excel"><i class="fas fa-download"></i> Template</button>
+                    <input type="file" id="fileUpload" accept=".xls,.xlsx,.csv" style="display: none;">
+                    <button class="btn btn-secondary" id="btnUpload" title="Upload data dari excel"><i class="fas fa-upload"></i> Upload</button>
+                    <button class="btn btn-success" id="btnSimpan"><i class="fas fa-sync"></i> Sinkron</button>
+                    <button class="btn btn-primary" id="btnTambahKelas" style="margin-left: 12px;"><i class="fas fa-plus"></i> Tambah Kelas</button>
+                </div>
+            </div>
 
-        <div class="kelas-grid" id="kelasGrid">
-            <!-- Cards will be rendered here by JavaScript -->
-        </div>
-    </main>
+            <div class="kelas-grid" id="kelasGrid">
+                <!-- Cards will be rendered here by JavaScript -->
+                <p style="grid-column: 1/-1; text-align: center; color: var(--text-dim); padding: 40px;">Memuat data kelas...</p>
+            </div>
+        </main>
+    </div>
 
     <!-- Modal Tambah Kelas -->
     <div class="modal-overlay" id="modalTambahKelas">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Tambah Kelas Baru</h2>
-                <button class="btn-close" id="btnCloseModal">&times;</button>
+                <button class="btn-close" id="btnCloseModal" style="background:transparent; border:none; color:var(--text-dim); font-size:24px; cursor:pointer;">&times;</button>
             </div>
             <form id="formTambahKelas">
-                <div class="form-group">
-                    <label class="form-label">Nama Kelas</label>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Nama Kelas</label>
                     <input type="text" id="inputNamaKelas" class="form-control" placeholder="Contoh: Kelas IX-A" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Kode Kelas (Singkatan)</label>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Kode Kelas (Singkatan)</label>
                     <input type="text" id="inputKodeKelas" class="form-control" placeholder="Contoh: 9A" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Ruang</label>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Ruang</label>
                     <input type="text" id="inputRuang" class="form-control" placeholder="Contoh: Ruang Teori 1 - Lantai 2" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Wali Kelas</label>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Wali Kelas</label>
                     <select id="inputWaliKelas" class="form-control" required>
                         <option value="" disabled selected>-- Memuat daftar guru... --</option>
                     </select>
-                    <span class="select-loading" id="waliLoadingText">⏳ Memuat daftar guru...</span>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Jumlah Siswa</label>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Jumlah Siswa</label>
                     <input type="number" id="inputSiswa" class="form-control" placeholder="0" required>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" id="btnBatalModal">Batal</button>
-                    <button type="submit" class="btn-success">Simpan Kelas</button>
+                <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:32px;">
+                    <button type="button" class="btn btn-secondary" id="btnBatalModal">Batal</button>
+                    <button type="submit" class="btn btn-success">Simpan Kelas</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <script src="js/load-sidebar.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Load User Info
+            const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            document.getElementById('userName').textContent = user.nama || 'Admin';
+            document.getElementById('userInitial').textContent = (user.nama || 'A').charAt(0).toUpperCase();
+
             // Element References
-            const btnTemplate = document.getElementById('btnTemplate');
-            const btnUpload = document.getElementById('btnUpload');
-            const fileUpload = document.getElementById('fileUpload');
-            const btnSimpan = document.getElementById('btnSimpan');
             const btnTambahKelas = document.getElementById('btnTambahKelas');
-            
             const modalTambahKelas = document.getElementById('modalTambahKelas');
             const btnCloseModal = document.getElementById('btnCloseModal');
             const btnBatalModal = document.getElementById('btnBatalModal');
             const formTambahKelas = document.getElementById('formTambahKelas');
             const kelasGrid = document.getElementById('kelasGrid');
-
-            // Data State Management
-            const defaultKelasData = [];
 
             let kelasData = [];
             let currentEditIndex = null;
@@ -228,31 +192,18 @@
                     kelasData = data || [];
                 } catch (e) {
                     console.error("Gagal mengambil data kelas:", e);
-                    try {
-                        const stored = localStorage.getItem('sais_kelas_data');
-                        if (stored) {
-                            kelasData = JSON.parse(stored);
-                        } else {
-                            kelasData = JSON.parse(JSON.stringify(defaultKelasData));
-                        }
-                    } catch (e2) {
-                        kelasData = JSON.parse(JSON.stringify(defaultKelasData));
-                    }
-                }
-                renderKelas();
-            }
-
-            function saveAndRender() {
-                try {
-                    localStorage.setItem('sais_kelas_data', JSON.stringify(kelasData));
-                } catch (e) {
-                    console.error("Error saving to localStorage", e);
+                    kelasData = [];
                 }
                 renderKelas();
             }
 
             function renderKelas() {
                 kelasGrid.innerHTML = '';
+                if (kelasData.length === 0) {
+                    kelasGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-dim); padding: 40px;">Belum ada data kelas.</p>';
+                    return;
+                }
+
                 kelasData.forEach((kelas, index) => {
                     const card = document.createElement('div');
                     card.className = 'kelas-card';
@@ -266,221 +217,96 @@
                         <div class="kelas-stats">
                             <div class="stat-item">
                                 <span class="stat-label">Wali Kelas</span>
-                                <span class="stat-value">${kelas.wali || ''}</span>
+                                <span class="stat-value">${kelas.wali || '-'}</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">Siswa</span>
-                                <span class="stat-value">${kelas.siswa || kelas.siswa_count || 0} Orang</span>
+                                <span class="stat-value">${kelas.siswa || 0} Orang</span>
                             </div>
                         </div>
                         <div class="card-actions" style="display: flex; gap: 8px;">
-                            <button class="btn-action" style="flex: 1;">Atur Siswa</button>
-                            <button class="btn-action" style="flex: 1;">Edit</button>
-                            <button class="btn-action btn-delete" style="flex: 1; color: #ef4444; border-color: rgba(239, 68, 68, 0.2);">Hapus</button>
+                            <button class="btn-action" style="flex: 1;" onclick="window.location.href='siswa.html?kelas=${encodeURIComponent(kelas.nama)}'">Siswa</button>
+                            <button class="btn-action" style="flex: 1;" onclick="editKelas(${index})">Edit</button>
+                            <button class="btn-action" style="flex: 1; color: #ef4444; border-color: rgba(239, 68, 68, 0.2);" onclick="deleteKelas(${index})">Hapus</button>
                         </div>
                     `;
                     kelasGrid.appendChild(card);
                 });
 
-                // Update total count
-                const countText = document.querySelector('header p');
-                countText.innerText = `Total ${kelasData.length} rombongan belajar aktif`;
+                document.getElementById('totalKelasText').innerText = `Total ${kelasData.length} rombongan belajar aktif`;
             }
 
-            // Initial load
-            fetchKelas();
+            // Global functions for inline onclicks
+            window.editKelas = async (index) => {
+                currentEditIndex = index;
+                const kelas = kelasData[index];
+                document.querySelector('.modal-title').innerText = 'Edit Kelas';
+                document.getElementById('inputKodeKelas').value = kelas.kode || '';
+                document.getElementById('inputNamaKelas').value = kelas.nama || '';
+                document.getElementById('inputRuang').value = kelas.ruang || '';
+                document.getElementById('inputSiswa').value = kelas.siswa || '0';
+                modalTambahKelas.classList.add('active');
+                await populateGuruDropdown(kelas.wali || '');
+            };
 
-            // 1. Template
-            btnTemplate.addEventListener('click', function() {
-                // Simulasi download csv
-                const link = document.createElement('a');
-                link.href = 'data:text/csv;charset=utf-8,Nama Kelas,Kode,Ruang,Wali Kelas,Jumlah Siswa\nVII-A,7A,Ruang Teori 1,Siti Aminah,32';
-                link.download = 'template_kelas.csv';
-                link.click();
-                alert('Template berhasil diunduh.');
-            });
-
-            // 2. Upload Massal
-            btnUpload.addEventListener('click', function() {
-                fileUpload.click();
-            });
-
-            fileUpload.addEventListener('change', function(e) {
-                if (e.target.files.length > 0) {
-                    const fileName = e.target.files[0].name;
-                    alert('Berhasil mengupload file: ' + fileName);
-                    fileUpload.value = '';
+            window.deleteKelas = async (index) => {
+                const kelas = kelasData[index];
+                if (confirm(`Hapus kelas "${kelas.nama}"?`)) {
+                    try {
+                        await window.db.deleteKelas(kelas.id);
+                        await fetchKelas();
+                    } catch (e) { alert('Gagal menghapus data.'); }
                 }
-            });
+            };
 
-            // 3. Simpan (Global button)
-            btnSimpan.addEventListener('click', async function() {
-                await fetchKelas();
-                alert('Data kelas berhasil disinkronkan dari database!');
-            });
-
-            // 4. Tambah/Edit Kelas (Modal)
-
-            // Mengisi dropdown Wali Kelas dari data guru terdaftar
             async function populateGuruDropdown(selectedWali = '') {
                 const selectEl = document.getElementById('inputWaliKelas');
-                const loadingText = document.getElementById('waliLoadingText');
-
-                selectEl.innerHTML = '<option value="" disabled>-- Memuat daftar guru... --</option>';
-                loadingText.style.display = 'block';
-
                 try {
                     const guruList = await window.db.getAllGuru();
                     selectEl.innerHTML = '<option value="">-- Pilih Wali Kelas --</option>';
-
-                    if (!guruList || guruList.length === 0) {
-                        selectEl.innerHTML += '<option value="" disabled>Belum ada guru terdaftar</option>';
-                    } else {
-                        guruList.forEach(guru => {
-                            const namaGuru = guru.nama || guru.name || '';
-                            const nip = guru.nip || guru.nuptk || '';
-                            const label = nip ? `${namaGuru} (${nip})` : namaGuru;
-                            const opt = document.createElement('option');
-                            opt.value = namaGuru;
-                            opt.textContent = label;
-                            // Preselect jika cocok dengan nilai yang sudah ada
-                            if (namaGuru === selectedWali || nip === selectedWali) {
-                                opt.selected = true;
-                            }
-                            selectEl.appendChild(opt);
-                        });
-
-                        // Jika selectedWali tidak ditemukan di list tapi ada nilainya, tambahkan sebagai opsi sementara
-                        if (selectedWali && !selectEl.querySelector(`option[value="${selectedWali}"]`)) {
-                            const optFallback = document.createElement('option');
-                            optFallback.value = selectedWali;
-                            optFallback.textContent = selectedWali + ' (data lama)';
-                            optFallback.selected = true;
-                            selectEl.appendChild(optFallback);
-                        }
-                    }
-                } catch (err) {
-                    console.error('Gagal memuat daftar guru:', err);
-                    selectEl.innerHTML = '<option value="">-- Gagal memuat guru --</option>';
-                    // Fallback: input manual jika gagal memuat
-                    if (selectedWali) {
-                        const optFallback = document.createElement('option');
-                        optFallback.value = selectedWali;
-                        optFallback.textContent = selectedWali;
-                        optFallback.selected = true;
-                        selectEl.appendChild(optFallback);
-                    }
-                } finally {
-                    loadingText.style.display = 'none';
-                }
+                    guruList.forEach(guru => {
+                        const opt = document.createElement('option');
+                        opt.value = guru.nama;
+                        opt.textContent = guru.nama;
+                        if (guru.nama === selectedWali) opt.selected = true;
+                        selectEl.appendChild(opt);
+                    });
+                } catch (err) { selectEl.innerHTML = '<option value="">Gagal memuat guru</option>'; }
             }
 
-            function openModal() {
+            btnTambahKelas.onclick = async () => {
+                currentEditIndex = null;
+                document.querySelector('.modal-title').innerText = 'Tambah Kelas Baru';
+                formTambahKelas.reset();
                 modalTambahKelas.classList.add('active');
-            }
-
-            function closeModal() {
-                modalTambahKelas.classList.remove('active');
-                formTambahKelas.reset();
-                currentEditIndex = null;
-                document.querySelector('.modal-title').innerText = 'Tambah Kelas Baru';
-            }
-
-            btnTambahKelas.addEventListener('click', async function() {
-                currentEditIndex = null;
-                document.querySelector('.modal-title').innerText = 'Tambah Kelas Baru';
-                formTambahKelas.reset();
-                openModal();
                 await populateGuruDropdown();
-            });
+            };
 
-            btnCloseModal.addEventListener('click', closeModal);
-            btnBatalModal.addEventListener('click', closeModal);
+            btnCloseModal.onclick = btnBatalModal.onclick = () => modalTambahKelas.classList.remove('active');
 
-            modalTambahKelas.addEventListener('click', function(e) {
-                if (e.target === modalTambahKelas) {
-                    closeModal();
-                }
-            });
-
-            // Submit Form Tambah/Edit Kelas
-            formTambahKelas.addEventListener('submit', async function(e) {
+            formTambahKelas.onsubmit = async (e) => {
                 e.preventDefault();
-                
                 const newData = {
                     nama: document.getElementById('inputNamaKelas').value,
                     kode: document.getElementById('inputKodeKelas').value,
                     ruang: document.getElementById('inputRuang').value,
                     wali: document.getElementById('inputWaliKelas').value,
-                    siswa: document.getElementById('inputSiswa').value
+                    siswa: parseInt(document.getElementById('inputSiswa').value) || 0
                 };
 
                 try {
                     if (currentEditIndex !== null) {
-                        const idx = parseInt(currentEditIndex, 10);
-                        const kelas = kelasData[idx];
-                        await window.db.updateKelas(kelas.id, newData);
-                        alert('Data kelas ' + newData.nama + ' berhasil diperbarui!');
+                        await window.db.updateKelas(kelasData[currentEditIndex].id, newData);
                     } else {
                         await window.db.insertKelas(newData);
-                        alert('Kelas ' + newData.nama + ' berhasil ditambahkan!');
                     }
                     await fetchKelas();
-                } catch (err) {
-                    console.error("Gagal menyimpan data kelas ke database:", err);
-                    if (currentEditIndex !== null) {
-                        const idx = parseInt(currentEditIndex, 10);
-                        kelasData[idx] = newData;
-                    } else {
-                        kelasData.push(newData);
-                    }
-                    saveAndRender();
-                    alert('Data disimpan sementara di penyimpanan lokal (offline).');
-                }
-                
-                closeModal();
-            });
+                    modalTambahKelas.classList.remove('active');
+                } catch (err) { alert('Gagal menyimpan data.'); }
+            };
 
-            // 5. Card Actions (Atur Siswa, Edit & Hapus)
-            kelasGrid.addEventListener('click', async function(e) {
-                if (e.target.classList.contains('btn-action')) {
-                    const card = e.target.closest('.kelas-card');
-                    const index = card.dataset.index;
-                    const kelas = kelasData[parseInt(index, 10)];
-                    
-                    if (e.target.innerText.includes('Atur Siswa')) {
-                        const filterText = kelas.nama.replace('Kelas ', '');
-                        window.location.href = 'siswa.html?filter=' + encodeURIComponent(filterText);
-                    } else if (e.target.innerText.includes('Edit')) {
-                        currentEditIndex = index;
-                        document.querySelector('.modal-title').innerText = 'Edit Kelas';
-                        
-                        document.getElementById('inputKodeKelas').value = kelas.kode || '';
-                        document.getElementById('inputNamaKelas').value = kelas.nama || '';
-                        document.getElementById('inputRuang').value = kelas.ruang || '';
-                        document.getElementById('inputSiswa').value = kelas.siswa || kelas.siswa_count || '0';
-                        
-                        openModal();
-                        // Isi dropdown guru & preselect wali kelas yang sudah tersimpan
-                        await populateGuruDropdown(kelas.wali || '');
-                    } else if (e.target.classList.contains('btn-delete') || e.target.innerText.includes('Hapus')) {
-                        if (confirm(`Apakah Anda yakin ingin menghapus kelas "${kelas.nama}"?\n\nTindakan ini tidak dapat dibatalkan.`)) {
-                            try {
-                                await window.db.deleteKelas(kelas.id);
-                                alert('Kelas ' + kelas.nama + ' berhasil dihapus dari database!');
-                                await fetchKelas();
-                            } catch (err) {
-                                console.error("Gagal menghapus kelas dari database:", err);
-                                kelasData.splice(parseInt(index, 10), 1);
-                                saveAndRender();
-                                alert('Kelas dihapus dari penyimpanan lokal.');
-                            }
-                        }
-                    }
-                }
-            });
+            await fetchKelas();
         });
     </script>
-    <script src="js/load-sidebar.js"></script>
 </body>
 </html>

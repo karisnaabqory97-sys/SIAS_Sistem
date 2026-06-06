@@ -6,650 +6,256 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Rapot | SAIS</title>
+    <title>Manajemen Rapot | SAIS Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style_admin_shared.css">
     <style>
-        :root {
-            --primary: #2563eb;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --bg-main: #0f172a;
-            --bg-sidebar: #1e293b;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
+        /* Specific management styles for Rapot */
+        .summary-cards {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 16px; margin-bottom: 32px;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-
-        body {
-            background: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
+        .summary-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 20px; text-align: center;
         }
-
-        /* Main Content */
-        main {
-            flex: 1;
-            margin-left: 260px;
-            padding: 40px;
+        .summary-card .icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px; font-size: 20px;
         }
+        .summary-card .icon.blue { background: rgba(108, 99, 255, 0.1); color: var(--accent); }
+        .summary-card .icon.green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .summary-card .icon.yellow { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .summary-card .icon.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .summary-card .value { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+        .summary-card .label { font-size: 12px; color: var(--text-dim); }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 32px;
-            gap: 16px;
-        }
+        .grade-badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+        .grade-a { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .grade-b { background: rgba(108, 99, 255, 0.1); color: var(--accent); }
+        .grade-c { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 
-        .search-bar {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 16px;
-            width: 300px;
-            color: white;
-            outline: none;
-        }
-
-        .filter-group {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .filter-select {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 16px;
-            color: white;
-            outline: none;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .filter-select option { background: #1e293b; }
-
-        .table-container {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            overflow: hidden;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th {
-            background: rgba(255, 255, 255, 0.02);
-            padding: 12px 16px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-dim);
-            border-bottom: 1px solid var(--border);
-        }
-
-        td {
-            padding: 12px 16px;
-            font-size: 13px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255, 255, 255, 0.02); }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary:hover { background: #1d4ed8; }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--primary);
-        }
-
-        .action-btn {
-            padding: 6px 14px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: white;
-            cursor: pointer;
-            font-size: 12px;
-            margin-right: 8px;
-            transition: all 0.3s;
-        }
-
-        .action-btn:hover { background: var(--primary); border-color: var(--primary); }
-
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; }
         .status-sudah { background: rgba(16, 185, 129, 0.1); color: #10b981; }
         .status-belum { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 
-        .grade-badge {
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
+        .filter-select {
+            background: var(--bg-body); border: 1px solid var(--border);
+            color: white; padding: 10px 16px; border-radius: 12px;
+            font-size: 13px; outline: none; cursor: pointer;
         }
-
-        .grade-a { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .grade-b { background: rgba(37, 99, 235, 0.2); color: #2563eb; }
-        .grade-c { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .grade-d { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
 
         /* Modal Styles */
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            backdrop-filter: blur(4px);
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000;
         }
-
         .modal-overlay.active { display: flex; }
-
         .modal {
-            background: #1e293b;
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 32px;
-            width: 100%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease-out;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 32px; width: 100%; max-width: 800px;
+            max-height: 90vh; overflow-y: auto;
         }
-
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .modal-title { font-size: 20px; font-weight: 600; }
-        .modal-subtitle { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
-
-        .btn-close {
-            background: transparent;
-            border: none;
-            color: var(--text-dim);
-            font-size: 24px;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .btn-close:hover { color: white; }
-
-        .rapot-preview {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            margin-top: 16px;
-        }
-
-        .rapot-header {
-            text-align: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 2px solid var(--border);
-        }
-
-        .rapot-header h3 { font-size: 18px; margin-bottom: 4px; }
-        .rapot-header p { font-size: 12px; color: var(--text-dim); }
-
-        .rapot-student-info {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-            font-size: 12px;
-        }
-
-        .info-item span { color: var(--text-dim); display: block; margin-bottom: 4px; }
-        .info-item strong { color: var(--text-main); }
-
-        .rapot-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        .rapot-table th {
-            background: var(--primary);
-            color: white;
-            padding: 10px 12px;
-            text-align: center;
-        }
-
-        .rapot-table td {
-            padding: 10px 12px;
-            text-align: center;
-            border: 1px solid var(--border);
-        }
-
-        .rapot-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
-
-        .rapot-footer {
-            margin-top: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-
-        .rapot-stats {
-            display: flex;
-            gap: 24px;
-        }
-
-        .stat-box {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-            min-width: 100px;
-        }
-
-        .stat-box .label { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
-        .stat-box .value { font-size: 24px; font-weight: 700; color: var(--primary); }
-
-        .signature-section {
-            text-align: center;
-            font-size: 11px;
-            color: var(--text-dim);
-        }
-
-        .modal-footer {
-            margin-top: 24px;
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-
-        .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-
-        .summary-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .summary-card .icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 12px;
-            font-size: 20px;
-        }
-
-        .summary-card .icon.blue { background: rgba(37, 99, 235, 0.2); color: var(--primary); }
-        .summary-card .icon.green { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-        .summary-card .icon.yellow { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-        .summary-card .icon.red { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-
-        .summary-card .value { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-        .summary-card .label { font-size: 13px; color: var(--text-dim); }
     </style>
 </head>
 <body data-page="rapot">
     <div id="sidebar-container"></div>
 
-    <main>
-        <header>
-            <div>
-                <h1 style="font-size: 24px; font-weight: 600;">Manajemen Rapot</h1>
-                <p style="color: var(--text-dim); font-size: 14px;">Pantau dan kelola nilai rapot seluruh siswa</p>
+    <div class="wrapper">
+        <header class="global-header">
+            <div class="top-bar-left">
+                <button id="menuToggle"><i class="fas fa-bars"></i></button>
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" placeholder="Cari data, menu, atau bantuan...">
+                </div>
             </div>
-            <div class="filter-group">
-                <select class="filter-select" id="filterKelas">
-                    <option value="">Semua Kelas</option>
-                </select>
-                <select class="filter-select" id="filterSemester">
-                    <option value="">Semua Semester</option>
-                    <option value="ganjil">Semester Ganjil</option>
-                    <option value="genap">Semester Genap</option>
-                </select>
-                <button class="btn-primary" onclick="exportRapot()">
-                    <span>Export</span>
-                </button>
+
+            <div class="header-actions">
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Admin</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                    <div class="user-avatar" id="userInitial">A</div>
+                </div>
             </div>
         </header>
 
-        <!-- Summary Cards -->
-        <div class="summary-cards">
-            <div class="summary-card">
-                <div class="icon blue">&#128218;</div>
-                <div class="value" id="totalRapot">24</div>
-                <div class="label">Total Rapot</div>
+        <main>
+            <div class="page-header">
+                <div class="header-title">
+                    <h1>Manajemen Rapot</h1>
+                    <p>Pantau dan kelola nilai rapot seluruh siswa</p>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <select class="filter-select" id="filterKelas">
+                        <option value="">Semua Kelas</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="alert('Export PDF...')"><i class="fas fa-file-export"></i> Export</button>
+                </div>
             </div>
-            <div class="summary-card">
-                <div class="icon green">&#10004;</div>
-                <div class="value" id="sudahInput">18</div>
-                <div class="label">Sudah Diinput</div>
-            </div>
-            <div class="summary-card">
-                <div class="icon yellow">&#9203;</div>
-                <div class="value" id="belumInput">6</div>
-                <div class="label">Belum Diinput</div>
-            </div>
-            <div class="summary-card">
-                <div class="icon red">&#9888;</div>
-                <div class="value" id="belumValidasi">4</div>
-                <div class="label">Perlu Validasi</div>
-            </div>
-        </div>
 
-        <!-- Rapot Table -->
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>NO</th>
-                        <th>NISN</th>
-                        <th>NAMA SISWA</th>
-                        <th>KELAS</th>
-                        <th>MATA PELAJARAN</th>
-                        <th>NILAI AKHIR</th>
-                        <th>GRADE</th>
-                        <th>STATUS</th>
-                        <th>AKSI</th>
-                    </tr>
-                </thead>
-                <tbody id="rapotTableBody">
-                    <!-- Data will be loaded here -->
-                </tbody>
-            </table>
-        </div>
-    </main>
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="icon blue"><i class="fas fa-book"></i></div>
+                    <div class="value" id="totalRapot">0</div>
+                    <div class="label">Total Rapot</div>
+                </div>
+                <div class="summary-card">
+                    <div class="icon green"><i class="fas fa-check-circle"></i></div>
+                    <div class="value" id="sudahInput">0</div>
+                    <div class="label">Sudah Diinput</div>
+                </div>
+                <div class="summary-card">
+                    <div class="icon yellow"><i class="fas fa-clock"></i></div>
+                    <div class="value" id="belumInput">0</div>
+                    <div class="label">Belum Diinput</div>
+                </div>
+                <div class="summary-card">
+                    <div class="icon red"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="value" id="belumValidasi">0</div>
+                    <div class="label">Perlu Validasi</div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>NO</th>
+                                <th>NISN</th>
+                                <th>NAMA SISWA</th>
+                                <th>KELAS</th>
+                                <th>MAPEL</th>
+                                <th>NILAI</th>
+                                <th>GRADE</th>
+                                <th>STATUS</th>
+                                <th>AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rapotTableBody">
+                            <tr><td colspan="9" style="text-align: center; padding: 40px;">Memuat data rapot...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <!-- Modal Detail Rapot -->
     <div class="modal-overlay" id="detailModal">
         <div class="modal">
-            <div class="modal-header">
-                <div>
-                    <h2 class="modal-title">Detail Rapot Siswa</h2>
-                    <p class="modal-subtitle">Lihat preview rapot lengkap semester ini</p>
-                </div>
-                <button class="btn-close" onclick="closeModal('detailModal')">&times;</button>
+            <div class="modal-header" style="display:flex; justify-content:space-between; margin-bottom:24px;">
+                <h2 class="modal-title">Detail Rapot Siswa</h2>
+                <button class="btn-close" onclick="document.getElementById('detailModal').classList.remove('active')" style="background:transparent; border:none; color:var(--text-dim); font-size:24px; cursor:pointer;">&times;</button>
             </div>
-            <div class="rapot-preview" id="rapotPreview">
-                <!-- Rapot content will be loaded here -->
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('detailModal')">Tutup</button>
-                <button class="btn-primary" onclick="printRapot()">Cetak Rapot</button>
+            <div id="rapotPreview"></div>
+            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                <button class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')">Tutup</button>
+                <button class="btn btn-primary" onclick="window.print()">Cetak</button>
             </div>
         </div>
     </div>
 
+    <script src="js/load-sidebar.js"></script>
     <script>
-        // Default rapot data
-        const defaultRapotData = [];
-
         let rapotData = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            document.getElementById('userName').textContent = user.nama || 'Admin';
+            document.getElementById('userInitial').textContent = (user.nama || 'A').charAt(0).toUpperCase();
+
+            await fetchRapot();
+            await loadClasses();
+        });
 
         async function fetchRapot() {
             try {
                 const data = await window.db.getAllNilai();
-                rapotData = data;
-            } catch (e) {
-                console.error("Gagal mengambil data:", e);
-                const stored = localStorage.getItem('sais_rapot_data');
-                rapotData = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(defaultRapotData));
-            }
-            renderTable();
-            updateSummary();
+                rapotData = data || [];
+                renderTable();
+                updateSummary();
+            } catch (e) { console.error(e); }
         }
 
-        function saveData() {
-            localStorage.setItem('sais_rapot_data', JSON.stringify(rapotData));
+        async function loadClasses() {
+            try {
+                const kelasList = await window.db.getAllKelas();
+                const filterKelas = document.getElementById('filterKelas');
+                kelasList.forEach(k => {
+                    const name = typeof k === 'object' ? k.nama : k;
+                    const opt = document.createElement('option');
+                    opt.value = name; opt.textContent = name;
+                    filterKelas.appendChild(opt);
+                });
+            } catch (e) { console.error(e); }
         }
 
-        function renderTable(filterKelas = '', filterSemester = '') {
-            const tableBody = document.getElementById('rapotTableBody');
-            tableBody.innerHTML = '';
+        function renderTable(filterKelas = '') {
+            const tbody = document.getElementById('rapotTableBody');
+            tbody.innerHTML = '';
+            
+            let filtered = rapotData;
+            if (filterKelas) filtered = filtered.filter(r => r.kelas === filterKelas);
 
-            let filteredData = rapotData;
-            if (filterKelas) {
-                filteredData = filteredData.filter(r => r.kelas === filterKelas);
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">Belum ada data rapot.</td></tr>';
+                return;
             }
 
-            filteredData.forEach((rapot, index) => {
+            filtered.forEach((r, i) => {
                 const tr = document.createElement('tr');
-                const gradeClass = rapot.grade === 'A' ? 'grade-a' : rapot.grade === 'B' ? 'grade-b' : rapot.grade === 'C' ? 'grade-c' : 'grade-d';
-                const statusClass = rapot.status === 'Sudah' ? 'status-sudah' : 'status-belum';
-
                 tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${rapot.nisn}</td>
-                    <td>${rapot.nama}</td>
-                    <td>${rapot.kelas}</td>
-                    <td>${rapot.mapel}</td>
-                    <td>${rapot.nilaiAkhir > 0 ? rapot.nilaiAkhir : '-'}</td>
-                    <td><span class="grade-badge ${gradeClass}">${rapot.grade}</span></td>
-                    <td><span class="status-badge ${statusClass}">${rapot.status}</span></td>
-                    <td>
-                        <button class="action-btn" onclick="viewDetail(${rapot.id})">Lihat</button>
-                    </td>
+                    <td>${i+1}</td>
+                    <td>${r.nisn}</td>
+                    <td style="font-weight:600;">${r.nama}</td>
+                    <td><span class="badge badge-purple">${r.kelas}</span></td>
+                    <td>${r.mapel}</td>
+                    <td>${r.nilaiAkhir || '-'}</td>
+                    <td><span class="grade-badge grade-${(r.grade || 'C').toLowerCase()}">${r.grade || '-'}</span></td>
+                    <td><span class="status-badge status-${(r.status || 'Belum').toLowerCase()}">${r.status || 'Belum'}</span></td>
+                    <td><button class="btn-action" style="padding:4px 10px; border-radius:8px; border:1px solid var(--border); background:transparent; color:white; cursor:pointer;" onclick="viewDetail(${r.id})">Lihat</button></td>
                 `;
-                tableBody.appendChild(tr);
+                tbody.appendChild(tr);
             });
         }
 
         function updateSummary() {
-            const total = rapotData.length;
-            const sudah = rapotData.filter(r => r.status === 'Sudah').length;
-            const belum = rapotData.filter(r => r.status === 'Belum').length;
-            const belumValidasi = rapotData.filter(r => r.nilaiAkhir < 75).length;
-
-            document.getElementById('totalRapot').textContent = total;
-            document.getElementById('sudahInput').textContent = sudah;
-            document.getElementById('belumInput').textContent = belum;
-            document.getElementById('belumValidasi').textContent = belumValidasi;
+            document.getElementById('totalRapot').textContent = rapotData.length;
+            document.getElementById('sudahInput').textContent = rapotData.filter(r => r.status === 'Sudah').length;
+            document.getElementById('belumInput').textContent = rapotData.filter(r => r.status === 'Belum').length;
+            document.getElementById('belumValidasi').textContent = rapotData.filter(r => (r.nilaiAkhir || 0) < 75).length;
         }
 
-        function viewDetail(id) {
-            const rapot = rapotData.find(r => r.id === id);
-            if (!rapot) return;
-
-            const siswaRapot = rapotData.filter(r => r.nisn === rapot.nisn);
-            const totalNilai = siswaRapot.reduce((sum, r) => sum + r.nilaiAkhir, 0);
-            const countNilai = siswaRapot.filter(r => r.nilaiAkhir > 0).length;
-            const rataRata = countNilai > 0 ? (totalNilai / countNilai).toFixed(1) : 0;
-
-            const preview = document.getElementById('rapotPreview');
-            preview.innerHTML = `
-                <div class="rapot-header">
-                    <h3>RAPOT SEMESTER GANJIL</h3>
-                    <p>SMP NEGERI 1 CONTOHHARI</p>
+        window.viewDetail = (id) => {
+            const r = rapotData.find(x => x.id === id);
+            if(!r) return;
+            document.getElementById('rapotPreview').innerHTML = `
+                <div style="text-align:center; border-bottom:2px solid var(--border); padding-bottom:20px; margin-bottom:20px;">
+                    <h3>RAPOT HASIL BELAJAR</h3>
+                    <p style="font-size:12px; color:var(--text-dim);">SMP NEGERI SAIS PROFESSIONAL</p>
                 </div>
-                <div class="rapot-student-info">
-                    <div class="info-item">
-                        <span>NISN</span>
-                        <strong>${rapot.nisn}</strong>
-                    </div>
-                    <div class="info-item">
-                        <span>Nama Siswa</span>
-                        <strong>${rapot.nama}</strong>
-                    </div>
-                    <div class="info-item">
-                        <span>Kelas</span>
-                        <strong>${rapot.kelas}</strong>
-                    </div>
-                    <div class="info-item">
-                        <span>Tahun Ajaran</span>
-                        <strong>2025/2026</strong>
-                    </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; font-size:13px; margin-bottom:20px;">
+                    <div><span style="color:var(--text-dim);">Nama:</span> <strong>${r.nama}</strong></div>
+                    <div><span style="color:var(--text-dim);">NISN:</span> <strong>${r.nisn}</strong></div>
+                    <div><span style="color:var(--text-dim);">Kelas:</span> <strong>${r.kelas}</strong></div>
+                    <div><span style="color:var(--text-dim);">Mapel:</span> <strong>${r.mapel}</strong></div>
                 </div>
-                <table class="rapot-table">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Mata Pelajaran</th>
-                            <th>Nilai</th>
-                            <th>Grade</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${siswaRapot.map((r, i) => `
-                            <tr>
-                                <td>${i + 1}</td>
-                                <td style="text-align: left;">${r.mapel}</td>
-                                <td>${r.nilaiAkhir > 0 ? r.nilaiAkhir : '-'}</td>
-                                <td><span class="grade-badge ${r.grade === 'A' ? 'grade-a' : r.grade === 'B' ? 'grade-b' : 'grade-c'}">${r.grade}</span></td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-                <div class="rapot-footer">
-                    <div class="rapot-stats">
-                        <div class="stat-box">
-                            <div class="label">Rata-rata</div>
-                            <div class="value">${rataRata}</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="label">Total Mapel</div>
-                            <div class="value">${siswaRapot.length}</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="label">Sudah Dinilai</div>
-                            <div class="value">${countNilai}</div>
-                        </div>
-                    </div>
-                    <div class="signature-section">
-                        <p>Mengetahui,</p>
-                        <p style="margin-top: 40px;">Kepala Sekolah</p>
-                    </div>
+                <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:16px; text-align:center;">
+                    <div style="font-size:12px; color:var(--text-dim);">Nilai Akhir</div>
+                    <div style="font-size:48px; font-weight:800; color:var(--accent);">${r.nilaiAkhir || 0}</div>
+                    <div style="font-size:18px; font-weight:600;">Grade: ${r.grade || '-'}</div>
                 </div>
             `;
-
             document.getElementById('detailModal').classList.add('active');
-        }
+        };
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        function exportRapot() {
-            alert('Fitur export dalam pengembangan.\nAkan menghasilkan file PDF/Excel.');
-        }
-
-        function printRapot() {
-            alert('Mencetak rapot...');
-        }
-
-        // Event listeners
-        document.getElementById('filterKelas').addEventListener('change', (e) => {
-            renderTable(e.target.value, document.getElementById('filterSemester').value);
-        });
-
-        document.getElementById('filterSemester').addEventListener('change', (e) => {
-            renderTable(document.getElementById('filterKelas').value, e.target.value);
-        });
-
-        // Close modal on outside click
-        window.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay')) {
-                e.target.classList.remove('active');
-            }
-        });
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', async function() {
-            const filterKelas = document.getElementById('filterKelas');
-            
-            // Load Classes dynamically from Neon DB
-            try {
-                const kelasList = await window.db.getAllKelas();
-                filterKelas.innerHTML = '<option value="">Semua Kelas</option>';
-                
-                if (kelasList && kelasList.length > 0) {
-                    kelasList.forEach(kelas => {
-                        const kelasName = (typeof kelas === 'object') ? (kelas.nama || '') : kelas;
-                        const option = document.createElement('option');
-                        option.value = kelasName;
-                        option.textContent = kelasName;
-                        filterKelas.appendChild(option);
-                    });
-                }
-            } catch (err) {
-                console.error("Gagal memuat kelas dari DB:", err);
-                filterKelas.innerHTML = `
-                    <option value="">Semua Kelas</option>
-                    <option value="VII-A">VII-A</option>
-                    <option value="VII-B">VII-B</option>
-                    <option value="VIII-A">VIII-A</option>
-                    <option value="VIII-B">VIII-B</option>
-                    <option value="IX-A">IX-A</option>
-                    <option value="IX-B">IX-B</option>
-                `;
-            }
-        });
-
-        fetchRapot();
+        document.getElementById('filterKelas').onchange = (e) => renderTable(e.target.value);
     </script>
-    <script src="js/load-sidebar.js"></script>
 </body>
 </html>

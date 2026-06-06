@@ -6,88 +6,16 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Pelajaran | SAIS</title>
+    <title>Manajemen Pelajaran | SAIS Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style_admin_shared.css">
     <style>
-        :root {
-            --primary: #2563eb;
-            --bg-main: #0f172a;
-            --bg-sidebar: #1e293b;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        body {
-            background: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Main Content */
-        main {
-            flex: 1;
-            margin-left: 260px;
-            padding: 40px;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-
-        .btn-add {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .table-container {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            overflow: hidden;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th {
-            padding: 16px 24px;
-            font-size: 13px;
-            color: var(--text-dim);
-            border-bottom: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        td {
-            padding: 16px 24px;
-            font-size: 14px;
-            border-bottom: 1px solid var(--border);
-        }
-
+        /* Specific management styles for Pelajaran */
         .subject-badge {
             padding: 4px 12px;
-            background: rgba(37, 99, 235, 0.1);
-            color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--accent);
             border-radius: 8px;
             font-size: 12px;
             font-weight: 600;
@@ -97,175 +25,110 @@
             padding: 6px 12px;
             border: 1px solid var(--border);
             background: transparent;
-            color: white;
+            color: var(--text-dim);
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 14px;
             cursor: pointer;
-            margin-right: 4px;
+            margin-right: 8px;
+            transition: all 0.3s;
         }
 
         .action-btn:hover {
-            background: var(--primary);
-            border-color: var(--primary);
+            color: var(--accent);
+            border-color: var(--accent);
         }
 
         /* Modal Styles */
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            backdrop-filter: blur(4px);
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000;
         }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
+        .modal-overlay.active { display: flex; }
         .modal {
-            background: var(--bg-sidebar);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 32px;
-            width: 100%;
-            max-width: 500px;
-            animation: slideUp 0.3s ease-out;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 32px; width: 100%; max-width: 500px;
         }
-
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .btn-close {
-            background: transparent;
-            border: none;
-            color: var(--text-dim);
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            color: var(--text-dim);
-            margin-bottom: 8px;
-        }
-
         .form-control {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            color: white;
-            outline: none;
-            transition: all 0.3s;
+            width: 100%; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border); border-radius: 12px; padding: 12px;
+            color: white; outline: none; transition: 0.3s;
         }
-
-        .form-control:focus {
-            border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .modal-footer {
-            margin-top: 24px;
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-
-        .btn-cancel {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-        }
-
-        .btn-save {
-            background: var(--primary);
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-        }
+        .form-control:focus { border-color: var(--accent); }
     </style>
 </head>
 <body data-page="pelajaran">
     <div id="sidebar-container"></div>
 
-    <main>
-        <header>
-            <div>
-                <h1 style="font-size: 24px; font-weight: 600;">Manajemen Mata Pelajaran</h1>
-                <p style="color: var(--text-dim); font-size: 14px;">Total 14 mata pelajaran terdaftar</p>
+    <div class="wrapper">
+        <header class="global-header">
+            <div class="top-bar-left">
+                <button id="menuToggle"><i class="fas fa-bars"></i></button>
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" placeholder="Cari data, menu, atau bantuan...">
+                </div>
             </div>
-            <button class="btn-add">+ Tambah Pelajaran</button>
+
+            <div class="header-actions">
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Admin</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                    <div class="user-avatar" id="userInitial">A</div>
+                </div>
+            </div>
         </header>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>KODE</th>
-                        <th>NAMA PELAJARAN</th>
-                        <th>KATEGORI</th>
-                        <th>JUMLAH GURU</th>
-                        <th>AKSI</th>
-                    </tr>
-                </thead>
-                <tbody id="pelajaranTableBody">
-                    <!-- Data akan dirender oleh JavaScript -->
-                </tbody>
-            </table>
-        </div>
-    </main>
+        <main>
+            <div class="page-header">
+                <div class="header-title">
+                    <h1>Manajemen Pelajaran</h1>
+                    <p id="totalPelajaranText">Total 0 mata pelajaran terdaftar</p>
+                </div>
+                <button class="btn btn-primary" id="btnTambahPelajaran"><i class="fas fa-plus"></i> Tambah Pelajaran</button>
+            </div>
+
+            <div class="content-card">
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>KODE</th>
+                                <th>NAMA PELAJARAN</th>
+                                <th>KATEGORI</th>
+                                <th>JUMLAH GURU</th>
+                                <th>AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pelajaranTableBody">
+                            <tr><td colspan="5" style="text-align: center; padding: 40px;">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <!-- Modal Tambah/Edit Pelajaran -->
     <div class="modal-overlay" id="modalPelajaran">
         <div class="modal">
-            <div class="modal-header">
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
                 <h2 class="modal-title" id="modalTitle">Tambah Pelajaran Baru</h2>
-                <button class="btn-close" id="btnCloseModal">&times;</button>
+                <button class="btn-close" id="btnCloseModal" style="background:transparent; border:none; color:var(--text-dim); font-size:24px; cursor:pointer;">&times;</button>
             </div>
             <form id="formPelajaran">
-                <div class="form-group">
-                    <label>Kode Pelajaran</label>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Kode Pelajaran</label>
                     <input type="text" class="form-control" id="inputKode" placeholder="Contoh: MTK, IPA" required>
                 </div>
-                <div class="form-group">
-                    <label>Nama Pelajaran</label>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Nama Pelajaran</label>
                     <input type="text" class="form-control" id="inputNama" placeholder="Contoh: Matematika" required>
                 </div>
-                <div class="form-group">
-                    <label>Kategori</label>
-                    <select class="form-control" id="inputKategori" style="background: var(--bg-main);">
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Kategori</label>
+                    <select class="form-control" id="inputKategori" style="background: var(--bg-body);">
                         <option value="Sains & Logika">Sains & Logika</option>
                         <option value="Bahasa & Sastra">Bahasa & Sastra</option>
                         <option value="Sains">Sains</option>
@@ -275,33 +138,29 @@
                         <option value="Teknologi">Teknologi</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Jumlah Guru</label>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Jumlah Guru</label>
                     <input type="number" class="form-control" id="inputJumlahGuru" placeholder="0" min="0">
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-cancel" id="btnBatal">Batal</button>
-                    <button type="submit" class="btn-save" id="btnSubmit">Simpan</button>
+                <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:32px;">
+                    <button type="button" class="btn btn-secondary" id="btnBatal">Batal</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmit">Simpan</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <script src="js/load-sidebar.js"></script>
     <script>
-        // Data Default
-        const defaultPelajaranData = [
-            { kode: 'MTK', nama: 'Matematika', kategori: 'Sains & Logika', guru: 4 },
-            { kode: 'BIND', nama: 'Bahasa Indonesia', kategori: 'Bahasa & Sastra', guru: 3 },
-            { kode: 'IPA', nama: 'Ilmu Pengetahuan Alam', kategori: 'Sains', guru: 5 },
-            { kode: 'BING', nama: 'Bahasa Inggris', kategori: 'Bahasa', guru: 2 }
-        ];
-
         let pelajaranData = [];
         let currentEditIndex = null;
 
-        // Load data
-        window.addEventListener('DOMContentLoaded', function() {
-            fetchPelajaran();
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            document.getElementById('userName').textContent = user.nama || 'Admin';
+            document.getElementById('userInitial').textContent = (user.nama || 'A').charAt(0).toUpperCase();
+
+            await fetchPelajaran();
             setupEventListeners();
         });
 
@@ -317,12 +176,7 @@
                 }));
             } catch (e) {
                 console.error("Gagal mengambil data:", e);
-                const stored = localStorage.getItem('sais_pelajaran_data');
-                if (stored) {
-                    pelajaranData = JSON.parse(stored);
-                } else {
-                    pelajaranData = JSON.parse(JSON.stringify(defaultPelajaranData));
-                }
+                pelajaranData = [];
             }
             renderTable();
         }
@@ -331,60 +185,29 @@
             const tbody = document.getElementById('pelajaranTableBody');
             tbody.innerHTML = '';
 
+            if (pelajaranData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">Belum ada data pelajaran.</td></tr>';
+            }
+
             pelajaranData.forEach((pel, index) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><span class="subject-badge">${pel.kode}</span></td>
-                    <td>${pel.nama}</td>
+                    <td style="font-weight: 600;">${pel.nama}</td>
                     <td>${pel.kategori}</td>
                     <td>${pel.guru} Guru</td>
                     <td>
-                        <button class="action-btn btn-edit" data-index="${index}">Edit</button>
-                        <button class="action-btn btn-hapus" data-index="${index}">Hapus</button>
+                        <button class="action-btn" onclick="editPelajaran(${index})"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn" style="color:#ef4444;" onclick="deletePelajaran(${index})"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // Update total count
-            document.querySelector('header p').textContent = `Total ${pelajaranData.length} mata pelajaran terdaftar`;
+            document.getElementById('totalPelajaranText').textContent = `Total ${pelajaranData.length} mata pelajaran terdaftar`;
         }
 
-        function saveAndRender() {
-            try {
-                localStorage.setItem('sais_pelajaran_data', JSON.stringify(pelajaranData));
-            } catch (e) {
-                console.error("Error saving to localStorage", e);
-            }
-            renderTable();
-        }
-
-        function setupEventListeners() {
-            // Tombol Tambah
-            document.querySelector('.btn-add').addEventListener('click', openAddModal);
-
-            // Modal
-            document.getElementById('btnCloseModal').addEventListener('click', closeModal);
-            document.getElementById('btnBatal').addEventListener('click', closeModal);
-            document.getElementById('modalPelajaran').addEventListener('click', function(e) {
-                if (e.target === this) closeModal();
-            });
-
-            // Form Submit
-            document.getElementById('formPelajaran').addEventListener('submit', handleSubmit);
-
-            // Table Actions
-            document.getElementById('pelajaranTableBody').addEventListener('click', handleTableClick);
-        }
-
-        function openAddModal() {
-            currentEditIndex = null;
-            document.getElementById('modalTitle').textContent = 'Tambah Pelajaran Baru';
-            document.getElementById('formPelajaran').reset();
-            document.getElementById('modalPelajaran').classList.add('active');
-        }
-
-        function openEditModal(index) {
+        window.editPelajaran = (index) => {
             currentEditIndex = index;
             const pel = pelajaranData[index];
             document.getElementById('modalTitle').textContent = 'Edit Pelajaran';
@@ -393,72 +216,49 @@
             document.getElementById('inputKategori').value = pel.kategori;
             document.getElementById('inputJumlahGuru').value = pel.guru;
             document.getElementById('modalPelajaran').classList.add('active');
-        }
+        };
 
-        function closeModal() {
-            document.getElementById('modalPelajaran').classList.remove('active');
-            document.getElementById('formPelajaran').reset();
-            currentEditIndex = null;
-        }
+        window.deletePelajaran = async (index) => {
+            if (confirm(`Hapus pelajaran "${pelajaranData[index].nama}"?`)) {
+                try {
+                    await window.db.deleteMapel(pelajaranData[index].id);
+                    await fetchPelajaran();
+                } catch (e) { alert('Gagal menghapus data.'); }
+            }
+        };
 
-        async function handleSubmit(e) {
-            e.preventDefault();
-
-            const newData = {
-                kode: document.getElementById('inputKode').value.toUpperCase(),
-                nama: document.getElementById('inputNama').value,
-                kategori: document.getElementById('inputKategori').value,
-                guru: parseInt(document.getElementById('inputJumlahGuru').value) || 0
+        function setupEventListeners() {
+            document.getElementById('btnTambahPelajaran').onclick = () => {
+                currentEditIndex = null;
+                document.getElementById('modalTitle').textContent = 'Tambah Pelajaran Baru';
+                document.getElementById('formPelajaran').reset();
+                document.getElementById('modalPelajaran').classList.add('active');
             };
 
-            try {
-                if (currentEditIndex !== null) {
-                    const pel = pelajaranData[currentEditIndex];
-                    await window.db.updateMapel(pel.id, newData);
-                    alert('Berhasil memperbarui pelajaran!');
-                } else {
-                    await window.db.insertMapel(newData);
-                    alert('Berhasil menambahkan pelajaran baru!');
-                }
-                await fetchPelajaran();
-                closeModal();
-            } catch (err) {
-                console.error('Save error:', err);
-                if (currentEditIndex !== null) {
-                    pelajaranData[currentEditIndex] = newData;
-                } else {
-                    pelajaranData.push(newData);
-                }
-                saveAndRender();
-                closeModal();
-            }
-        }
+            document.getElementById('btnCloseModal').onclick = document.getElementById('btnBatal').onclick = () => {
+                document.getElementById('modalPelajaran').classList.remove('active');
+            };
 
-        async function handleTableClick(e) {
-            const index = e.target.dataset.index;
-            if (index === undefined) return;
+            document.getElementById('formPelajaran').onsubmit = async (e) => {
+                e.preventDefault();
+                const newData = {
+                    singkatan: document.getElementById('inputKode').value.toUpperCase(),
+                    nama: document.getElementById('inputNama').value,
+                    deskripsi: document.getElementById('inputKategori').value,
+                    guru: parseInt(document.getElementById('inputJumlahGuru').value) || 0
+                };
 
-            const idx = parseInt(index, 10);
-            const pel = pelajaranData[idx];
-
-            if (e.target.classList.contains('btn-edit')) {
-                openEditModal(idx);
-            } else if (e.target.classList.contains('btn-hapus')) {
-                if (confirm(`Apakah Anda yakin ingin menghapus pelajaran "${pel.nama}"?`)) {
-                    try {
-                        await window.db.deleteMapel(pel.id);
-                        alert('Berhasil menghapus pelajaran!');
-                        await fetchPelajaran();
-                    } catch (err) {
-                        console.error('Delete error:', err);
-                        pelajaranData.splice(idx, 1);
-                        saveAndRender();
-                        alert('Berhasil menghapus pelajaran!');
+                try {
+                    if (currentEditIndex !== null) {
+                        await window.db.updateMapel(pelajaranData[currentEditIndex].id, newData);
+                    } else {
+                        await window.db.insertMapel(newData);
                     }
-                }
-            }
+                    await fetchPelajaran();
+                    document.getElementById('modalPelajaran').classList.remove('active');
+                } catch (err) { alert('Gagal menyimpan data.'); }
+            };
         }
     </script>
-    <script src="js/load-sidebar.js"></script>
 </body>
 </html>

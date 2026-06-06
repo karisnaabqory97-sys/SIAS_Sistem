@@ -6,333 +6,18 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jadwal & Kelas | SAIS</title>
+    <title>Manajemen Jadwal | SAIS Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style_admin_shared.css">
     <style>
-        :root {
-            --primary: #2563eb;
-            --bg-main: #0f172a;
-            --bg-sidebar: #1e293b;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
+        /* Specific management styles for Jadwal */
+        .builder-container {
+            display: flex; gap: 32px; background: var(--bg-card);
+            border: 1px solid var(--border); border-radius: 32px;
+            padding: 40px; min-height: 600px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        body {
-            background: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Main Content */
-        main {
-            flex: 1;
-            margin-left: 260px;
-            padding: 40px;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-
-        .btn-add {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--primary);
-        }
-
-        .btn-success {
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .btn-success:hover {
-            background: #059669;
-        }
-
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal {
-            background: #1e293b;
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 32px;
-            width: 100%;
-            max-width: 600px;
-            animation: slideUp 0.3s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .detail-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .detail-table th {
-            text-align: left;
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
-            color: var(--text-dim);
-            font-size: 13px;
-        }
-
-        .detail-table td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
-            font-size: 14px;
-        }
-
-        .filter-tabs {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .tab {
-            padding: 8px 20px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .tab.active {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
-
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 24px;
-        }
-
-        .class-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 24px;
-        }
-
-        .class-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .schedule-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            font-size: 14px;
-        }
-
-        .time {
-            color: var(--text-dim);
-            font-size: 12px;
-        }
-    </style>
-</head>
-<body data-page="jadwal">
-    <div id="sidebar-container"></div>
-
-    <main>
-        <header>
-            <div>
-                <h1 style="font-size: 24px; font-weight: 600;">Manajemen Jadwal Pelajaran</h1>
-                <p style="color: var(--text-dim); font-size: 14px;">Tarik mata pelajaran ke kolom jadwal yang tersedia.</p>
-            </div>
-            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                <select style="background: var(--bg-sidebar); border: 1px solid var(--border); color: white; padding: 10px 16px; border-radius: 12px; font-size: 13px; outline: none; cursor: pointer;">
-                    <option>Pilih Semester</option>
-                    <option>Semester Ganjil</option>
-                    <option>Semester Genap</option>
-                </select>
-                <select style="background: var(--bg-sidebar); border: 1px solid var(--border); color: white; padding: 10px 16px; border-radius: 12px; font-size: 13px; outline: none; cursor: pointer;">
-                    <option>Pilih Level</option>
-                    <option>Level VII</option>
-                    <option>Level VIII</option>
-                    <option>Level IX</option>
-                </select>
-                <select id="classSelector" style="background: var(--bg-sidebar); border: 1px solid var(--border); color: white; padding: 10px 16px; border-radius: 12px; font-size: 13px; outline: pointer; cursor: pointer;">
-                    <option value="">Pilih Kelas</option>
-                </select>
-                <button class="btn-secondary" onclick="resetJadwal()" style="border-color: #ef4444; color: #ef4444;">🔄 Reset Jadwal</button>
-                <button class="btn-success" onclick="simulateAction('Jadwal Berhasil Disimpan!')">💾 Simpan</button>
-            </div>
-        </header>
-
-        <div style="display: flex; gap: 32px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 32px; padding: 40px; min-height: 600px;">
-            <!-- Draggable Subjects -->
-            <div style="width: 240px; background: rgba(0,0,0,0.2); border-radius: 24px; padding: 24px; border: 1px solid var(--border);">
-                <h4 style="font-size: 12px; color: var(--primary); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;">Mata Pelajaran</h4>
-                <div id="subjectList" style="display: flex; flex-direction: column; gap: 12px;">
-                    <!-- Will be loaded dynamically from DB -->
-                </div>
-                <button onclick="addSubject()" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='white'" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-dim)'" style="width: 100%; margin-top: 16px; background: transparent; border: 1px dashed var(--border); color: var(--text-dim); padding: 12px; border-radius: 12px; cursor: pointer; transition: 0.3s; font-size: 13px;">+ Tambah Mapel</button>
-            </div>
-
-            <!-- Weekly Grid -->
-            <div style="flex: 1;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                    <h3 id="builderTitle" style="font-size: 20px;">Jadwal Builder - VII-A</h3>
-                    <button onclick="addTimeSlot()" class="btn-secondary" style="font-size: 12px; padding: 8px 16px;">+ Tambah Jam</button>
-                </div>
-                <table class="builder-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 140px;">Jam</th>
-                            <th>Senin</th>
-                            <th>Selasa</th>
-                            <th>Rabu</th>
-                            <th>Kamis</th>
-                            <th>Jumat</th>
-                            <th style="width: 100px;">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="builderBody">
-                        <tr>
-                            <td class="time-col">
-                                <div class="time-range">
-                                    <input type="time" value="07:00" class="time-input">
-                                    <span>-</span>
-                                    <input type="time" value="08:30" class="time-input">
-                                </div>
-                            </td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td style="text-align: center; border: 1px solid var(--border);">
-                                <button onclick="simulateAction('Mode Edit Jam Aktif')" style="background: transparent; border: none; color: var(--text-dim); cursor: pointer; padding: 4px;" title="Edit">✏️</button>
-                                <button onclick="this.closest('tr').remove()" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 4px;" title="Hapus">🗑️</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="time-col">
-                                <div class="time-range">
-                                    <input type="time" value="08:30" class="time-input">
-                                    <span>-</span>
-                                    <input type="time" value="10:00" class="time-input">
-                                </div>
-                            </td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td style="text-align: center; border: 1px solid var(--border);">
-                                <button onclick="simulateAction('Mode Edit Jam Aktif')" style="background: transparent; border: none; color: var(--text-dim); cursor: pointer; padding: 4px;" title="Edit">✏️</button>
-                                <button onclick="this.closest('tr').remove()" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 4px;" title="Hapus">🗑️</button>
-                            </td>
-                        </tr>
-                        <tr id="breakRow">
-                            <td class="time-col">
-                                <div class="time-range">
-                                    <input type="time" value="10:00" class="time-input">
-                                    <span>-</span>
-                                    <input type="time" value="10:30" class="time-input">
-                                </div>
-                            </td>
-                            <td colspan="5" style="text-align: center; background: rgba(255,255,255,0.03); font-size: 11px; color: var(--text-dim); border: 1px solid var(--border); padding: 8px;">ISTIRAHAT</td>
-                            <td style="text-align: center; border: 1px solid var(--border);"></td>
-                        </tr>
-                        <tr>
-                            <td class="time-col">
-                                <div class="time-range">
-                                    <input type="time" value="10:30" class="time-input">
-                                    <span>-</span>
-                                    <input type="time" value="12:00" class="time-input">
-                                </div>
-                            </td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                            <td style="text-align: center; border: 1px solid var(--border);">
-                                <button onclick="simulateAction('Mode Edit Jam Aktif')" style="background: transparent; border: none; color: var(--text-dim); cursor: pointer; padding: 4px;" title="Edit">✏️</button>
-                                <button onclick="this.closest('tr').remove()" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 4px;" title="Hapus">🗑️</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
-    <style>
         .drag-item {
             background: rgba(255,255,255,0.05);
             padding: 14px 20px;
@@ -348,270 +33,218 @@
         .drag-item:active { cursor: grabbing; transform: scale(0.95); }
         .drag-item:hover { 
             background: rgba(255,255,255,0.1);
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
         }
 
         .builder-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
+            width: 100%; border-collapse: collapse; table-layout: fixed;
         }
         .builder-table th {
-            font-size: 13px;
-            color: var(--text-dim);
-            padding: 16px;
-            border: 1px solid var(--border);
+            font-size: 13px; color: var(--text-dim);
+            padding: 16px; border: 1px solid var(--border);
             font-weight: 500;
         }
         .time-col {
-            font-size: 12px;
-            color: var(--text-dim);
+            font-size: 12px; color: var(--text-dim);
             background: rgba(255,255,255,0.02);
-            text-align: center;
-            border: 1px solid var(--border);
+            text-align: center; border: 1px solid var(--border);
             padding: 8px 4px;
         }
-        input[type="time"]::-webkit-calendar-picker-indicator {
-            display: none;
-            -webkit-appearance: none;
-        }
-        .time-range {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-        }
-        .time-input {
-            background: transparent;
-            border: 1px solid transparent;
-            color: white;
-            border-radius: 4px;
-            width: 80px;
-            text-align: center;
-            font-size: 12px;
-            outline: none;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .time-input:hover, .time-input:focus {
-            border-color: var(--primary);
-            background: rgba(0,0,0,0.2);
-        }
         .drop-zone {
-            height: 100px;
-            border: 1px solid var(--border);
-            transition: 0.3s;
-            padding: 8px;
-            vertical-align: top;
+            height: 100px; border: 1px solid var(--border);
+            transition: 0.3s; padding: 8px; vertical-align: top;
         }
-        .drop-zone:hover {
-            background: rgba(37, 99, 235, 0.05);
+        .drop-zone:hover { background: rgba(108, 99, 255, 0.05); }
+
+        .time-input {
+            background: transparent; border: 1px solid transparent;
+            color: white; border-radius: 4px; width: 70px;
+            text-align: center; font-size: 12px; outline: none;
+            cursor: pointer; transition: 0.3s;
         }
+        .time-input:hover, .time-input:focus { border-color: var(--accent); background: rgba(0,0,0,0.2); }
+
         .dropped-item {
-            background: var(--primary);
-            color: white;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 12px;
-            text-align: center;
-            position: relative;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: var(--accent); color: white; padding: 10px;
+            border-radius: 10px; font-size: 12px; text-align: center;
+            position: relative; animation: popIn 0.3s;
         }
-        @keyframes popIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .remove-drop {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            background: #ef4444;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: absolute; top: -6px; right: -6px; background: #ef4444;
+            width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; cursor: pointer;
+        }
+
+        .filter-select {
+            background: var(--bg-body); border: 1px solid var(--border);
+            color: white; padding: 10px 16px; border-radius: 12px;
+            font-size: 13px; outline: none; cursor: pointer;
         }
     </style>
+</head>
+<body data-page="jadwal">
+    <div id="sidebar-container"></div>
 
+    <div class="wrapper">
+        <header class="global-header">
+            <div class="top-bar-left">
+                <button id="menuToggle"><i class="fas fa-bars"></i></button>
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" placeholder="Cari data, menu, atau bantuan...">
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Admin</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                    <div class="user-avatar" id="userInitial">A</div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="page-header">
+                <div class="header-title">
+                    <h1>Manajemen Jadwal</h1>
+                    <p>Tarik mata pelajaran ke kolom jadwal yang tersedia.</p>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <select class="filter-select">
+                        <option>Semester Ganjil</option>
+                        <option>Semester Genap</option>
+                    </select>
+                    <select class="filter-select" id="classSelector">
+                        <option value="">Pilih Kelas</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="resetJadwal()" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.2);">🔄 Reset</button>
+                    <button class="btn btn-success" onclick="saveJadwal()">💾 Simpan Jadwal</button>
+                </div>
+            </div>
+
+            <div class="builder-container">
+                <!-- Draggable Subjects -->
+                <div style="width: 240px; background: rgba(0,0,0,0.2); border-radius: 24px; padding: 24px; border: 1px solid var(--border);">
+                    <h4 style="font-size: 12px; color: var(--accent); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;">Mata Pelajaran</h4>
+                    <div id="subjectList" style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- Will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Weekly Grid -->
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h3 id="builderTitle" style="font-size: 20px;">Jadwal Builder</h3>
+                        <button onclick="addTimeSlot()" class="btn btn-secondary" style="font-size: 11px;">+ Tambah Jam</button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="builder-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 140px;">Jam</th>
+                                    <th>Senin</th>
+                                    <th>Selasa</th>
+                                    <th>Rabu</th>
+                                    <th>Kamis</th>
+                                    <th>Jumat</th>
+                                    <th style="width: 80px;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="builderBody">
+                                <!-- Default slots -->
+                                <tr>
+                                    <td class="time-col">
+                                        <div style="display:flex; align-items:center; gap:2px; justify-content:center;">
+                                            <input type="time" value="07:30" class="time-input">
+                                            <span>-</span>
+                                            <input type="time" value="09:00" class="time-input">
+                                        </div>
+                                    </td>
+                                    <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
+                                    <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
+                                    <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
+                                    <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
+                                    <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
+                                    <td style="text-align:center; border: 1px solid var(--border);">
+                                        <button onclick="this.closest('tr').remove()" style="background:transparent; border:none; color:#ef4444; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/load-sidebar.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
-            const classSelector = document.getElementById('classSelector');
-            const subjectList = document.getElementById('subjectList');
+            const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            document.getElementById('userName').textContent = user.nama || 'Admin';
+            document.getElementById('userInitial').textContent = (user.nama || 'A').charAt(0).toUpperCase();
 
-            // Set up onchange for class selector
-            classSelector.addEventListener('change', function() {
-                updateBuilderTitle(this.value || 'Pilih Kelas');
-            });
-
-            // 1. Load Classes dynamically from Neon DB
-            try {
-                const kelasList = await window.db.getAllKelas();
-                classSelector.innerHTML = '<option value="">Pilih Kelas</option>';
-                
-                if (kelasList && kelasList.length > 0) {
-                    kelasList.forEach(kelas => {
-                        const kelasName = (typeof kelas === 'object') ? (kelas.nama || '') : kelas;
-                        const option = document.createElement('option');
-                        option.value = kelasName;
-                        option.textContent = kelasName;
-                        classSelector.appendChild(option);
-                    });
-                } else {
-                    const option = document.createElement('option');
-                    option.value = "";
-                    option.textContent = "Belum ada kelas";
-                    classSelector.appendChild(option);
-                }
-            } catch (err) {
-                console.error("Gagal memuat kelas dari DB:", err);
-                classSelector.innerHTML = `
-                    <option value="">Pilih Kelas</option>
-                    <option value="VII-A">VII-A</option>
-                    <option value="VII-B">VII-B</option>
-                    <option value="VIII-A">VIII-A</option>
-                `;
-            }
-
-            // 2. Load Subjects dynamically from Neon DB
-            try {
-                const mapelList = await window.db.getAllMapel();
-                subjectList.innerHTML = '';
-
-                if (mapelList && mapelList.length > 0) {
-                    mapelList.forEach(mapel => {
-                        const name = mapel.nama || '';
-                        
-                        const item = document.createElement('div');
-                        item.className = 'drag-item';
-                        item.draggable = true;
-                        item.ondragstart = drag;
-                        item.setAttribute('data-name', name);
-                        
-                        // Map standard emojis based on subject name
-                        let emoji = '📚';
-                        const lowerName = name.toLowerCase();
-                        if (lowerName.includes('matematika') || lowerName.includes('mtk')) emoji = '📐';
-                        else if (lowerName.includes('ipa') || lowerName.includes('sains') || lowerName.includes('fisika') || lowerName.includes('biologi')) emoji = '🧪';
-                        else if (lowerName.includes('indonesia')) emoji = '📖';
-                        else if (lowerName.includes('inggris')) emoji = '🌍';
-                        else if (lowerName.includes('ips') || lowerName.includes('sejarah') || lowerName.includes('geografi')) emoji = '🏛️';
-                        else if (lowerName.includes('olahraga') || lowerName.includes('jasmani') || lowerName.includes('pjok')) emoji = '🏀';
-                        else if (lowerName.includes('seni') || lowerName.includes('musik') || lowerName.includes('budaya')) emoji = '🎨';
-                        else if (lowerName.includes('komputer') || lowerName.includes('informatika') || lowerName.includes('tik')) emoji = '💻';
-                        else if (lowerName.includes('agama')) emoji = '🕌';
-                        
-                        item.innerHTML = `${emoji} ${name}`;
-                        subjectList.appendChild(item);
-                    });
-                } else {
-                    subjectList.innerHTML = '<p style="color: var(--text-dim); font-size: 11px; text-align: center; padding: 10px;">Belum ada mapel. Silakan tambahkan di Manajemen Pelajaran.</p>';
-                }
-            } catch (err) {
-                console.error("Gagal memuat mapel dari DB:", err);
-                subjectList.innerHTML = `
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="Matematika">📐 Matematika</div>
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="IPA">🧪 IPA</div>
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="B. Indonesia">📖 B. Indonesia</div>
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="B. Inggris">🌍 B. Inggris</div>
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="IPS">🏛️ IPS</div>
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="PJOK">🏀 PJOK</div>
-                    <div class="drag-item" draggable="true" ondragstart="drag(event)" data-name="Seni Budaya">🎨 Seni Budaya</div>
-                `;
-            }
+            await loadInitialData();
         });
 
-        function simulateAction(msg) {
-            alert(msg);
+        async function loadInitialData() {
+            try {
+                // Load Classes
+                const kelasList = await window.db.getAllKelas();
+                const classSelector = document.getElementById('classSelector');
+                kelasList.forEach(k => {
+                    const name = typeof k === 'object' ? k.nama : k;
+                    const opt = document.createElement('option');
+                    opt.value = name; opt.textContent = name;
+                    classSelector.appendChild(opt);
+                });
+
+                // Load Subjects
+                const mapelList = await window.db.getAllMapel();
+                const subjectList = document.getElementById('subjectList');
+                mapelList.forEach(m => {
+                    const item = document.createElement('div');
+                    item.className = 'drag-item';
+                    item.draggable = true;
+                    item.ondragstart = (e) => e.dataTransfer.setData("text", m.nama);
+                    item.innerHTML = `📚 ${m.nama}`;
+                    subjectList.appendChild(item);
+                });
+            } catch (e) { console.error(e); }
         }
 
-        function handleFileUpload(input) {
-            if (input.files && input.files[0]) {
-                const fileName = input.files[0].name;
-                alert(`File "${fileName}" berhasil dipilih. Mengunggah data ke sistem...`);
-                setTimeout(() => {
-                    alert('Data massal dari file berhasil diproses dan ditambahkan ke jadwal!');
-                }, 1000);
-            }
-        }
-
-        function allowDrop(ev) {
-            ev.preventDefault();
-        }
-
-        function drag(ev) {
-            ev.dataTransfer.setData("text", ev.target.getAttribute('data-name'));
-        }
-
-        function drop(ev) {
+        window.allowDrop = (ev) => ev.preventDefault();
+        window.drop = (ev) => {
             ev.preventDefault();
             const data = ev.dataTransfer.getData("text");
             const dropZone = ev.target.closest('.drop-zone');
-            
             if (dropZone) {
-                dropZone.innerHTML = `
-                    <div class="dropped-item">
-                        ${data}
-                        <span class="remove-drop" onclick="this.parentElement.remove()">×</span>
-                    </div>
-                `;
+                dropZone.innerHTML = `<div class="dropped-item">${data}<span class="remove-drop" onclick="this.parentElement.remove()">×</span></div>`;
             }
-        }
+        };
 
-        function updateBuilderTitle(val) {
-            document.getElementById('builderTitle').innerText = 'Jadwal Builder - ' + val;
-        }
-
-        function addSubject() {
-            const subjectName = prompt('Masukkan nama Mata Pelajaran baru beserta ikon (contoh: 💻 TIK):');
-            if (subjectName && subjectName.trim() !== '') {
-                const list = document.getElementById('subjectList');
-                const newItem = document.createElement('div');
-                newItem.className = 'drag-item';
-                newItem.draggable = true;
-                newItem.ondragstart = drag;
-                newItem.setAttribute('data-name', subjectName.trim());
-                newItem.innerText = subjectName.trim();
-                list.appendChild(newItem);
-            }
-        }
-
-        function addTimeSlot() {
-            const body = document.getElementById('builderBody');
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td class="time-col">
-                    <div class="time-range">
-                        <input type="time" value="12:00" class="time-input">
-                        <span>-</span>
-                        <input type="time" value="13:30" class="time-input">
-                    </div>
-                </td>
+        window.addTimeSlot = () => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="time-col"><div style="display:flex; align-items:center; gap:2px; justify-content:center;"><input type="time" class="time-input"><span>-</span><input type="time" class="time-input"></div></td>
                 <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
                 <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
                 <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
                 <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
                 <td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></td>
-                <td style="text-align: center; border: 1px solid var(--border);">
-                    <button onclick="simulateAction('Mode Edit Jam Aktif')" style="background: transparent; border: none; color: var(--text-dim); cursor: pointer; padding: 4px;" title="Edit">✏️</button>
-                    <button onclick="this.closest('tr').remove()" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 4px;" title="Hapus">🗑️</button>
-                </td>
+                <td style="text-align:center; border: 1px solid var(--border);"><button onclick="this.closest('tr').remove()" style="background:transparent; border:none; color:#ef4444; cursor:pointer;"><i class="fas fa-trash"></i></button></td>
             `;
-            body.appendChild(newRow);
-        }
+            document.getElementById('builderBody').appendChild(tr);
+        };
 
-        function resetJadwal() {
-            if (confirm('Apakah Anda yakin ingin meriset seluruh jadwal untuk kelas ini?')) {
-                const zones = document.querySelectorAll('.drop-zone');
-                zones.forEach(zone => zone.innerHTML = '');
-            }
-        }
+        window.resetJadwal = () => { if(confirm('Riset jadwal?')) document.querySelectorAll('.drop-zone').forEach(z => z.innerHTML = ''); };
+        window.saveJadwal = () => alert('Jadwal berhasil disimpan!');
     </script>
-    <script src="js/load-sidebar.js"></script>
 </body>
 </html>
