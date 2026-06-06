@@ -6,534 +6,158 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Informasi | SAIS</title>
+    <title>Manajemen Informasi | SAIS Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style_admin_shared.css">
     <style>
-        :root {
-            --primary: #2563eb;
-            --bg-main: #0f172a;
-            --bg-sidebar: #1e293b;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        body {
-            background: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Main Content */
-        main {
-            flex: 1;
-            margin-left: 260px;
-            padding: 40px;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-
-        .search-bar {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 16px;
-            width: 300px;
-            color: white;
-            outline: none;
-        }
-
-        /* Table Styles */
-        .table-container {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            overflow: hidden;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th {
-            background: rgba(255, 255, 255, 0.02);
-            padding: 16px 24px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-dim);
-            border-bottom: 1px solid var(--border);
-        }
-
-        td {
-            padding: 16px 24px;
-            font-size: 14px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        .status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
+        /* Specific styles for Informasi */
         .status-aktif { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-        .status-nonaktif { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .status-nonaktif { background: rgba(239, 68, 68, 0.1); color: #f87171; }
         
         .action-btn {
-            padding: 6px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text-main);
-            cursor: pointer;
-            font-size: 12px;
-            margin-right: 4px;
+            padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border);
+            background: transparent; color: var(--text-dim); cursor: pointer;
+            font-size: 14px; margin-right: 4px; transition: 0.3s;
         }
+        .action-btn:hover { color: var(--accent); border-color: var(--accent); }
 
-        .action-btn:hover {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
-
-        .btn-add {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--primary);
-        }
-
-        .btn-success {
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .btn-success:hover {
-            background: #059669;
-        }
-
-        /* Modal Styles */
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            backdrop-filter: blur(4px);
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000;
         }
-
+        .modal-overlay.active { display: flex; }
         .modal {
-            background: #1e293b;
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 32px;
-            width: 100%;
-            max-width: 500px;
-            animation: slideUp 0.3s ease-out;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 32px; width: 100%; max-width: 500px;
         }
-
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            margin-bottom: 24px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            color: var(--text-dim);
-            margin-bottom: 8px;
-        }
-
         .form-control {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            color: white;
-            outline: none;
-        }
-
-        textarea.form-control {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .modal-footer {
-            margin-top: 32px;
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-
-        .btn-cancel {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-        }
-
-        .btn-save {
-            background: var(--primary);
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
+            width: 100%; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border); border-radius: 12px; padding: 12px;
+            color: white; outline: none; margin-bottom: 16px;
         }
     </style>
 </head>
 <body data-page="informasi">
     <div id="sidebar-container"></div>
 
-    <main>
-        <header>
-            <div>
-                <h1 style="font-size: 24px; font-weight: 600;">Manajemen Informasi</h1>
-                <p style="color: var(--text-dim); font-size: 14px;">Mengelola Pengumuman & Berita Sekolah</p>
+    <div class="wrapper">
+        <header class="global-header">
+            <div class="top-bar-left">
+                <button id="menuToggle"><i class="fas fa-bars"></i></button>
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" placeholder="Cari informasi...">
+                </div>
             </div>
-            <div style="display: flex; gap: 16px; align-items: center; width: 100%; margin-top: 20px;">
-                <input type="text" class="search-bar" placeholder="Cari informasi..." style="flex: 1;">
-                <div style="display: flex; gap: 12px;">
-                    <button class="btn-success" id="btnSimpan">💾 Simpan</button>
-                    <button class="btn-add" id="openAddModal" style="margin-left: 12px;">+ Tambah Informasi</button>
+
+            <div class="header-actions">
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Admin</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                    <div class="user-avatar" id="userInitial">A</div>
                 </div>
             </div>
         </header>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>TANGGAL</th>
-                        <th>JUDUL PENGUMUMAN</th>
-                        <th>SASARAN / PERUNTUKAN</th>
-                        <th>STATUS</th>
-                        <th>AKSI</th>
-                    </tr>
-                </thead>
-                <tbody id="infoTableBody">
-                    <!-- JavaScript will render data here -->
-                </tbody>
-            </table>
-        </div>
-    </main>
+        <main>
+            <div class="page-header">
+                <div class="header-title">
+                    <h1>Manajemen Informasi</h1>
+                    <p>Kelola Pengumuman & Berita Sekolah</p>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-success" id="btnSimpan">💾 Simpan</button>
+                    <button class="btn btn-primary" id="openAddModal"><i class="fas fa-plus"></i> Tambah Informasi</button>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>TANGGAL</th>
+                                <th>JUDUL PENGUMUMAN</th>
+                                <th>SASARAN</th>
+                                <th>STATUS</th>
+                                <th>AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="infoTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <!-- Modal Tambah/Edit Informasi -->
     <div class="modal-overlay" id="infoModal">
         <div class="modal">
-            <div class="modal-header">
-                <h2 id="modalTitle">Tambah Informasi Baru</h2>
-                <p style="color: var(--text-dim); font-size: 14px;">Masukkan pengumuman resmi sekolah.</p>
-            </div>
+            <h2 id="modalTitle" style="margin-bottom: 24px;">Tambah Informasi Baru</h2>
             <form id="infoForm">
-                <div class="form-group">
-                    <label>Tanggal</label>
-                    <input type="date" class="form-control" id="infoDate" required>
-                </div>
-                <div class="form-group">
-                    <label>Judul Pengumuman</label>
-                    <input type="text" class="form-control" id="infoTitle" placeholder="Contoh: Persiapan Ujian Tengah Semester" required>
-                </div>
-                <div class="form-group">
-                    <label>Isi Detail Pengumuman</label>
-                    <textarea class="form-control" id="infoContent" placeholder="Isi pengumuman lengkap..." required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Sasaran / Peruntukan</label>
-                    <select class="form-control" id="infoTarget" style="background: #0f172a;">
-                        <option value="Semua">Semua Warga Sekolah</option>
-                        <option value="Siswa">Khusus Siswa & Orang Tua</option>
-                        <option value="Guru">Khusus Guru / Wali Kelas</option>
-                    </select>
-                </div>
-                <div class="form-group" id="statusGroup" style="display: none;">
-                    <label>Status</label>
-                    <select class="form-control" id="infoStatus" style="background: #0f172a;">
-                        <option value="Aktif">Aktif (Tampil)</option>
-                        <option value="Nonaktif">Nonaktif (Arsip)</option>
-                    </select>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-cancel" id="closeModal">Batal</button>
-                    <button type="submit" class="btn-save">Simpan</button>
+                <label style="font-size:12px; color:var(--text-dim);">Tanggal</label>
+                <input type="date" class="form-control" id="infoDate" required>
+                
+                <label style="font-size:12px; color:var(--text-dim);">Judul</label>
+                <input type="text" class="form-control" id="infoTitle" required>
+                
+                <label style="font-size:12px; color:var(--text-dim);">Isi Pengumuman</label>
+                <textarea class="form-control" id="infoContent" style="min-height:100px;" required></textarea>
+                
+                <label style="font-size:12px; color:var(--text-dim);">Sasaran</label>
+                <select class="form-control" id="infoTarget">
+                    <option value="Semua">Semua</option>
+                    <option value="Siswa">Siswa</option>
+                    <option value="Guru">Guru</option>
+                </select>
+
+                <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px;">
+                    <button type="button" class="btn btn-secondary" id="closeModal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <script src="js/load-sidebar.js"></script>
     <script>
-        const defaultInfo = [
-            { tanggal: '2026-05-28', judul: 'Persiapan Ujian Tengah Semester', isi: 'Jadwal UTS telah diperbarui, silakan cek menu jadwal.', sasaran: 'Semua', status: 'Aktif' },
-            { tanggal: '2026-05-25', judul: 'Rapat Komite Sekolah', isi: 'Rapat akan diadakan hari Sabtu pukul 09:00 WIB di aula sekolah.', sasaran: 'Guru', status: 'Aktif' },
-            { tanggal: '2026-05-20', judul: 'Lomba Hari Pendidikan Nasional', isi: 'Berbagai lomba akademik dan olahraga akan diselenggarakan.', sasaran: 'Siswa', status: 'Aktif' }
-        ];
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            document.getElementById('userName').textContent = user.nama || 'Admin';
+            document.getElementById('userInitial').textContent = (user.nama || 'A').charAt(0).toUpperCase();
 
-        let infoData = [];
-        const tableBody = document.getElementById('infoTableBody');
-        const searchBar = document.querySelector('.search-bar');
+            await fetchInfo();
+        });
 
-        // Database Adaptor
         async function fetchInfo() {
             try {
                 const data = await window.db.getAllInformasi();
-                infoData = data;
-            } catch (e) {
-                console.error("Gagal mengambil data:", e);
-                // LocalStorage Fallback
-                try {
-                    const stored = localStorage.getItem('sais_dataInformasi');
-                    if (stored) {
-                        infoData = JSON.parse(stored);
-                    } else {
-                        infoData = JSON.parse(JSON.stringify(defaultInfo));
-                    }
-                } catch (e2) {
-                    infoData = JSON.parse(JSON.stringify(defaultInfo));
-                }
-            }
-            renderTable(searchBar.value);
+                const tbody = document.getElementById('infoTableBody');
+                tbody.innerHTML = data.map(i => `
+                    <tr>
+                        <td>${i.tanggal}</td>
+                        <td>
+                            <div style="font-weight:600;">${i.judul}</div>
+                            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">${i.isi.substring(0, 50)}...</div>
+                        </td>
+                        <td><span class="badge badge-purple">${i.sasaran}</span></td>
+                        <td><span class="badge badge-success">Aktif</span></td>
+                        <td>
+                            <button class="action-btn"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn" style="color:#ef4444;"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
         }
 
-        function saveAndRender() {
-            try {
-                localStorage.setItem('sais_dataInformasi', JSON.stringify(infoData));
-            } catch (e) { console.error("Error saving to localStorage", e); }
-            renderTable(searchBar.value);
-        }
-
-        function formatDate(dateStr) {
-            const parts = dateStr.split('-');
-            if (parts.length === 3) {
-                return `${parts[2]}/${parts[1]}/${parts[0]}`;
-            }
-            return dateStr;
-        }
-
-        function renderTable(filterQuery = '') {
-            tableBody.innerHTML = '';
-            const lowerQuery = filterQuery.toLowerCase();
-
-            infoData.forEach((info, index) => {
-                const rowText = `${info.tanggal} ${info.judul} ${info.sasaran} ${info.status}`.toLowerCase();
-                if (filterQuery && !rowText.includes(lowerQuery)) return;
-
-                const tr = document.createElement('tr');
-                tr.dataset.index = index;
-                tr.innerHTML = `
-                    <td>${formatDate(info.tanggal)}</td>
-                    <td>
-                        <div style="font-weight: 600;">${info.judul}</div>
-                        <div style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">${info.isi}</div>
-                    </td>
-                    <td>${info.sasaran}</td>
-                    <td><span class="status status-${info.status.toLowerCase() === 'aktif' ? 'aktif' : 'nonaktif'}">${info.status}</span></td>
-                    <td>
-                        <button class="action-btn btn-edit">Edit</button>
-                        <button class="action-btn btn-hapus">Hapus</button>
-                    </td>
-                `;
-                tableBody.appendChild(tr);
-            });
-        }
-
-        fetchInfo();
-
-        document.getElementById('btnSimpan').addEventListener('click', () => {
-            if (window.isSupabaseConfigured && window.isSupabaseConfigured()) {
-                alert('Informasi: Data Pengumuman telah otomatis disinkronkan secara aman ke cloud database Supabase!');
-            } else {
-                saveAndRender();
-                alert('Semua perubahan informasi berhasil disimpan secara lokal!');
-            }
-        });
-
-        // Modal Logic
-        const modal = document.getElementById('infoModal');
-        const openModalBtn = document.getElementById('openAddModal');
-        const closeModalBtn = document.getElementById('closeModal');
-        const form = document.getElementById('infoForm');
-        let currentEditIndex = null;
-
-        openModalBtn.addEventListener('click', () => {
-            currentEditIndex = null;
-            document.getElementById('modalTitle').innerText = 'Tambah Informasi Baru';
-            document.getElementById('statusGroup').style.display = 'none';
-            form.reset();
-            // Set default date to today
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('infoDate').value = today;
-            modal.style.display = 'flex';
-        });
-
-        closeModalBtn.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-
-        // Edit and Hapus events
-        tableBody.addEventListener('click', async (e) => {
-            const tr = e.target.closest('tr');
-            if (!tr) return;
-            const index = parseInt(tr.dataset.index, 10);
-            const info = infoData[index];
-
-            if (e.target.classList.contains('btn-edit')) {
-                currentEditIndex = index;
-                document.getElementById('modalTitle').innerText = 'Edit Informasi';
-                document.getElementById('statusGroup').style.display = 'block';
-
-                document.getElementById('infoDate').value = info.tanggal;
-                document.getElementById('infoTitle').value = info.judul;
-                document.getElementById('infoContent').value = info.isi;
-                document.getElementById('infoTarget').value = info.sasaran;
-                document.getElementById('infoStatus').value = info.status;
-
-                modal.style.display = 'flex';
-            } else if (e.target.classList.contains('btn-hapus')) {
-                if (confirm(`Apakah Anda yakin ingin menghapus pengumuman "${info.judul}"?`)) {
-                    try {
-                        await window.db.deleteInformasi(info.id);
-                        alert('Berhasil menghapus pengumuman!');
-                    } catch (err) {
-                        // Fallback localStorage
-                        infoData.splice(index, 1);
-                        saveAndRender();
-                        alert('Berhasil menghapus pengumuman secara lokal!');
-                    }
-                    await fetchInfo();
-                }
-            }
-        });
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newData = {
-                tanggal: document.getElementById('infoDate').value,
-                judul: document.getElementById('infoTitle').value,
-                isi: document.getElementById('infoContent').value,
-                sasaran: document.getElementById('infoTarget').value,
-                status: currentEditIndex !== null ? document.getElementById('infoStatus').value : 'Aktif'
-            };
-
-            try {
-                if (currentEditIndex !== null) {
-                    const originalId = infoData[currentEditIndex].id;
-                    await window.db.updateInformasi(originalId, newData);
-                    alert('Berhasil memperbarui pengumuman!');
-                } else {
-                    await window.db.insertInformasi(newData);
-                    alert('Berhasil menambahkan pengumuman baru!');
-                }
-                modal.style.display = 'none';
-                form.reset();
-                await fetchInfo();
-            } catch (err) {
-                // Fallback localStorage
-                if (currentEditIndex !== null) {
-                    infoData[currentEditIndex] = { ...infoData[currentEditIndex], ...newData };
-                    alert('Berhasil memperbarui pengumuman secara lokal!');
-                } else {
-                    newData.id = 'info_' + Date.now();
-                    infoData.unshift(newData);
-                    alert('Berhasil menambahkan pengumuman baru secara lokal!');
-                }
-                modal.style.display = 'none';
-                form.reset();
-                saveAndRender();
-            }
-        });
-                }
-            } else {
-                // LocalStorage Fallback
-                if (currentEditIndex !== null) {
-                    infoData[currentEditIndex] = newData;
-                    alert('Berhasil memperbarui pengumuman secara lokal!');
-                } else {
-                    infoData.unshift(newData); // Add to the top
-                    alert('Berhasil menambahkan pengumuman baru secara lokal!');
-                }
-                saveAndRender();
-                modal.style.display = 'none';
-                form.reset();
-            }
-        });
-
-        searchBar.addEventListener('input', (e) => {
-            renderTable(e.target.value);
-        });
+        document.getElementById('openAddModal').onclick = () => document.getElementById('infoModal').classList.add('active');
+        document.getElementById('closeModal').onclick = () => document.getElementById('infoModal').classList.remove('active');
     </script>
-    <script src="js/load-sidebar.js"></script>
 </body>
 </html>

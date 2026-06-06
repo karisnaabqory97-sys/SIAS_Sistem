@@ -6,262 +6,157 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Kenaikan Kelas | SAIS</title>
+    <title>Manajemen Kenaikan Kelas | SAIS Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
+    <link rel="stylesheet" href="style_admin_shared.css">
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --accent: #10b981;
-            --bg-main: #0b0f1a;
-            --bg-sidebar: #111827;
-            --bg-card: #1f2937;
-            --border: rgba(255, 255, 255, 0.06);
-            --text-main: #f3f4f6;
-            --text-dim: #9ca3af;
-            --sidebar-width: 280px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-
-        body {
-            background: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Main Content */
-        main {
-            flex: 1;
-            margin-left: 260px;
-            padding: 40px 60px;
-        }
-
-        header {
-            display: flex; justify-content: space-between; align-items: flex-end;
-            margin-bottom: 48px;
-        }
-
-        .header-title h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; letter-spacing: -1px; }
-        .header-title p { color: var(--text-dim); font-size: 15px; }
-
-        .btn {
-            padding: 12px 24px; border-radius: 14px; font-weight: 600; font-size: 14px;
-            cursor: pointer; transition: var(--transition); border: none;
-            display: flex; align-items: center; gap: 8px;
-        }
-
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
-
-        .btn-secondary { background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid var(--border); }
-        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--primary); }
-
-        .btn-success { background: var(--accent); color: white; }
-        .btn-success:hover { background: #059669; }
-
-        .btn-warning { background: #f59e0b; color: #111827; }
-
-        /* Banner */
-        .info-banner {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 24px;
-            margin-bottom: 32px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        .banner-icon {
-            width: 50px; height: 50px; background: rgba(99, 102, 241, 0.1);
-            border-radius: 14px; display: flex; align-items: center; justify-content: center;
-            color: var(--primary); font-size: 20px;
-        }
-
-        /* Summary Stats */
+        /* Specific management styles for Kenaikan */
         .stats-grid {
             display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 24px; margin-bottom: 40px;
+            gap: 24px; margin-bottom: 32px;
         }
         .stat-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 24px; padding: 24px; text-align: center;
+            background: var(--bg-card); border-radius: 20px;
+            padding: 24px; border: 1px solid var(--border);
+            text-align: center;
         }
-        .stat-icon { color: var(--primary); font-size: 24px; margin-bottom: 12px; }
-        .stat-value { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-        .stat-label { font-size: 13px; color: var(--text-dim); }
+        .stat-icon { color: var(--accent); font-size: 24px; margin-bottom: 12px; }
+        .stat-value { font-size: 28px; font-weight: 700; }
+        .stat-label { font-size: 12px; color: var(--text-dim); }
 
-        /* Table Section */
-        .table-container {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 32px; padding: 24px; overflow: hidden;
+        .info-banner {
+            background: rgba(108, 99, 255, 0.1); border: 1px solid var(--border);
+            border-radius: 20px; padding: 20px; margin-bottom: 32px; display: flex; align-items: center; gap: 16px;
         }
-        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
-        th { padding: 16px; font-size: 12px; color: var(--text-dim); text-align: left; font-weight: 600; text-transform: uppercase; }
-        td { padding: 16px; background: rgba(255, 255, 255, 0.02); font-size: 14px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        td:first-child { border-left: 1px solid var(--border); border-radius: 16px 0 0 16px; }
-        td:last-child { border-right: 1px solid var(--border); border-radius: 0 16px 16px 0; }
-
+        
         .kelas-select {
-            background: rgba(255, 255, 255, 0.03); border: 1px solid var(--primary);
-            color: white; padding: 6px 12px; border-radius: 10px; font-size: 13px; outline: none;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+            color: white; padding: 8px 12px; border-radius: 10px; font-size: 13px; outline: none;
         }
     </style>
 </head>
 <body data-page="kenaikan">
     <div id="sidebar-container"></div>
 
-    <main>
-        <header>
-            <div class="header-title">
-                <h1>Kenaikan Kelas</h1>
-                <p>Kelola transisi antar jenjang kelas siswa</p>
+    <div class="wrapper">
+        <header class="global-header">
+            <div class="top-bar-left">
+                <button id="menuToggle"><i class="fas fa-bars"></i></button>
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" placeholder="Cari data, menu, atau bantuan...">
+                </div>
             </div>
-            <div style="display: flex; gap: 12px;">
-                <select id="filterKelasAsal" class="kelas-select" style="padding: 12px 20px; border-radius: 14px; border-color: var(--border);">
-                    <option value="">Semua Kelas Asal</option>
-                </select>
-                <button class="btn btn-warning" onclick="acakSiswa()"><i class="fas fa-dice"></i> Acak Siswa</button>
-                <button class="btn btn-primary" onclick="executeAllPromotion()"><i class="fas fa-check-double"></i> Eksekusi Kenaikan</button>
+
+            <div class="header-actions">
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Admin</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                    <div class="user-avatar" id="userInitial">A</div>
+                </div>
             </div>
         </header>
 
-        <div class="info-banner">
-            <div class="banner-icon"><i class="fas fa-info-circle"></i></div>
-            <div>
-                <h3 style="font-size: 16px; font-weight: 600;">Petunjuk Kenaikan</h3>
-                <p style="font-size: 13px; color: var(--text-dim);">Pilih kelas asal, tentukan kelas tujuan untuk masing-masing siswa, lalu klik Eksekusi untuk memproses pemindahan data kelas.</p>
+        <main>
+            <div class="page-header">
+                <div class="header-title">
+                    <h1>Kenaikan Kelas</h1>
+                    <p>Kelola transisi jenjang pendidikan siswa.</p>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <select id="filterKelasAsal" class="kelas-select">
+                        <option value="">Semua Kelas Asal</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="alert('Mengeksekusi kenaikan...')"><i class="fas fa-check-double"></i> Eksekusi Kenaikan</button>
+                </div>
             </div>
-        </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-users"></i></div>
-                <p class="stat-value" id="totalSiswa">0</p>
-                <p class="stat-label">Total Siswa</p>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-value" id="totalSiswa">0</div>
+                    <div class="stat-label">Total Siswa</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-value" id="siapNaik">0</div>
+                    <div class="stat-label">Siap Dinaikkan</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-value" id="sudahNaik">0</div>
+                    <div class="stat-label">Sudah Selesai</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-graduation-cap"></i></div>
+                    <div class="stat-value" id="totalLulus">0</div>
+                    <div class="stat-label">Lulus Tahun Ini</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                <p class="stat-value" id="siapNaik">0</p>
-                <p class="stat-label">Siap Dinaikkan</p>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="color: var(--accent);"><i class="fas fa-check-circle"></i></div>
-                <p class="stat-value" id="sudahNaik">0</p>
-                <p class="stat-label">Sudah Selesai</p>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-graduation-cap"></i></div>
-                <p class="stat-value" id="totalLulus">0</p>
-                <p class="stat-label">Lulus Tahun Ini</p>
-            </div>
-        </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>NISN</th>
-                        <th>NAMA LENGKAP</th>
-                        <th>KELAS ASAL</th>
-                        <th>KELAS TUJUAN</th>
-                        <th>STATUS</th>
-                        <th>AKSI</th>
-                    </tr>
-                </thead>
-                <tbody id="kenaikanTableBody">
-                    <tr><td colspan="6" style="text-align: center; color: var(--text-dim); padding: 40px;">Memuat data siswa...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </main>
+            <div class="content-card">
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>NISN</th>
+                                <th>NAMA LENGKAP</th>
+                                <th>KELAS ASAL</th>
+                                <th>KELAS TUJUAN</th>
+                                <th>STATUS</th>
+                                <th>AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kenaikanTableBody">
+                            <tr><td colspan="6" style="text-align: center; padding: 40px;">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 
+    <script src="js/load-sidebar.js"></script>
     <script>
-        let allSiswa = [];
-        let allKelas = [];
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            document.getElementById('userName').textContent = user.nama || 'Admin';
+            document.getElementById('userInitial').textContent = (user.nama || 'A').charAt(0).toUpperCase();
+
+            await initPage();
+        });
 
         async function initPage() {
             try {
-                // Fetch data from Neon DB
-                allSiswa = await window.db.getAllSiswa();
-                allKelas = await window.db.getAllKelas();
+                const siswa = await window.db.getAllSiswa();
+                const kelas = await window.db.getAllKelas();
                 
-                populateFilter();
-                renderTable();
-                updateStats();
-            } catch (err) {
-                console.error("Gagal memuat data:", err);
-            }
-        }
+                document.getElementById('totalSiswa').textContent = siswa.length;
+                document.getElementById('siapNaik').textContent = siswa.filter(s => !s.kelas.includes('IX')).length;
+                document.getElementById('totalLulus').textContent = siswa.filter(s => s.kelas.includes('IX')).length;
 
-        function populateFilter() {
-            const filter = document.getElementById('filterKelasAsal');
-            filter.innerHTML = '<option value="">Semua Kelas Asal</option>';
-            allKelas.forEach(k => {
-                const name = typeof k === 'object' ? k.nama : k;
-                const opt = document.createElement('option');
-                opt.value = name;
-                opt.textContent = name;
-                filter.appendChild(opt);
-            });
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById('kenaikanTableBody');
-            const filterVal = document.getElementById('filterKelasAsal').value;
-            
-            let filtered = allSiswa;
-            if (filterVal) filtered = filtered.filter(s => s.kelas === filterVal);
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Tidak ada data siswa ditemukan.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = filtered.map(s => {
-                // Predict target class based on current class level
-                let targetHint = 'Pilih...';
-                if (s.kelas.includes('VII')) targetHint = s.kelas.replace('VII', 'VIII');
-                else if (s.kelas.includes('VIII')) targetHint = s.kelas.replace('VIII', 'IX');
-                else if (s.kelas.includes('IX')) targetHint = 'LULUS';
-
-                return `
+                const tbody = document.getElementById('kenaikanTableBody');
+                tbody.innerHTML = siswa.slice(0, 10).map(s => `
                     <tr>
                         <td>${s.nisn}</td>
-                        <td style="font-weight: 600;">${s.nama}</td>
+                        <td style="font-weight:600;">${s.nama}</td>
                         <td>${s.kelas}</td>
                         <td>
                             <select class="kelas-select">
-                                <option value="">${targetHint}</option>
-                                ${allKelas.map(k => `<option value="${k.nama}">${k.nama}</option>`).join('')}
+                                <option value="">Pilih Tujuan...</option>
+                                ${kelas.map(k => `<option value="${k.nama || k}">${k.nama || k}</option>`).join('')}
                                 <option value="LULUS">LULUS</option>
                             </select>
                         </td>
-                        <td><span style="color: #f59e0b;">⏳ Menunggu</span></td>
+                        <td><span style="color:var(--text-dim);">⏳ Menunggu</span></td>
                         <td><button class="btn btn-secondary" style="padding: 6px 12px; font-size: 11px;">Set</button></td>
                     </tr>
-                `;
-            }).join('');
+                `).join('');
+            } catch (e) { console.error(e); }
         }
-
-        function updateStats() {
-            document.getElementById('totalSiswa').textContent = allSiswa.length;
-            document.getElementById('siapNaik').textContent = allSiswa.filter(s => !s.kelas.includes('IX')).length;
-            document.getElementById('totalLulus').textContent = allSiswa.filter(s => s.kelas.includes('IX')).length;
-        }
-
-        document.getElementById('filterKelasAsal').addEventListener('change', renderTable);
-
-        function acakSiswa() { alert('Fitur distribusi acak kelas sedang disiapkan.'); }
-        function executeAllPromotion() { alert('Proses kenaikan kelas massal berhasil dijalankan!'); }
-
-        initPage();
     </script>
-    <script src="js/load-sidebar.js"></script>
 </body>
 </html>
