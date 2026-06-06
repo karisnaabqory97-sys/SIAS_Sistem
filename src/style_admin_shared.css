@@ -129,6 +129,17 @@ td { padding: 16px; font-size: 13px; border-bottom: 1px solid var(--border); }
 .badge-purple { background: rgba(108, 99, 255, 0.1); color: var(--accent); }
 .badge-success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 
+/* Global Dropdown Visibility Fix */
+select {
+    background-color: var(--bg-body) !important;
+    color: var(--text-main) !important;
+}
+
+select option {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+}
+
 /* Sidebar Component Styling (Moved from sidebar_admin.html) */
 #sidebar {
     width: var(--sidebar-width);

@@ -137,6 +137,17 @@ main { padding: 24px; flex: 1; }
 .icon-red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 .icon-indigo { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
 
+/* Global Dropdown Visibility Fix */
+select {
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+}
+
+select option {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+}
+
 /* Summary Stats/Cards */
 .summary-card {
     background: linear-gradient(135deg, #1e293b 0%, #111827 100%);
