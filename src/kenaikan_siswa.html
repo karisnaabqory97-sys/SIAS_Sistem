@@ -6,15 +6,12 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kenaikan Kelas | SAIS</title>
+    <title>Kenaikan Kelas | SAIS Siswa</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --primary: #10b981;
-            --primary-hover: #059669;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
             --bg-main: #0f172a;
             --bg-sidebar: #1e293b;
             --card-bg: rgba(255, 255, 255, 0.05);
@@ -25,661 +22,67 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
-        body {
-            background: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
+        body { background: var(--bg-main); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+
+        .mobile-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px; background: var(--bg-sidebar); border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
         }
 
-        aside {
-            width: 260px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            padding: 24px;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
+        .back-btn {
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.05); border-radius: 12px; color: white; text-decoration: none;
         }
 
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 40px;
-        }
+        main { flex: 1; padding: 20px; width: 100%; max-width: 600px; margin: 0 auto; text-align: center; }
 
-        .logo-box {
-            width: 32px;
-            height: 32px;
-            background: var(--primary);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-        }
+        .status-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 40px 20px; margin-top: 20px; }
+        .status-icon { font-size: 64px; margin-bottom: 20px; }
+        h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+        .status-desc { font-size: 14px; color: var(--text-dim); line-height: 1.6; margin-bottom: 32px; }
 
-        nav { flex: 1; }
-        nav ul { list-style: none; }
-        nav li { margin-bottom: 8px; }
-
-        nav a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            text-decoration: none;
-            color: var(--text-dim);
-            border-radius: 12px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        nav a.active, nav a:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        nav a.logout-link:hover {
-            background: #ef4444;
-            color: white;
-        }
-
-        .user-profile {
-            margin-top: auto;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
-            background: #334155;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 600;
-            color: white;
-        }
-
-        main {
-            flex: 1;
-            margin-left: 260px;
-            padding: 40px;
-        }
-
-        header {
-            margin-bottom: 32px;
-        }
-
-        h1 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            color: var(--text-dim);
-            font-size: 14px;
-        }
-
-        /* Info Banner */
-        .info-banner {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 16px;
-            padding: 20px 24px;
-            margin-bottom: 32px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .info-banner .icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(16, 185, 129, 0.2);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
-
-        .info-banner h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .info-banner p {
-            font-size: 13px;
-            color: var(--text-dim);
-        }
-
-        /* Status Card */
-        .status-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 32px;
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .status-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 40px;
-        }
-
-        .status-icon.pending {
-            background: rgba(245, 158, 11, 0.2);
-        }
-
-        .status-icon.promoted {
-            background: rgba(16, 185, 129, 0.2);
-        }
-
-        .status-icon .emoji {
-            font-size: 40px;
-        }
-
-        .status-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .status-description {
-            font-size: 14px;
-            color: var(--text-dim);
-            margin-bottom: 24px;
-        }
-
-        /* Promotion Result Card */
-        .promotion-card {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
-            border: 2px solid rgba(16, 185, 129, 0.3);
-            border-radius: 24px;
-            padding: 40px;
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .promotion-card .celebration {
-            font-size: 64px;
-            margin-bottom: 16px;
-        }
-
-        .promotion-card h2 {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--success);
-            margin-bottom: 8px;
-        }
-
-        .promotion-card .congrats {
-            font-size: 16px;
-            color: var(--text-dim);
-            margin-bottom: 32px;
-        }
-
-        .class-transition {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 24px;
-            margin-bottom: 32px;
-        }
-
-        .class-box {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px 32px;
-            text-align: center;
-        }
-
-        .class-box .label {
-            font-size: 12px;
-            color: var(--text-dim);
-            margin-bottom: 8px;
- }
-
-        .class-box .class-name {
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .class-box.old .class-name {
-            color: var(--text-dim);
-        }
-
-        .class-box.new .class-name {
-            color: var(--success);
-        }
-
-        .class-transition .arrow {
-            font-size: 32px;
-            color: var(--success);
-        }
-
-        /* Student Info */
-        .student-info {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-        }
-
-        .info-item {
-            text-align: center;
-        }
-
-        .info-item .label {
-            font-size: 12px;
-            color: var(--text-dim);
-            margin-bottom: 4px;
-        }
-
-        .info-item .value {
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        /* Empty State */
-        .empty-state {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 60px 40px;
-            text-align: center;
-        }
-
-        .empty-state .icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-
-        .empty-state h3 {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .empty-state p {
-            font-size: 14px;
-            color: var(--text-dim);
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        /* Additional Info */
-        .additional-info {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            margin-top: 24px;
-        }
-
-        .additional-info h4 {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: var(--primary);
-        }
-
-        .info-list {
-            list-style: none;
-        }
-
-        .info-list li {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 14px;
-        }
-
-        .info-list li:last-child {
-            border-bottom: none;
-        }
-
-        .info-list li .bullet {
-            width: 24px;
-            height: 24px;
-            background: rgba(16, 185, 129, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            font-size: 12px;
-            flex-shrink: 0;
-        }
-
-        /* Toast Notification */
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: #1e293b;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 2000;
-            animation: slideIn 0.3s ease-out;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .toast.success { border-left: 4px solid var(--success); }
-        .toast.error { border-left: 4px solid var(--danger); }
-        .toast.warning { border-left: 4px solid var(--warning); }
-
-        .toast .icon {
-            font-size: 20px;
-        }
-
-        .toast.success .icon { color: var(--success); }
-        .toast.error .icon { color: var(--danger); }
-        .toast.warning .icon { color: var(--warning); }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left; }
+        .info-item { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 16px; border: 1px solid var(--border); }
+        .info-label { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; text-transform: uppercase; }
+        .info-value { font-size: 15px; font-weight: 600; color: white; }
     </style>
 </head>
 <body>
-    <aside>
-        <div class="logo-section">
-            <div class="logo-box">S</div>
-            <span style="font-weight: 600; font-size: 18px;">SAIS Siswa</span>
+    <div class="mobile-header">
+        <a href="dashboard_siswa.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <div style="text-align: right;">
+            <p id="userNama" style="font-size: 13px; font-weight: 600;">Nama Siswa</p>
+            <p id="userKelas" style="font-size: 11px; color: var(--text-dim);">Kelas -</p>
         </div>
-        <nav>
-            <ul>
-                <li><a href="dashboard_siswa.html">Dashboard</a></li>
-                <li><a href="jadwal_siswa.html">Jadwal</a></li>
-                <li><a href="jadwal_ujian_siswa.html">Ujian</a></li>
-                <li><a href="nilai_siswa.html">Nilai</a></li>
-                <li><a href="rapot_siswa.html">Rapot</a></li>
-                <li><a href="kenaikan_siswa.html" class="active">Kenaikan Kelas</a></li>
-                <li><a href="informasi_siswa.html">Informasi</a></li>
-                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
-            </ul>
-        </nav>
-        <div class="user-profile">
-            <div class="avatar" id="userAvatar">-</div>
-            <div>
-                <p style="font-size: 14px; font-weight: 600;" id="userNama">Memuat...</p>
-                <p style="font-size: 12px; color: var(--text-dim);" id="userKelas">-</p>
-            </div>
-        </div>
-    </aside>
+    </div>
 
     <main>
-        <header>
-            <h1>Kenaikan Kelas</h1>
-            <p class="subtitle">Informasi kenaikan kelas untuk tahun ajaran baru</p>
-        </header>
+        <div class="status-card">
+            <div class="status-icon">⏳</div>
+            <h1>Status Kenaikan Kelas</h1>
+            <p class="status-desc">Proses kenaikan kelas sedang disiapkan oleh admin sekolah. Hasil akan muncul di sini setelah tahun ajaran berakhir.</p>
 
-        <!-- Info Banner -->
-        <div class="info-banner">
-            <div class="icon">&#128218;</div>
-            <div>
-                <h3>Informasi Kenaikan Kelas</h3>
-                <p>Berikut adalah informasi kenaikan kelas Anda. Kenaikan kelas dilakukan oleh admin sekolah pada akhir tahun ajaran.</p>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Kelas Sekarang</div>
+                    <div class="info-value" id="currentKelas">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Tahun Ajaran</div>
+                    <div class="info-value">2025/2026</div>
+                </div>
             </div>
-        </div>
-
-        <!-- Content Container -->
-        <div id="contentContainer">
-            <!-- Dynamic content will be loaded here -->
-        </div>
-
-        <!-- Additional Info -->
-        <div class="additional-info">
-            <h4>Informasi Penting</h4>
-            <ul class="info-list">
-                <li>
-                    <span class="bullet">1</span>
-                    <span>Kenaikan kelas dilakukan setelah tahun ajaran berakhir dan setelah seluruh nilai rapot diisi.</span>
-                </li>
-                <li>
-                    <span class="bullet">2</span>
-                    <span>Siswa kelas IX (sembilan) yang menyelesaikan seluruh persyaratan akan dinyatakan LULUS.</span>
-                </li>
-                <li>
-                    <span class="bullet">3</span>
-                    <span>Jika ada kendala terkait kenaikan kelas, silakan hubungi wali kelas atau bagian kesiswaan.</span>
-                </li>
-            </ul>
         </div>
     </main>
 
     <script>
-        // Load user data from login
-        window.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => {
             const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
-            const userNama = currentUser.nama || 'Ahmad Fauzi';
-            const userKelas = currentUser.kelas || 'VII-A';
-            const userNisn = currentUser.nisn || '0012345678';
-
-            // Update user profile
-            document.getElementById('userAvatar').textContent = userNama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            document.getElementById('userNama').textContent = userNama;
-            document.getElementById('userKelas').textContent = 'Kelas ' + userKelas;
-
-            // Load promotion data
-            loadPromotionData(userNisn, userKelas);
+            document.getElementById('userNama').textContent = currentUser.nama || 'Siswa';
+            document.getElementById('userKelas').textContent = 'Kelas ' + (currentUser.kelas || '-');
+            document.getElementById('currentKelas').textContent = currentUser.kelas || '-';
         });
-
-        function loadPromotionData(nisn, currentKelas) {
-            const container = document.getElementById('contentContainer');
-
-            // Default mock data
-            const defaultKenaikanData = [
-                { id: 1, nisn: '0012345678', nama: 'Ahmad Fauzi', kelas: 'VII-A', status: 'pending' },
-                { id: 2, nisn: '0012345679', nama: 'Citra Lestari', kelas: 'VII-A', status: 'promoted', kelasBaru: 'VIII-A' },
-                { id: 3, nisn: '0023456781', nama: 'Fajar Nugroho', kelas: 'VIII-A', status: 'pending' },
-                { id: 4, nisn: '0034567891', nama: 'Joko Susilo', kelas: 'IX-A', status: 'promoted', kelasBaru: 'LULUS' }
-            ];
-
-            // Class promotion mapping
-            const classPromotionMap = {
-                'VII-A': 'VIII-A',
-                'VII-B': 'VIII-B',
-                'VIII-A': 'IX-A',
-                'VIII-B': 'IX-B',
-                'IX-A': 'LULUS',
-                'IX-B': 'LULUS'
-            };
-
-            let kenaikanData = [];
-            try {
-                const stored = localStorage.getItem('sais_kenaikan_data');
-                if (stored) {
-                    kenaikanData = JSON.parse(stored);
-                } else {
-                    kenaikanData = defaultKenaikanData;
-                }
-            } catch (e) {
-                kenaikanData = defaultKenaikanData;
-            }
-
-            // Find student data
-            const studentData = kenaikanData.find(s => s.nisn === nisn);
-
-            if (!studentData) {
-                // Student not found in promotion data - show pending status
-                container.innerHTML = `
-                    <div class="status-card">
-                        <div class="status-icon pending">
-                            <span class="emoji">&#9203;</span>
-                        </div>
-                        <h2 class="status-title">Menunggu Kenaikan</h2>
-                        <p class="status-description">Belum ada data kenaikan kelas untuk tahun ajaran baru. Kenaikan kelas akan diproses oleh admin sekolah.</p>
-                        <div class="student-info">
-                            <div class="info-item">
-                                <div class="label">Kelas Saat Ini</div>
-                                <div class="value">${currentKelas}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="label">Kelas Baru</div>
-                                <div class="value" style="color: var(--text-dim);">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="label">Status</div>
-                                <div class="value" style="color: var(--warning);">Menunggu</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-
-            if (studentData.status === 'promoted') {
-                // Student has been promoted
-                const newClass = studentData.kelasBaru || classPromotionMap[currentKelas];
-                const isGraduated = newClass === 'LULUS';
-
-                container.innerHTML = `
-                    <div class="promotion-card">
-                        <div class="celebration">${isGraduated ? '&#127881;' : '&#128079;'}</div>
-                        <h2>${isGraduated ? 'SELAMAT LULUS!' : 'BERHASIL DINAIKKAN!'}</h2>
-                        <p class="congrats">${isGraduated ? 'Selamat! Anda telah menyelesaikan seluruh jenjang pendidikan di SMP.' : 'Selamat! Anda telah dinaikkan ke kelas baru.'}</p>
-
-                        <div class="class-transition">
-                            <div class="class-box old">
-                                <div class="label">Kelas Lama</div>
-                                <div class="class-name">${studentData.kelas}</div>
-                            </div>
-                            <div class="arrow">&rarr;</div>
-                            <div class="class-box new">
-                                <div class="label">Kelas Baru</div>
-                                <div class="class-name">${newClass}</div>
-                            </div>
-                        </div>
-
-                        <div class="student-info">
-                            <div class="info-item">
-                                <div class="label">NISN</div>
-                                <div class="value">${studentData.nisn}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="label">Nama Lengkap</div>
-                                <div class="value">${studentData.nama}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="label">Status</div>
-                                <div class="value" style="color: var(--success);">${isGraduated ? 'LULUS' : 'Sudah Dinaikkan'}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (studentData.status === 'pending') {
-                // Student is pending
-                const nextClass = classPromotionMap[currentKelas];
-                const isGraduated = nextClass === 'LULUS';
-
-                container.innerHTML = `
-                    <div class="status-card">
-                        <div class="status-icon pending">
-                            <span class="emoji">&#9203;</span>
-                        </div>
-                        <h2 class="status-title">Menunggu Kenaikan</h2>
-                        <p class="status-description">Data kenaikan kelas Anda sedang dalam proses. Kenaikan akan segera diproses oleh admin sekolah.</p>
-                        <div class="student-info">
-                            <div class="info-item">
-                                <div class="label">Kelas Saat Ini</div>
-                                <div class="value">${currentKelas}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="label">Kelas Baru</div>
-                                <div class="value" style="color: var(--primary);">${nextClass}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="label">Status</div>
-                                <div class="value" style="color: var(--warning);">Menunggu</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (studentData.status === 'held') {
-                // Student is held back
-                container.innerHTML = `
-                    <div class="status-card">
-                        <div class="status-icon pending" style="background: rgba(239, 68, 68, 0.2);">
-                            <span class="emoji">&#9888;</span>
-                        </div>
-                        <h2 class="status-title">Ditahan</h2>
-                        <p class="status-description">Mohon maaf, Anda ditahan di kelas saat ini. Silakan hubungi wali kelas untuk informasi lebih lanjut.</p>
-                        <div class="student-info">
-                            <div class="info-item">
-                                <div class="label">Kelas Saat Ini</div>
-                                <div class="value">${currentKelas}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="label">Kelas Baru</div>
-                                <div class="value" style="color: var(--danger);">Ditahan</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="label">Status</div>
-                                <div class="value" style="color: var(--danger);">Ditahan</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-
-            let icon = '&#10004;';
-            if (type === 'error') icon = '&#10006;';
-            if (type === 'warning') icon = '&#9888;';
-
-            toast.innerHTML = `
-                <span class="icon">${icon}</span>
-                <span>${message}</span>
-            `;
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.animation = 'slideOut 0.3s ease-out forwards';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
     </script>
 </body>
 </html>

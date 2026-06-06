@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <!-- Konfigurasi Database Neon -->
     <script src="neon-config.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informasi Sekolah | SAIS Siswa</title>
+    <title>Informasi & Pengumuman | SAIS Siswa</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary: #10b981;
+            --primary: #6366f1;
             --bg-main: #0f172a;
             --bg-sidebar: #1e293b;
             --card-bg: rgba(255, 255, 255, 0.05);
@@ -19,196 +22,85 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
-        body { background: var(--bg-main); color: var(--text-main); display: flex; min-height: 100vh; }
+        body { background: var(--bg-main); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
 
-        aside {
-            width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; padding: 24px; position: fixed; height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
+        .mobile-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px; background: var(--bg-sidebar); border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
         }
 
-        .logo-section { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
-
-        .logo-box {
-            width: 32px; height: 32px; background: var(--primary); border-radius: 8px;
-            display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;
+        .back-btn {
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.05); border-radius: 12px; color: white; text-decoration: none;
         }
 
-        nav { flex: 1; }
-        nav ul { list-style: none; }
-        nav li { margin-bottom: 8px; }
+        main { flex: 1; padding: 20px; width: 100%; max-width: 800px; margin: 0 auto; }
 
-        nav a {
-            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-            text-decoration: none; color: var(--text-dim); border-radius: 12px;
-            font-size: 14px; transition: all 0.3s;
-        }
+        header { margin-bottom: 24px; }
+        h1 { font-size: 20px; font-weight: 700; }
+        .subtitle { font-size: 13px; color: var(--text-dim); }
 
-        nav a.active, nav a:hover { background: var(--primary); color: white; }
-        nav a.logout-link:hover { background: #ef4444; color: white; }
-
-        .user-profile {
-            margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);
-            display: flex; align-items: center; gap: 12px;
-        }
-
-        .avatar {
-            width: 40px; height: 40px; background: #334155; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: 600; color: white;
-        }
-
-        main { flex: 1; margin-left: 260px; padding: 40px; }
-
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-
-        h1 { font-size: 24px; font-weight: 600; }
-
-        .search-bar {
-            background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
-            padding: 10px 16px; width: 300px; color: white; outline: none;
-        }
-
-        .info-container { display: flex; flex-direction: column; gap: 20px; }
-
-        .info-card {
-            background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px;
-            padding: 24px; transition: transform 0.3s, border-color 0.3s;
-        }
-
-        .info-card:hover { transform: translateY(-2px); border-color: var(--primary); }
-
-        .info-meta { display: flex; gap: 16px; font-size: 12px; color: var(--text-dim); margin-bottom: 8px; }
-
-        .info-badge {
-            background: rgba(16, 185, 129, 0.1); color: var(--primary);
-            padding: 2px 8px; border-radius: 12px; font-weight: 500;
-        }
-
-        .info-title { font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--text-main); }
-        .info-body { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+        .info-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 16px; position: relative; }
+        .info-date { font-size: 11px; color: var(--primary); font-weight: 600; margin-bottom: 8px; }
+        .info-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: white; }
+        .info-content { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+        .info-tag { position: absolute; top: 20px; right: 20px; font-size: 10px; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; }
     </style>
 </head>
 <body>
-    <aside>
-        <div class="logo-section">
-            <div class="logo-box">S</div>
-            <span style="font-weight: 600; font-size: 18px;">SAIS Siswa</span>
+    <div class="mobile-header">
+        <a href="dashboard_siswa.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <div style="text-align: right;">
+            <p id="userNama" style="font-size: 13px; font-weight: 600;">Nama Siswa</p>
+            <p id="userKelas" style="font-size: 11px; color: var(--text-dim);">Kelas -</p>
         </div>
-        <nav>
-            <ul>
-                <li><a href="dashboard_siswa.html">Dashboard</a></li>
-                <li><a href="jadwal_siswa.html">Jadwal</a></li>
-                <li><a href="jadwal_ujian_siswa.html">Ujian</a></li>
-                <li><a href="nilai_siswa.html">Nilai</a></li>
-                <li><a href="rapot_siswa.html">Rapot</a></li>
-                <li><a href="kenaikan_siswa.html">Kenaikan Kelas</a></li>
-                <li><a href="informasi_siswa.html" class="active">Informasi</a></li>
-                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
-            </ul>
-        </nav>
-        <div class="user-profile">
-            <div class="avatar" id="userAvatar">-</div>
-            <div>
-                <p style="font-size: 14px; font-weight: 600;" id="userNama">Memuat...</p>
-                <p style="font-size: 12px; color: var(--text-dim);" id="userKelas">-</p>
-            </div>
-        </div>
-    </aside>
+    </div>
 
     <main>
         <header>
-            <div>
-                <h1>Informasi & Pengumuman Sekolah</h1>
-                <p style="color: var(--text-dim); font-size: 14px;">Informasi resmi untuk Siswa & Wali Murid.</p>
-            </div>
-            <input type="text" class="search-bar" id="searchBar" placeholder="Cari informasi...">
+            <h1>Informasi & Pengumuman</h1>
+            <p class="subtitle">Berita terbaru dari sekolah untuk Anda.</p>
         </header>
 
-        <div class="info-container" id="infoContainer">
+        <div id="infoContainer">
+            <!-- Will be loaded by JS -->
+            <p style="text-align: center; padding: 40px; color: var(--text-dim);">Memuat informasi...</p>
         </div>
     </main>
 
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            // Load user data
+        document.addEventListener('DOMContentLoaded', () => {
             const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
-            const userNama = currentUser.nama || 'Ahmad Fauzi';
-            const userKelas = currentUser.kelas || 'VII-A';
-
-            // Update user profile
-            document.getElementById('userAvatar').textContent = userNama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            document.getElementById('userNama').textContent = userNama;
-            document.getElementById('userKelas').textContent = 'Kelas ' + userKelas;
-
-            // Load info data
-            const defaultInfo = [
-                { tanggal: '2026-05-28', judul: 'Persiapan Ujian Tengah Semester', isi: 'Jadwal UTS telah diperbarui, silakan cek menu jadwal.', sasaran: 'Semua', status: 'Aktif' },
-                { tanggal: '2026-05-25', judul: 'Rapat Komite Sekolah', isi: 'Rapat akan diadakan hari Sabtu pukul 09:00 WIB di aula sekolah.', sasaran: 'Guru', status: 'Aktif' },
-                { tanggal: '2026-05-20', judul: 'Lomba Hari Pendidikan Nasional', isi: 'Berbagai lomba akademik dan olahraga akan diselenggarakan.', sasaran: 'Siswa', status: 'Aktif' }
-            ];
-
-            let infoData = [];
-            try {
-                const stored = localStorage.getItem('sais_dataInformasi');
-                if (stored) {
-                    infoData = JSON.parse(stored);
-                } else {
-                    infoData = defaultInfo;
-                    localStorage.setItem('sais_dataInformasi', JSON.stringify(defaultInfo));
-                }
-            } catch (e) {
-                infoData = defaultInfo;
-            }
-
-            const container = document.getElementById('infoContainer');
-            const searchBar = document.getElementById('searchBar');
-
-            function formatDate(dateStr) {
-                const parts = dateStr.split('-');
-                if (parts.length === 3) {
-                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
-                }
-                return dateStr;
-            }
-
-            function renderAnnouncements(filterQuery = '') {
-                container.innerHTML = '';
-                const lowerQuery = filterQuery.toLowerCase();
-
-                const filteredInfo = infoData.filter(info =>
-                    (info.sasaran === 'Semua' || info.sasaran === 'Siswa') &&
-                    info.status === 'Aktif' &&
-                    (info.judul.toLowerCase().includes(lowerQuery) || info.isi.toLowerCase().includes(lowerQuery))
-                );
-
-                if (filteredInfo.length === 0) {
-                    container.innerHTML = `
-                        <div style="background: var(--card-bg); border: 1px solid var(--border); padding: 32px; border-radius: 20px; text-align: center;">
-                            <p style="color: var(--text-dim); font-size: 14px;">Tidak ada pengumuman untuk siswa saat ini.</p>
-                        </div>
-                    `;
-                } else {
-                    container.innerHTML = filteredInfo.map(info => `
-                        <div class="info-card">
-                            <div class="info-meta">
-                                <span>📅 ${formatDate(info.tanggal)}</span>
-                                <span class="info-badge">Untuk: ${info.sasaran === 'Semua' ? 'Semua Warga Sekolah' : 'Khusus Siswa & Orang Tua'}</span>
-                            </div>
-                            <div class="info-title">${info.judul}</div>
-                            <div class="info-body">${info.isi}</div>
-                        </div>
-                    `).join('');
-                }
-            }
-
-            renderAnnouncements();
-
-            searchBar.addEventListener('input', (e) => {
-                renderAnnouncements(e.target.value);
-            });
+            document.getElementById('userNama').textContent = currentUser.nama || 'Siswa';
+            document.getElementById('userKelas').textContent = 'Kelas ' + (currentUser.kelas || '-');
+            
+            renderInfo();
         });
+
+        function renderInfo() {
+            const container = document.getElementById('infoContainer');
+            try {
+                const infoData = JSON.parse(localStorage.getItem('sais_dataInformasi') || '[]');
+                const filtered = infoData.filter(i => i.sasaran === 'Semua' || i.sasaran === 'Siswa');
+
+                if (filtered.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--text-dim);">Belum ada informasi terbaru.</p>';
+                    return;
+                }
+
+                container.innerHTML = filtered.map(i => `
+                    <div class="info-card">
+                        <div class="info-tag">${i.kategori || 'Umum'}</div>
+                        <div class="info-date">${i.tanggal || 'Baru Saja'}</div>
+                        <div class="info-title">${i.judul}</div>
+                        <div class="info-content">${i.isi}</div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: #ef4444;">Gagal memuat data.</p>';
+            }
+        }
     </script>
 </body>
 </html>

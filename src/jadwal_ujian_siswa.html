@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <!-- Konfigurasi Database Neon -->
     <script src="neon-config.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jadwal Ujian | SAIS Siswa</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --primary: #10b981;
@@ -19,302 +22,88 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
-        body { background: var(--bg-main); color: var(--text-main); display: flex; min-height: 100vh; }
+        body { background: var(--bg-main); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
 
-        aside {
-            width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; padding: 24px; position: fixed; height: 100vh; overflow-y: auto; overflow-x: hidden;
+        .mobile-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px; background: var(--bg-sidebar); border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
         }
 
-        .logo-section { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
-
-        .logo-box {
-            width: 32px; height: 32px; background: var(--primary); border-radius: 8px;
-            display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;
+        .back-btn {
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.05); border-radius: 12px; color: white; text-decoration: none;
         }
 
-        nav { flex: 1; }
-        nav ul { list-style: none; }
-        nav li { margin-bottom: 8px; }
+        main { flex: 1; padding: 20px; width: 100%; max-width: 800px; margin: 0 auto; }
 
-        nav a {
-            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-            text-decoration: none; color: var(--text-dim); border-radius: 12px;
-            font-size: 14px; transition: all 0.3s;
-        }
+        header { margin-bottom: 24px; }
+        h1 { font-size: 20px; font-weight: 700; }
+        .subtitle { font-size: 13px; color: var(--text-dim); }
 
-        nav a.active, nav a:hover { background: var(--primary); color: white; }
-        nav a.logout-link:hover { background: #ef4444; color: white; }
+        .exam-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
+        .exam-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .exam-title { font-size: 16px; font-weight: 600; }
+        .exam-badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .badge-uts { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .badge-uas { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 
-        .user-profile {
-            margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);
-            display: flex; align-items: center; gap: 12px;
-        }
-
-        .avatar {
-            width: 40px; height: 40px; background: #334155; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: 600; color: white;
-        }
-
-        main { flex: 1; margin-left: 260px; padding: 40px; }
-
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-
-        h1 { font-size: 24px; font-weight: 600; }
-
-        .filters { display: flex; gap: 12px; }
-
-        select {
-            background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-            padding: 10px 14px; color: white; font-size: 13px; outline: none;
-        }
-
-        select option { background: var(--bg-sidebar); }
-
-        .card {
-            background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px;
-            padding: 24px; margin-bottom: 24px;
-        }
-
-        .card-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
-        }
-
-        .card-title { font-size: 18px; font-weight: 600; }
-
-        .badge {
-            padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 500;
-        }
-
-        .badge-uts { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
-        .badge-uas { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .badge-tugas { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
-
-        .exam-list { display: flex; flex-direction: column; gap: 16px; }
-
-        .exam-item {
-            background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border);
-            border-radius: 16px; padding: 20px; transition: all 0.3s;
-        }
-
-        .exam-item:hover { border-color: var(--primary); }
-
-        .exam-item.upcoming {
-            border-color: rgba(16, 185, 129, 0.3);
-            background: rgba(16, 185, 129, 0.05);
-        }
-
-        .exam-info h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-
-        .exam-meta { display: flex; gap: 20px; font-size: 13px; color: var(--text-dim); flex-wrap: wrap; }
-        .exam-meta span { display: flex; align-items: center; gap: 6px; }
-
-        .exam-badge-group { display: flex; gap: 8px; margin-top: 12px; }
-
-        .count-badge {
-            background: rgba(16, 185, 129, 0.1); color: var(--primary);
-            padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500;
-        }
-
-        .count-badge.warning {
-            background: rgba(251, 191, 36, 0.1); color: #fbbf24;
-        }
-
-        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
-        .empty-state h3 { font-size: 18px; margin-bottom: 8px; }
-
-        .countdown {
-            background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);
-            border-radius: 12px; padding: 16px; margin-top: 12px; text-align: center;
-        }
-
-        .countdown-label { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
-        .countdown-value { font-size: 24px; font-weight: 700; color: #fbbf24; }
+        .exam-meta { display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-dim); }
+        .exam-meta-item { display: flex; align-items: center; gap: 8px; }
+        .exam-meta-item i { width: 16px; text-align: center; color: var(--primary); }
     </style>
 </head>
 <body>
-    <aside>
-        <div class="logo-section">
-            <div class="logo-box">S</div>
-            <span style="font-weight: 600; font-size: 18px;">SAIS Siswa</span>
+    <div class="mobile-header">
+        <a href="dashboard_siswa.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <div style="text-align: right;">
+            <p id="userNama" style="font-size: 13px; font-weight: 600;">Nama Siswa</p>
+            <p id="userKelas" style="font-size: 11px; color: var(--text-dim);">Kelas -</p>
         </div>
-        <nav>
-            <ul>
-                <li><a href="dashboard_siswa.html">Dashboard</a></li>
-                <li><a href="jadwal_siswa.html">Jadwal</a></li>
-                <li><a href="jadwal_ujian_siswa.html" class="active">Ujian</a></li>
-                <li><a href="nilai_siswa.html">Nilai</a></li>
-                <li><a href="rapot_siswa.html">Rapot</a></li>
-                <li><a href="kenaikan_siswa.html">Kenaikan Kelas</a></li>
-                <li><a href="informasi_siswa.html">Informasi</a></li>
-                <li><a href="index.html" class="logout-link" style="color: #ef4444; margin-top: 12px;">Logout</a></li>
-            </ul>
-        </nav>
-        <div class="user-profile">
-            <div class="avatar" id="userAvatar">-</div>
-            <div>
-                <p style="font-size: 14px; font-weight: 600;" id="userNama">Memuat...</p>
-                <p style="font-size: 12px; color: var(--text-dim);" id="userKelas">-</p>
-            </div>
-        </div>
-    </aside>
+    </div>
 
     <main>
         <header>
-            <div>
-                <h1>Jadwal Ujian</h1>
-                <p style="color: var(--text-dim); font-size: 14px;" id="kelasInfo">Jadwal ujian kelas Anda.</p>
-            </div>
-            <div class="filters">
-                <select id="filterJenis">
-                    <option value="">Semua Jenis</option>
-                    <option value="UTS">UTS</option>
-                    <option value="UAS">UAS</option>
-                    <option value="Tugas">Tugas / Kuis</option>
-                </select>
-            </div>
+            <h1>Jadwal Ujian</h1>
+            <p class="subtitle" id="examSubtitle">Daftar pelaksanaan ujian semester ini.</p>
         </header>
 
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Jadwal Ujian Kelas Saya</h3>
-                <span class="count-badge" id="totalCount">0 ujian</span>
-            </div>
-            <div id="examList" class="exam-list">
-            </div>
-        </div>
-
-        <div class="card" id="upcomingCard" style="display: none;">
-            <div class="card-header">
-                <h3 class="card-title">Ujian Terdekat</h3>
-                <span class="count-badge warning" id="upcomingLabel"></span>
-            </div>
-            <div id="upcomingExam"></div>
+        <div id="examContainer">
+            <!-- Will be loaded by JS -->
+            <p style="text-align: center; padding: 40px; color: var(--text-dim);">Memuat jadwal ujian...</p>
         </div>
     </main>
 
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            // Load user data
+        document.addEventListener('DOMContentLoaded', () => {
             const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
-            const userNama = currentUser.nama || 'Ahmad Fauzi';
-            const userKelas = currentUser.kelas || 'VII-A';
-
-            document.getElementById('userAvatar').textContent = userNama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            document.getElementById('userNama').textContent = userNama;
-            document.getElementById('userKelas').textContent = 'Kelas ' + userKelas;
-            document.getElementById('kelasInfo').textContent = 'Jadwal ujian untuk kelas ' + userKelas;
-
-            loadExams();
-
-            document.getElementById('filterJenis').addEventListener('change', loadExams);
+            document.getElementById('userNama').textContent = currentUser.nama || 'Siswa';
+            document.getElementById('userKelas').textContent = 'Kelas ' + (currentUser.kelas || '-');
+            
+            renderExams();
         });
 
-        function loadExams() {
-            let ujianData = [];
-            try {
-                const stored = localStorage.getItem('sais_jadwal_ujian');
-                if (stored) {
-                    ujianData = JSON.parse(stored);
-                }
-            } catch (e) {
-                console.error(e);
-            }
+        function renderExams() {
+            const container = document.getElementById('examContainer');
+            // Mock data or fetch from local/db
+            const exams = [
+                { mapel: 'Matematika', jenis: 'UTS', tanggal: '2025-10-12', waktu: '08:00 - 10:00', ruang: 'Lab Komputer' },
+                { mapel: 'Bahasa Indonesia', jenis: 'UAS', tanggal: '2025-12-05', waktu: '08:00 - 10:00', ruang: 'Ruang 102' }
+            ];
 
-            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
-            const userKelas = currentUser.kelas || 'VII-A';
-
-            const filterJenis = document.getElementById('filterJenis').value;
-
-            // Filter berdasarkan kelas siswa
-            let filtered = ujianData.filter(u => u.kelas === userKelas);
-
-            if (filterJenis) {
-                filtered = filtered.filter(u => u.jenis === filterJenis);
-            }
-
-            filtered.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
-
-            const container = document.getElementById('examList');
-            document.getElementById('totalCount').textContent = filtered.length + ' ujian';
-
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <h3>Tidak ada jadwal ujian</h3>
-                        <p>Belum ada jadwal ujian untuk kelas Anda.</p>
+            container.innerHTML = exams.map(u => `
+                <div class="exam-card">
+                    <div class="exam-header">
+                        <div class="exam-title">${u.mapel}</div>
+                        <span class="exam-badge badge-${u.jenis.toLowerCase()}">${u.jenis}</span>
                     </div>
-                `;
-                document.getElementById('upcomingCard').style.display = 'none';
-                return;
-            }
-
-            // Check upcoming exam
-            const today = new Date().toISOString().split('T')[0];
-            const upcoming = filtered.find(u => u.tanggal >= today);
-
-            if (upcoming) {
-                document.getElementById('upcomingCard').style.display = 'block';
-                document.getElementById('upcomingLabel').textContent = upcoming.jenis;
-
-                const examDate = new Date(upcoming.tanggal);
-                const todayDate = new Date(today);
-                const diffTime = examDate - todayDate;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                document.getElementById('upcomingExam').innerHTML = `
-                    <div class="exam-item upcoming">
-                        <div class="exam-info">
-                            <h3>
-                                ${upcoming.mapel}
-                                <span class="badge badge-${upcoming.jenis.toLowerCase()}">${upcoming.jenis}</span>
-                            </h3>
-                            <div class="exam-meta">
-                                <span>📅 ${formatDate(upcoming.tanggal)}</span>
-                                <span>🕐 ${upcoming.waktuMulai} - ${upcoming.waktuSelesai}</span>
-                                <span>📍 ${upcoming.ruang}</span>
-                            </div>
-                        </div>
-                        <div class="countdown">
-                            <div class="countdown-label">Sisa Waktu</div>
-                            <div class="countdown-value">${diffDays} Hari</div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                document.getElementById('upcomingCard').style.display = 'none';
-            }
-
-            container.innerHTML = filtered.map(u => `
-                <div class="exam-item">
-                    <div class="exam-info">
-                        <h3>
-                            ${u.mapel}
-                            <span class="badge badge-${u.jenis.toLowerCase()}">${u.jenis}</span>
-                            ${u.tanggal < today ? '<span style="color: var(--text-dim); font-size: 11px;">(Selesai)</span>' : ''}
-                        </h3>
-                        <div class="exam-meta">
-                            <span>📅 ${formatDate(u.tanggal)}</span>
-                            <span>🕐 ${u.waktuMulai} - ${u.waktuSelesai}</span>
-                            <span>📍 ${u.ruang}</span>
-                        </div>
-                        ${u.keterangan ? `<p style="font-size: 12px; color: var(--text-dim); margin-top: 8px;">${u.keterangan}</p>` : ''}
+                    <div class="exam-meta">
+                        <div class="exam-meta-item"><i class="fas fa-calendar-alt"></i> ${u.tanggal}</div>
+                        <div class="exam-meta-item"><i class="fas fa-clock"></i> ${u.waktu}</div>
+                        <div class="exam-meta-item"><i class="fas fa-door-open"></i> ${u.ruang}</div>
                     </div>
                 </div>
             `).join('');
-        }
-
-        function formatDate(dateStr) {
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-            const parts = dateStr.split('-');
-            const day = parseInt(parts[2]);
-            const month = months[parseInt(parts[1]) - 1];
-            const year = parts[0];
-            const d = new Date(dateStr);
-            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            return `${days[d.getDay()]}, ${day} ${month} ${year}`;
         }
     </script>
 </body>
