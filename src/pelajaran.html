@@ -21,6 +21,18 @@
             font-weight: 600;
         }
 
+        .class-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-radius: 6px;
+            font-size: 11px;
+            margin-right: 4px;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
         .action-btn {
             padding: 6px 12px;
             border: 1px solid var(--border);
@@ -46,7 +58,8 @@
         .modal-overlay.active { display: flex; }
         .modal {
             background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 24px; padding: 32px; width: 100%; max-width: 500px;
+            border-radius: 24px; padding: 32px; width: 100%; max-width: 550px;
+            max-height: 90vh; overflow-y: auto;
         }
         .form-control {
             width: 100%; background: rgba(255, 255, 255, 0.05);
@@ -54,6 +67,29 @@
             color: white; outline: none; transition: 0.3s;
         }
         .form-control:focus { border-color: var(--accent); }
+
+        .multi-select-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .checkbox-item input {
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
     </style>
 </head>
 <body data-page="pelajaran">
@@ -65,7 +101,7 @@
                 <button id="menuToggle"><i class="fas fa-bars"></i></button>
                 <div class="search-container">
                     <i class="fas fa-search"></i>
-                    <input type="text" class="search-input" placeholder="Cari data, menu, atau bantuan...">
+                    <input type="text" class="search-input" id="globalSearch" placeholder="Cari data, menu, atau bantuan...">
                 </div>
             </div>
 
@@ -96,8 +132,8 @@
                             <tr>
                                 <th>KODE</th>
                                 <th>NAMA PELAJARAN</th>
-                                <th>KATEGORI</th>
-                                <th>JUMLAH GURU</th>
+                                <th>KELAS</th>
+                                <th>NAMA GURU</th>
                                 <th>AKSI</th>
                             </tr>
                         </thead>
@@ -126,22 +162,22 @@
                     <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Nama Pelajaran</label>
                     <input type="text" class="form-control" id="inputNama" placeholder="Contoh: Matematika" required>
                 </div>
+                
                 <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Kategori</label>
-                    <select class="form-control" id="inputKategori" style="background: var(--bg-body);">
-                        <option value="Sains & Logika">Sains & Logika</option>
-                        <option value="Bahasa & Sastra">Bahasa & Sastra</option>
-                        <option value="Sains">Sains</option>
-                        <option value="Bahasa">Bahasa</option>
-                        <option value="IPS">IPS</option>
-                        <option value="Seni & Olahraga">Seni & Olahraga</option>
-                        <option value="Teknologi">Teknologi</option>
+                    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Pilih Kelas (Sinkron Manajemen Kelas)</label>
+                    <div id="classCheckboxes" class="multi-select-container">
+                        <!-- Classes will be loaded here -->
+                        <span style="font-size: 11px; color: var(--text-dim);">Memuat kelas...</span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Nama Guru (Sinkron Manajemen Guru)</label>
+                    <select class="form-control" id="inputNamaGuru" style="background: var(--bg-body);">
+                        <option value="">-- Pilih Guru --</option>
                     </select>
                 </div>
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:8px;">Jumlah Guru</label>
-                    <input type="number" class="form-control" id="inputJumlahGuru" placeholder="0" min="0">
-                </div>
+
                 <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:32px;">
                     <button type="button" class="btn btn-secondary" id="btnBatal">Batal</button>
                     <button type="submit" class="btn btn-primary" id="btnSubmit">Simpan</button>
@@ -154,15 +190,41 @@
     <script>
         let pelajaranData = [];
         let currentEditIndex = null;
+        let kelasList = [];
+        let guruList = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
             document.getElementById('userName').textContent = user.nama || 'Admin';
             document.getElementById('userInitial').textContent = (user.nama || 'A').charAt(0).toUpperCase();
 
-            await fetchPelajaran();
+            await initData();
             setupEventListeners();
         });
+
+        async function initData() {
+            try {
+                // Load Classes for Checkboxes
+                kelasList = await window.db.getAllKelas();
+                const classContainer = document.getElementById('classCheckboxes');
+                classContainer.innerHTML = kelasList.map(k => {
+                    const name = typeof k === 'object' ? k.nama : k;
+                    return `
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="kelas" value="${name}"> ${name}
+                        </label>
+                    `;
+                }).join('');
+
+                // Load Teachers for Dropdown
+                guruList = await window.db.getAllGuru();
+                const guruSelect = document.getElementById('inputNamaGuru');
+                guruSelect.innerHTML = '<option value="">-- Pilih Guru --</option>' + 
+                    guruList.map(g => `<option value="${g.nama}">${g.nama}</option>`).join('');
+
+                await fetchPelajaran();
+            } catch (e) { console.error(e); }
+        }
 
         async function fetchPelajaran() {
             try {
@@ -171,8 +233,8 @@
                     id: m.id,
                     kode: m.singkatan || '',
                     nama: m.nama || '',
-                    kategori: m.deskripsi || '',
-                    guru: m.guru || 0
+                    kelas: m.kelas_list || [], // Array of class names
+                    guru: m.pengampu || ''     // Teacher name
                 }));
             } catch (e) {
                 console.error("Gagal mengambil data:", e);
@@ -181,21 +243,28 @@
             renderTable();
         }
 
-        function renderTable() {
+        function renderTable(filterQuery = '') {
             const tbody = document.getElementById('pelajaranTableBody');
             tbody.innerHTML = '';
 
-            if (pelajaranData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">Belum ada data pelajaran.</td></tr>';
+            const lowerQuery = filterQuery.toLowerCase();
+            const filtered = pelajaranData.filter(p => 
+                p.nama.toLowerCase().includes(lowerQuery) || 
+                p.kode.toLowerCase().includes(lowerQuery)
+            );
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">Tidak ada data pelajaran.</td></tr>';
             }
 
-            pelajaranData.forEach((pel, index) => {
+            filtered.forEach((pel, index) => {
+                const classTags = pel.kelas.map(k => `<span class="class-tag">${k}</span>`).join('');
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><span class="subject-badge">${pel.kode}</span></td>
                     <td style="font-weight: 600;">${pel.nama}</td>
-                    <td>${pel.kategori}</td>
-                    <td>${pel.guru} Guru</td>
+                    <td>${classTags || '-'}</td>
+                    <td><i class="fas fa-user-tie" style="margin-right:8px; color:var(--text-dim);"></i>${pel.guru || '-'}</td>
                     <td>
                         <button class="action-btn" onclick="editPelajaran(${index})"><i class="fas fa-edit"></i></button>
                         <button class="action-btn" style="color:#ef4444;" onclick="deletePelajaran(${index})"><i class="fas fa-trash"></i></button>
@@ -213,8 +282,14 @@
             document.getElementById('modalTitle').textContent = 'Edit Pelajaran';
             document.getElementById('inputKode').value = pel.kode;
             document.getElementById('inputNama').value = pel.nama;
-            document.getElementById('inputKategori').value = pel.kategori;
-            document.getElementById('inputJumlahGuru').value = pel.guru;
+            document.getElementById('inputNamaGuru').value = pel.guru;
+            
+            // Set Checkboxes
+            const checkboxes = document.querySelectorAll('input[name="kelas"]');
+            checkboxes.forEach(cb => {
+                cb.checked = pel.kelas.includes(cb.value);
+            });
+
             document.getElementById('modalPelajaran').classList.add('active');
         };
 
@@ -241,11 +316,15 @@
 
             document.getElementById('formPelajaran').onsubmit = async (e) => {
                 e.preventDefault();
+                
+                // Get selected classes
+                const selectedClasses = Array.from(document.querySelectorAll('input[name="kelas"]:checked')).map(cb => cb.value);
+
                 const newData = {
                     singkatan: document.getElementById('inputKode').value.toUpperCase(),
                     nama: document.getElementById('inputNama').value,
-                    deskripsi: document.getElementById('inputKategori').value,
-                    guru: parseInt(document.getElementById('inputJumlahGuru').value) || 0
+                    kelas_list: selectedClasses,
+                    pengampu: document.getElementById('inputNamaGuru').value
                 };
 
                 try {
@@ -258,6 +337,8 @@
                     document.getElementById('modalPelajaran').classList.remove('active');
                 } catch (err) { alert('Gagal menyimpan data.'); }
             };
+
+            document.getElementById('globalSearch').addEventListener('input', (e) => renderTable(e.target.value));
         }
     </script>
 </body>
