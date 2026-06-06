@@ -516,23 +516,56 @@ window.db = {
     // ==================== PRESENSI ====================
 
     async getAllPresensi() {
+        if (isProduction) {
+            return await apiGet('presensi');
+        }
         return Storage.get('presensi_data') || [];
     },
 
-    async getPresensiBySiswa(siswaId) {
+    async getPresensiByFilter(kelas, mapel) {
+        if (isProduction) {
+            return await apiGet('presensi', { kelas, mapel });
+        }
         const data = Storage.get('presensi_data') || [];
-        return data.filter(p => p.siswa_id === siswaId);
+        return data.filter(p => p.kelas === kelas && p.mapel === mapel);
     },
 
-    async insertPresensi(presensi) {
-        const data = Storage.get('presensi_data') || [];
-        if (!presensi.id) {
-            presensi.id = 'presensi_' + Date.now();
+    async getPresensiBySiswa(nisn) {
+        if (isProduction) {
+            return await apiGet('presensi', { nisn });
         }
-        presensi.created_at = new Date().toISOString();
-        data.push(presensi);
+        const data = Storage.get('presensi_data') || [];
+        return data.filter(p => p.nisn === nisn);
+    },
+
+    async upsertPresensi(presensi) {
+        // Handle single or array of attendance records
+        const records = Array.isArray(presensi) ? presensi : [presensi];
+        
+        if (isProduction) {
+            return await apiCall('presensi', 'upsert', records);
+        }
+
+        const data = Storage.get('presensi_data') || [];
+        records.forEach(newRec => {
+            // Find existing record for same student, class, mapel, and meeting
+            const idx = data.findIndex(r => 
+                r.nisn === newRec.nisn && 
+                r.mapel === newRec.mapel && 
+                r.pertemuan === newRec.pertemuan
+            );
+
+            if (idx >= 0) {
+                data[idx] = { ...data[idx], ...newRec, updated_at: new Date().toISOString() };
+            } else {
+                newRec.id = 'att_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                newRec.created_at = new Date().toISOString();
+                data.push(newRec);
+            }
+        });
+
         Storage.set('presensi_data', data);
-        return presensi;
+        return true;
     }
 };
 

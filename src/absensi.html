@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Konfigurasi Database Neon -->
+    <script src="neon-config.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekap Absensi Siswa | SAIS Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style_admin_shared.css">
+    <style>
+        .report-controls {
+            display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+        }
+        .filter-item { flex: 1; min-width: 200px; }
+        .filter-item label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 8px; }
+        .filter-select { width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: white; outline: none; }
+
+        .teacher-info-banner {
+            background: rgba(108, 99, 255, 0.1); border: 1px solid var(--border);
+            border-radius: 20px; padding: 24px; margin-bottom: 32px; display: none;
+            align-items: center; gap: 20px; animation: slideDown 0.3s ease-out;
+        }
+        .teacher-info-banner.active { display: flex; }
+        .teacher-icon { width: 48px; height: 48px; background: var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+
+        .attendance-table-wrapper { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th, td { border: 1px solid var(--border); padding: 12px; font-size: 13px; text-align: center; }
+        th { background: rgba(255,255,255,0.02); color: var(--text-dim); font-weight: 600; }
+        .student-name-cell { text-align: left; position: sticky; left: 0; background: var(--bg-card); z-index: 10; width: 200px; }
+        
+        .status-dot { width: 24px; height: 24px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+        .dot-h { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .dot-i { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .dot-s { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .dot-a { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        
+        .total-cell { font-weight: 700; color: var(--accent); }
+
+        @keyframes slideDown { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body data-page="absensi">
+    <div id="sidebar-container"></div>
+
+    <div class="wrapper">
+        <header class="global-header">
+            <div class="top-bar-left">
+                <button id="menuToggle"><i class="fas fa-bars"></i></button>
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" placeholder="Cari data absensi...">
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="user-profile">
+                    <div class="user-info"><span class="user-name">Admin</span><span class="user-role">Administrator</span></div>
+                    <div class="user-avatar">A</div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="page-header">
+                <div class="header-title">
+                    <h1>Rekap Absensi Siswa</h1>
+                    <p>Pantau kehadiran siswa per mata pelajaran.</p>
+                </div>
+                <button class="btn btn-secondary" onclick="window.print()"><i class="fas fa-print"></i> Cetak PDF</button>
+            </div>
+
+            <div class="report-controls">
+                <div class="filter-item">
+                    <label>Pilih Kelas</label>
+                    <select id="filterKelas" class="filter-select"><option value="">-- Pilih Kelas --</option></select>
+                </div>
+                <div class="filter-item">
+                    <label>Pilih Mata Pelajaran</label>
+                    <select id="filterMapel" class="filter-select"><option value="">-- Pilih Mapel --</option></select>
+                </div>
+            </div>
+
+            <div class="teacher-info-banner" id="teacherBanner">
+                <div class="teacher-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                <div>
+                    <h3 id="displayTeacher">Guru Pengampu: -</h3>
+                    <p id="displayKelas" style="font-size: 13px; color: var(--text-dim);">Kelas: -</p>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="attendance-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr id="tableHead">
+                                <th width="50px">No</th>
+                                <th class="student-name-cell">NISN / Nama Siswa</th>
+                                <th>JK</th>
+                                <!-- Pertemuan Ke-1 s/d 10 will go here -->
+                                <th width="80px">Total H</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceReportBody">
+                            <tr><td colspan="14" style="text-align:center; padding:50px; color:var(--text-dim);">Silakan pilih kelas dan mata pelajaran.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/load-sidebar.js"></script>
+    <script>
+        let allSiswa = [];
+        let allMapel = [];
+        let attendanceData = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadFilters();
+        });
+
+        async function loadFilters() {
+            try {
+                const kelas = await window.db.getAllKelas();
+                const mapel = await window.db.getAllMapel();
+                allMapel = mapel;
+
+                const selKelas = document.getElementById('filterKelas');
+                kelas.forEach(k => {
+                    const opt = document.createElement('option');
+                    opt.value = k.nama || k; opt.textContent = k.nama || k;
+                    selKelas.appendChild(opt);
+                });
+
+                const selMapel = document.getElementById('filterMapel');
+                mapel.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.nama; opt.textContent = m.nama;
+                    selMapel.appendChild(opt);
+                });
+
+                selKelas.onchange = selMapel.onchange = generateReport;
+            } catch (e) { console.error(e); }
+        }
+
+        async function generateReport() {
+            const kelas = document.getElementById('filterKelas').value;
+            const mapel = document.getElementById('filterMapel').value;
+
+            if (!kelas || !mapel) return;
+
+            // Update Teacher Info (Mock or Fetch from Mapel/Kelas relation)
+            const banner = document.getElementById('teacherBanner');
+            const foundMapel = allMapel.find(m => m.nama === mapel);
+            document.getElementById('displayTeacher').textContent = `Guru Pengampu: ${foundMapel?.pengampu || 'Guru Mata Pelajaran'}`;
+            document.getElementById('displayKelas').textContent = `Kelas: ${kelas}`;
+            banner.classList.add('active');
+
+            try {
+                allSiswa = (await window.db.getAllSiswa()).filter(s => s.kelas === kelas);
+                attendanceData = await window.db.getPresensiByFilter(kelas, mapel);
+                renderReportTable();
+            } catch (e) { console.error(e); }
+        }
+
+        function renderReportTable() {
+            const theadRow = document.getElementById('tableHead');
+            const tbody = document.getElementById('attendanceReportBody');
+            
+            // Generate Meeting Columns
+            let headHtml = `<th width="50px">No</th><th class="student-name-cell">NISN / Nama Siswa</th><th>JK</th>`;
+            for (let i = 1; i <= 10; i++) headHtml += `<th>Ke-${i}</th>`;
+            headHtml += `<th width="80px">Total H</th>`;
+            theadRow.innerHTML = headHtml;
+
+            tbody.innerHTML = '';
+            allSiswa.forEach((s, idx) => {
+                let rowHtml = `<td>${idx+1}</td><td class="student-name-cell">${s.nisn}<br><small>${s.nama}</small></td><td>${s.jk}</td>`;
+                let presentCount = 0;
+
+                for (let p = 1; p <= 10; p++) {
+                    const record = attendanceData.find(r => r.nisn === s.nisn && parseInt(r.pertemuan) === p);
+                    const status = record ? record.status : '-';
+                    if (status === 'H') presentCount++;
+                    
+                    rowHtml += `<td><span class="status-dot dot-${status.toLowerCase()}">${status}</span></td>`;
+                }
+
+                rowHtml += `<td class="total-cell">${presentCount}</td>`;
+                const tr = document.createElement('tr');
+                tr.innerHTML = rowHtml;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>

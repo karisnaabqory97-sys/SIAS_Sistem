@@ -83,6 +83,9 @@
                     <p id="totalSiswaText">Total 0 siswa terdaftar</p>
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <select id="filterKelas" class="search-bar" style="width: auto;">
+                        <option value="">-- Semua Kelas --</option>
+                    </select>
                     <input type="text" class="search-bar" id="tableSearch" placeholder="Cari NISN atau Nama...">
                     <button class="btn btn-secondary" id="btnTemplate"><i class="fas fa-download"></i> Template</button>
                     <input type="file" id="fileUpload" accept=".csv" style="display: none;">
@@ -226,6 +229,7 @@
         let siswaData = [];
         const tableBody = document.getElementById('siswaTableBody');
         const searchInput = document.getElementById('tableSearch');
+        const filterKelasSelect = document.getElementById('filterKelas');
 
         document.addEventListener('DOMContentLoaded', async () => {
             const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
@@ -238,6 +242,10 @@
         async function initPage() {
             await fetchKelasOptions();
             await fetchSiswa();
+            
+            // Listeners for filtering
+            searchInput.addEventListener('input', () => renderTable());
+            filterKelasSelect.addEventListener('change', () => renderTable());
         }
 
         async function fetchSiswa() {
@@ -251,14 +259,20 @@
             }
         }
 
-        function renderTable(filterQuery = '') {
+        function renderTable() {
+            const query = searchInput.value.toLowerCase();
+            const kelasFilter = filterKelasSelect.value;
+            
             tableBody.innerHTML = '';
             let visibleCount = 0;
-            const lowerQuery = filterQuery.toLowerCase();
 
             siswaData.forEach((siswa, index) => {
+                // Filter by Class
+                if (kelasFilter && siswa.kelas !== kelasFilter) return;
+
+                // Filter by Search Text
                 const rowText = `${siswa.nisn} ${siswa.nama} ${siswa.kelas}`.toLowerCase();
-                if (filterQuery && !rowText.includes(lowerQuery)) return;
+                if (query && !rowText.includes(query)) return;
 
                 visibleCount++;
                 const tr = document.createElement('tr');
@@ -278,24 +292,38 @@
                 tableBody.appendChild(tr);
             });
 
-            document.getElementById('totalSiswaText').innerText = `Total ${siswaData.length} siswa terdaftar`;
+            document.getElementById('totalSiswaText').innerText = query || kelasFilter
+                ? `Menampilkan ${visibleCount} siswa`
+                : `Total ${siswaData.length} siswa terdaftar`;
         }
 
         async function fetchKelasOptions() {
-            const inputKelas = document.getElementById('inputKelas');
+            const inputKelas = document.getElementById('inputKelas'); // Modal
             try {
                 const kelasList = await window.db.getAllKelas();
+                
+                // Clear and populate modal dropdown
                 inputKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+                // Clear and populate top filter dropdown
+                filterKelasSelect.innerHTML = '<option value="">-- Semua Kelas --</option>';
+
                 kelasList.forEach(k => {
                     const name = typeof k === 'object' ? k.nama : k;
-                    inputKelas.innerHTML += `<option value="${name}">${name}</option>`;
+                    const optHtml = `<option value="${name}">${name}</option>`;
+                    inputKelas.innerHTML += optHtml;
+                    filterKelasSelect.innerHTML += optHtml;
                 });
+
+                // Check for URL parameters (e.g. from clicking "Siswa" on a class card)
+                const urlParams = new URLSearchParams(window.location.search);
+                const classFromUrl = urlParams.get('kelas');
+                if (classFromUrl) {
+                    filterKelasSelect.value = classFromUrl;
+                }
             } catch (e) {
-                inputKelas.innerHTML = '<option value="VII-A">VII-A (Fallback)</option>';
+                console.error("Gagal memuat opsi kelas:", e);
             }
         }
-
-        searchInput.addEventListener('input', (e) => renderTable(e.target.value));
 
         // Modal Controls
         const addModal = document.getElementById('addModal');

@@ -264,13 +264,90 @@
 
         // Modal Controls
         const addModal = document.getElementById('addModal');
+        const detailModal = document.getElementById('detailModal');
+        const addGuruForm = document.getElementById('addGuruForm');
+        let currentEditId = null;
+
         document.getElementById('openAddModal').onclick = () => {
+            currentEditId = null;
             document.getElementById('modalTitle').innerText = 'Tambah Guru Baru';
-            document.getElementById('addGuruForm').reset();
+            document.getElementById('statusGroup').style.display = 'none';
+            addGuruForm.reset();
             document.getElementById('inputPassword').value = 'guru' + Date.now().toString().slice(-4);
             addModal.style.display = 'flex';
         };
+
         document.getElementById('closeAddModal').onclick = () => addModal.style.display = 'none';
+        document.getElementById('closeDetailModal').onclick = () => detailModal.style.display = 'none';
+
+        // CRUD Actions
+        window.editGuru = (index) => {
+            const guru = guruData[index];
+            currentEditId = guru.id;
+            document.getElementById('modalTitle').innerText = 'Edit Data Guru';
+            document.getElementById('statusGroup').style.display = 'block';
+            
+            document.getElementById('inputNUPTK').value = guru.nuptk || '';
+            document.getElementById('inputNama').value = guru.nama || '';
+            document.getElementById('inputMapel').value = guru.mapel || '';
+            document.getElementById('inputUsername').value = guru.username || '';
+            document.getElementById('inputPassword').value = guru.password || '';
+            document.getElementById('inputStatus').value = guru.status || 'Aktif';
+            
+            addModal.style.display = 'flex';
+        };
+
+        window.detailGuru = (index) => {
+            const guru = guruData[index];
+            const content = document.getElementById('detailContent');
+            content.innerHTML = `
+                <div style="display:grid; grid-template-columns: 1fr 2fr; gap: 10px; font-size: 14px;">
+                    <div style="color: var(--text-dim);">NUPTK</div><div>: ${guru.nuptk}</div>
+                    <div style="color: var(--text-dim);">Nama</div><div style="font-weight:600;">: ${guru.nama}</div>
+                    <div style="color: var(--text-dim);">Mata Pelajaran</div><div>: ${guru.mapel}</div>
+                    <div style="color: var(--text-dim);">Username</div><div>: ${guru.username}</div>
+                    <div style="color: var(--text-dim);">Status</div><div>: <span class="badge badge-purple">${guru.status}</span></div>
+                </div>
+            `;
+            detailModal.style.display = 'flex';
+        };
+
+        window.deleteGuru = async (index) => {
+            const guru = guruData[index];
+            if (confirm(`Apakah Anda yakin ingin menghapus guru ${guru.nama}?`)) {
+                try {
+                    await window.db.deleteGuru(guru.id);
+                    await fetchGuru();
+                } catch (e) {
+                    alert("Gagal menghapus data guru.");
+                }
+            }
+        };
+
+        addGuruForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = {
+                nuptk: document.getElementById('inputNUPTK').value,
+                nama: document.getElementById('inputNama').value,
+                mapel: document.getElementById('inputMapel').value,
+                username: document.getElementById('inputUsername').value,
+                password: document.getElementById('inputPassword').value,
+                status: currentEditId ? document.getElementById('inputStatus').value : 'Aktif'
+            };
+
+            try {
+                if (currentEditId) {
+                    await window.db.updateGuru(currentEditId, formData);
+                } else {
+                    formData.type = 'guru';
+                    await window.db.insertGuru(formData);
+                }
+                addModal.style.display = 'none';
+                await fetchGuru();
+            } catch (e) {
+                alert("Gagal menyimpan data guru.");
+            }
+        };
     </script>
 </body>
 </html>

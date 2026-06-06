@@ -204,47 +204,56 @@
                     return;
                 }
 
-                kelasData.forEach((kelas, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'kelas-card';
-                    card.dataset.index = index;
-                    card.innerHTML = `
-                        <div class="kelas-icon">${kelas.kode || ''}</div>
-                        <div class="kelas-info">
-                            <h3>${kelas.nama || ''}</h3>
-                            <p>${kelas.ruang || ''}</p>
-                        </div>
-                        <div class="kelas-stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Wali Kelas</span>
-                                <span class="stat-value">${kelas.wali || '-'}</span>
+                // Get actual student counts from db if available
+                window.db.getAllSiswa().then(allSiswa => {
+                    const studentCounts = allSiswa.reduce((acc, s) => {
+                        acc[s.kelas] = (acc[s.kelas] || 0) + 1;
+                        return acc;
+                    }, {});
+
+                    kelasData.forEach((kelas, index) => {
+                        const actualCount = studentCounts[kelas.nama] || 0;
+                        const card = document.createElement('div');
+                        card.className = 'kelas-card';
+                        card.dataset.index = index;
+                        card.innerHTML = `
+                            <div class="kelas-icon">${kelas.kode || ''}</div>
+                            <div class="kelas-info">
+                                <h3>${kelas.nama || ''}</h3>
+                                <p>${kelas.ruang || ''}</p>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Siswa</span>
-                                <span class="stat-value">${kelas.siswa || 0} Orang</span>
+                            <div class="kelas-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Wali Kelas</span>
+                                    <span class="stat-value">${kelas.wali || '-'}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Siswa</span>
+                                    <span class="stat-value">${actualCount} Orang</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="card-actions" style="display: flex; gap: 8px;">
-                            <button class="btn-action" style="flex: 1;" onclick="window.location.href='siswa.html?kelas=${encodeURIComponent(kelas.nama)}'">Siswa</button>
-                            <button class="btn-action" style="flex: 1;" onclick="editKelas(${index})">Edit</button>
-                            <button class="btn-action" style="flex: 1; color: #ef4444; border-color: rgba(239, 68, 68, 0.2);" onclick="deleteKelas(${index})">Hapus</button>
-                        </div>
-                    `;
-                    kelasGrid.appendChild(card);
+                            <div class="card-actions" style="display: flex; gap: 8px;">
+                                <button class="btn-action" style="flex: 1;" onclick="window.location.href='siswa.html?kelas=${encodeURIComponent(kelas.nama)}'">Siswa</button>
+                                <button class="btn-action" style="flex: 1;" onclick="editKelas(${index}, ${actualCount})">Edit</button>
+                                <button class="btn-action" style="flex: 1; color: #ef4444; border-color: rgba(239, 68, 68, 0.2);" onclick="deleteKelas(${index})">Hapus</button>
+                            </div>
+                        `;
+                        kelasGrid.appendChild(card);
+                    });
                 });
 
                 document.getElementById('totalKelasText').innerText = `Total ${kelasData.length} rombongan belajar aktif`;
             }
 
             // Global functions for inline onclicks
-            window.editKelas = async (index) => {
+            window.editKelas = async (index, count) => {
                 currentEditIndex = index;
                 const kelas = kelasData[index];
                 document.querySelector('.modal-title').innerText = 'Edit Kelas';
                 document.getElementById('inputKodeKelas').value = kelas.kode || '';
                 document.getElementById('inputNamaKelas').value = kelas.nama || '';
                 document.getElementById('inputRuang').value = kelas.ruang || '';
-                document.getElementById('inputSiswa').value = kelas.siswa || '0';
+                document.getElementById('inputSiswa').value = count || '0';
                 modalTambahKelas.classList.add('active');
                 await populateGuruDropdown(kelas.wali || '');
             };

@@ -9,7 +9,7 @@
     <title>Dashboard Siswa | SAIS</title>
     <!-- PWA Support -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2940/2940651.png">
@@ -44,9 +44,9 @@
             <div class="big-avatar" id="bigAvatar">S</div>
             <div class="profile-info">
                 <h2 id="fullNama">Nama Lengkap Siswa</h2>
-                <p id="fullNisn">NISN: -</p>
+                <p id="fullNisn">NISN: 0012345678</p>
                 <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 20px; text-align: left; margin-top: 10px;">
-                    <p style="font-size: 12px; margin-bottom: 4px;">Kelas Sekarang:</p>
+                    <p style="font-size: 12px; margin-bottom: 4px;">Kelas Saat Ini:</p>
                     <p style="font-weight: 600; color: white;" id="fullKelas">-</p>
                 </div>
             </div>
@@ -58,8 +58,8 @@
 
     <main>
         <div class="welcome-section">
-            <h1 id="welcomeText">Halo, Siswa! 👋</h1>
-            <p>Ayo semangat belajar hari ini.</p>
+            <h1 id="welcomeText">Selamat Pagi, Siswa!</h1>
+            <p>Lihat perkembangan belajarmu hari ini.</p>
         </div>
 
         <!-- Main Menu Grid -->
@@ -67,6 +67,10 @@
             <a href="jadwal_siswa.html" class="menu-item">
                 <div class="menu-icon icon-green"><i class="fas fa-calendar-alt"></i></div>
                 <span>Jadwal</span>
+            </a>
+            <a href="absensi_siswa.html" class="menu-item">
+                <div class="menu-icon icon-emerald" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="fas fa-clipboard-check"></i></div>
+                <span>Absensi</span>
             </a>
             <a href="nilai_siswa.html" class="menu-item">
                 <div class="menu-icon icon-blue"><i class="fas fa-chart-line"></i></div>
@@ -79,10 +83,6 @@
             <a href="jadwal_ujian_siswa.html" class="menu-item">
                 <div class="menu-icon icon-orange"><i class="fas fa-clock"></i></div>
                 <span>Ujian</span>
-            </a>
-            <a href="kenaikan_siswa.html" class="menu-item">
-                <div class="menu-icon icon-indigo"><i class="fas fa-arrow-up"></i></div>
-                <span>Kenaikan</span>
             </a>
             <a href="informasi_siswa.html" class="menu-item">
                 <div class="menu-icon icon-red"><i class="fas fa-bullhorn"></i></div>
@@ -111,7 +111,7 @@
         <!-- Announcements -->
         <div class="summary-card" style="margin-bottom: 0;">
             <div class="summary-header">
-                <h3>Pengumuman Sekolah</h3>
+                <h3>Pengumuman Baru</h3>
             </div>
             <div id="pengumumanContainer" style="font-size: 13px; color: var(--text-dim);">
                 Memuat pengumuman...
@@ -125,13 +125,13 @@
             <i class="fas fa-home"></i>
             <span>Home</span>
         </a>
-        <a href="jadwal_siswa.html" class="nav-link">
-            <i class="fas fa-calendar-alt"></i>
-            <span>Jadwal</span>
+        <a href="absensi_siswa.html" class="nav-link">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Absen</span>
         </a>
-        <a href="nilai_siswa.html" class="nav-link">
-            <i class="fas fa-chart-bar"></i>
-            <span>Nilai</span>
+        <a href="jadwal_siswa.html" class="nav-link">
+            <i class="fas fa-calendar-day"></i>
+            <span>Jadwal</span>
         </a>
         <div class="nav-link" onclick="toggleProfile()" style="cursor: pointer;">
             <i class="fas fa-user-circle"></i>
@@ -139,66 +139,29 @@
         </div>
     </div>
 
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
+    <script src="js/utils_guru_siswa.js"></script>
     <script>
-        function toggleProfile() {
-            const overlay = document.getElementById('profileOverlay');
-            if (overlay.style.display === 'flex') {
-                overlay.style.animation = 'slideDown 0.3s ease-in forwards';
-                setTimeout(() => { 
-                    overlay.style.display = 'none';
-                    overlay.style.animation = 'slideUp 0.3s ease-out';
-                }, 300);
-            } else {
-                overlay.style.display = 'flex';
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check Session
+            const user = JSON.parse(localStorage.getItem('sais_current_user') || 'null');
+            if (!user || user.type !== 'siswa') {
+                window.location.href = 'index.html';
+                return;
             }
-        }
 
-        // Add slideDown animation to CSS dynamically
-        const style = document.createElement('style');
-        style.innerHTML = `@keyframes slideDown { from { transform: translateY(0); } to { transform: translateY(100%); } }`;
-        document.head.appendChild(style);
-
-        function handleLogout() {
-            localStorage.removeItem('sais_current_user');
-            window.location.href = 'index.html';
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
-            const userNama = currentUser.nama || 'Siswa SAIS';
-            const userNisn = currentUser.nisn || '-';
-            const userKelas = currentUser.kelas || '-';
-
-            // Initial Avatar
-            const initial = userNama.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            
-            // Update UI Elements
-            document.getElementById('userNamaTop').textContent = userNama;
-            document.getElementById('userNisnTop').textContent = 'NISN: ' + userNisn;
-            document.getElementById('userAvatarTop').textContent = initial;
-            
-            // Update Profile Overlay
-            document.getElementById('bigAvatar').textContent = initial;
-            document.getElementById('fullNama').textContent = userNama;
-            document.getElementById('fullNisn').textContent = 'NISN: ' + userNisn;
-            document.getElementById('fullKelas').textContent = 'Kelas ' + userKelas;
-
-            // Welcome Text
-            document.getElementById('welcomeText').textContent = `Halo, ${userNama.split(' ')[0]}! 👋`;
+            loadUserInfo('siswa');
 
             // Load announcements
             const pengumumanContainer = document.getElementById('pengumumanContainer');
             try {
                 const infoData = JSON.parse(localStorage.getItem('sais_dataInformasi') || '[]');
-                const filtered = infoData.filter(i => i.sasaran === 'Semua' || i.sasaran === 'Siswa').slice(0, 2);
+                const filtered = infoData.filter(i => i.sasaran === 'Semua' || i.sasaran === 'Siswa');
                 
                 if (filtered.length > 0) {
-                    pengumumanContainer.innerHTML = filtered.map(i => `
-                        <div style="margin-bottom: 12px;">
+                    pengumumanContainer.innerHTML = filtered.slice(0, 2).map(i => `
+                        <div style="margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
                             <p style="font-weight: 600; color: white;">${i.judul}</p>
-                            <p style="font-size: 11px; margin-top: 2px;">${i.isi.substring(0, 60)}...</p>
+                            <p style="font-size: 11px; margin-top: 2px;">${i.isi.substring(0, 80)}...</p>
                         </div>
                     `).join('');
                 } else {
