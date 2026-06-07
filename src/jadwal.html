@@ -74,13 +74,17 @@
             position: relative; animation: popIn 0.3s;
             line-height: 1.4; font-weight: 500;
         }
+        .dropped-item.conflict { background: #ef4444; }
+        .dropped-item.success { background: #10b981; }
+        
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .remove-drop {
-            position: absolute; top: -6px; right: -6px; background: #ef4444;
+            position: absolute; top: -6px; right: -6px; background: #334155;
             width: 18px; height: 18px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-size: 12px; cursor: pointer; color: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .filter-select {
@@ -126,6 +130,12 @@
                         <option value="Ganjil">Semester Ganjil</option>
                         <option value="Genap">Semester Genap</option>
                     </select>
+                    <select class="filter-select" id="levelSelector">
+                        <option value="">-- Pilih Level --</option>
+                        <option value="Level VII">Level VII</option>
+                        <option value="Level VIII">Level VIII</option>
+                        <option value="Level IX">Level IX</option>
+                    </select>
                     <select class="filter-select" id="classSelector">
                         <option value="">-- Pilih Kelas --</option>
                     </select>
@@ -139,7 +149,7 @@
                 <div style="width: 250px; background: rgba(0,0,0,0.2); border-radius: 24px; padding: 24px; border: 1px solid var(--border); display: flex; flex-direction: column;">
                     <h4 style="font-size: 11px; color: var(--accent); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Mata Pelajaran Tersedia</h4>
                     <div id="subjectList" style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1;">
-                        <p style="font-size: 12px; color: var(--text-dim); text-align: center; padding: 20px;">Silakan pilih kelas terlebih dahulu.</p>
+                        <p style="font-size: 12px; color: var(--text-dim); text-align: center; padding: 20px;">Silakan pilih level dan kelas terlebih dahulu.</p>
                     </div>
                     <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-dim);">
                         <i class="fas fa-info-circle"></i> Tarik pelajaran ke kolom hari.
@@ -178,7 +188,10 @@
     <script src="js/load-sidebar.js"></script>
     <script>
         let allMapel = [];
+        let allKelas = [];
+        let allSchedules = [];
         let currentClass = "";
+        let currentLevel = "";
         let currentSemester = "Ganjil";
 
         document.addEventListener('DOMContentLoaded', async function() {
@@ -192,20 +205,37 @@
 
         async function loadInitialData() {
             try {
-                const [kelas, mapel] = await Promise.all([
+                const [kelas, mapel, schedules] = await Promise.all([
                     window.db.getAllKelas(),
-                    window.db.getAllMapel()
+                    window.db.getAllMapel(),
+                    window.db.getAllJadwal()
                 ]);
                 
+                allKelas = kelas;
                 allMapel = mapel;
+                allSchedules = schedules;
 
+                const levelSelector = document.getElementById('levelSelector');
                 const classSelector = document.getElementById('classSelector');
-                kelas.forEach(k => {
-                    const name = typeof k === 'object' ? k.nama : k;
-                    const opt = document.createElement('option');
-                    opt.value = name; opt.textContent = name;
-                    classSelector.appendChild(opt);
-                });
+                
+                levelSelector.onchange = (e) => {
+                    currentLevel = e.target.value;
+                    updateClassSelector();
+                    updateSubjectList();
+                };
+
+                function updateClassSelector() {
+                    classSelector.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+                    if (!currentLevel) return;
+                    
+                    const filtered = allKelas.filter(k => k.kode === currentLevel);
+                    filtered.forEach(k => {
+                        const opt = document.createElement('option');
+                        opt.value = k.nama;
+                        opt.textContent = k.nama;
+                        classSelector.appendChild(opt);
+                    });
+                }
             } catch (e) { console.error(e); }
         }
 
@@ -233,11 +263,11 @@
             container.innerHTML = '';
 
             if (!currentClass) {
-                container.innerHTML = '<p style="font-size: 12px; color: var(--text-dim); text-align: center; padding: 20px;">Silakan pilih kelas terlebih dahulu.</p>';
+                container.innerHTML = '<p style="font-size: 12px; color: var(--text-dim); text-align: center; padding: 20px;">Silakan pilih level dan kelas terlebih dahulu.</p>';
                 return;
             }
 
-            // Logic: Subject assigned to this class in 'Manajemen Pelajaran'
+            // Group subjects by Level/Class from 'Manajemen Pelajaran'
             const classMapel = allMapel.filter(m => {
                 const penugasan = m.penugasan || [];
                 return penugasan.some(p => p.kelas === currentClass);
@@ -249,13 +279,11 @@
             }
 
             classMapel.forEach(m => {
-                // Find teacher for this class
                 const assignment = m.penugasan.find(p => p.kelas === currentClass);
                 const item = document.createElement('div');
                 item.className = 'drag-item';
                 item.draggable = true;
                 
-                // Package subject and teacher data
                 const dragData = JSON.stringify({
                     mapel: m.nama,
                     guru: assignment ? assignment.guru : 'Belum ditentukan'
@@ -286,16 +314,56 @@
             try {
                 const data = JSON.parse(ev.dataTransfer.getData("application/json"));
                 const dropZone = ev.currentTarget;
+                const tr = dropZone.closest('tr');
+                const jamMulai = tr.querySelector('.start-time').value;
+                const jamSelesai = tr.querySelector('.end-time').value;
+                const dayIdx = Array.from(tr.children).indexOf(dropZone) - 1;
+                const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+                const hari = days[dayIdx];
+
+                const isConflict = checkConflict(data.guru, hari, jamMulai, jamSelesai);
                 
                 dropZone.innerHTML = `
-                    <div class="dropped-item">
+                    <div class="dropped-item ${isConflict ? 'conflict' : 'success'}">
                         <div>${data.mapel}</div>
                         <div style="font-size:9px; opacity:0.8;">${data.guru}</div>
+                        ${isConflict ? '<div style="font-size:8px; font-weight:700; margin-top:2px;">BENTROK GURU</div>' : ''}
                         <span class="remove-drop" onclick="this.parentElement.remove()">×</span>
                     </div>
                 `;
             } catch (e) { console.error("Invalid drag data", e); }
         };
+
+        function checkConflict(guru, hari, start, end) {
+            if (guru === 'Belum ditentukan' || !guru) return false;
+            
+            // Check in current screen
+            const rows = document.querySelectorAll('#builderBody tr');
+            let screenMatch = 0;
+            rows.forEach(row => {
+                const rowStart = row.querySelector('.start-time').value;
+                const rowEnd = row.querySelector('.end-time').value;
+                if (rowStart === start && rowEnd === end) {
+                    const zones = row.querySelectorAll('.drop-zone');
+                    const dayIdx = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'].indexOf(hari);
+                    const item = zones[dayIdx].querySelector('.dropped-item');
+                    if (item && item.querySelector('div:nth-child(2)').textContent === guru) {
+                        screenMatch++;
+                    }
+                }
+            });
+            if (screenMatch > 1) return true;
+
+            // Check in global database schedules (other classes)
+            return allSchedules.some(s => 
+                s.guru === guru && 
+                s.hari === hari && 
+                s.jam_mulai === start && 
+                s.jam_selesai === end &&
+                s.kelas !== currentClass &&
+                s.semester === currentSemester
+            );
+        }
 
         function addTimeSlot(startTime = "07:30", endTime = "09:00", dayData = {}) {
             const tr = document.createElement('tr');
@@ -308,15 +376,22 @@
                 </div>
             </td>`;
 
-            const days = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
+            const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
             days.forEach(day => {
-                const content = dayData[day] ? `
-                    <div class="dropped-item">
-                        <div>${dayData[day].mapel}</div>
-                        <div style="font-size:9px; opacity:0.8;">${dayData[day].guru}</div>
-                        <span class="remove-drop" onclick="this.parentElement.remove()">×</span>
-                    </div>
-                ` : '';
+                const dayLower = day.toLowerCase();
+                const item = dayData[dayLower];
+                let content = '';
+                if (item) {
+                    const isConflict = checkConflict(item.guru, day, startTime, endTime);
+                    content = `
+                        <div class="dropped-item ${isConflict ? 'conflict' : 'success'}">
+                            <div>${item.mapel}</div>
+                            <div style="font-size:9px; opacity:0.8;">${item.guru}</div>
+                            ${isConflict ? '<div style="font-size:8px; font-weight:700; margin-top:2px;">BENTROK GURU</div>' : ''}
+                            <span class="remove-drop" onclick="this.parentElement.remove()">×</span>
+                        </div>
+                    `;
+                }
                 
                 cells += `<td class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="handleDragLeave(event)">${content}</td>`;
             });
@@ -336,23 +411,23 @@
             if (!currentClass) return;
 
             try {
-                const schedules = await window.db.getJadwalByKelas(currentClass);
-                const filtered = schedules.filter(s => s.semester === currentSemester);
+                // Refresh global schedules before checking
+                allSchedules = await window.db.getAllJadwal();
+                
+                const schedules = allSchedules.filter(s => s.kelas === currentClass && s.semester === currentSemester);
 
-                if (filtered.length > 0) {
-                    // Group by time range
+                if (schedules.length > 0) {
                     const slots = {};
-                    filtered.forEach(s => {
+                    schedules.forEach(s => {
                         const key = `${s.jam_mulai}-${s.jam_selesai}`;
                         if (!slots[key]) slots[key] = { start: s.jam_mulai, end: s.jam_selesai, days: {} };
                         slots[key].days[s.hari.toLowerCase()] = { mapel: s.mapel, guru: s.guru };
                     });
 
-                    Object.values(slots).forEach(slot => {
+                    Object.values(slots).sort((a,b) => a.start.localeCompare(b.start)).forEach(slot => {
                         addTimeSlot(slot.start, slot.end, slot.days);
                     });
                 } else {
-                    // Default slots
                     addTimeSlot("07:30", "09:00");
                     addTimeSlot("09:00", "10:30");
                     addTimeSlot("10:45", "12:15");
@@ -361,7 +436,7 @@
         }
 
         window.resetJadwal = () => {
-            if(confirm('Apakah Anda yakin ingin menghapus seluruh jadwal di layar? Perubahan tidak akan tersimpan hingga Anda menekan tombol Simpan.')) {
+            if(confirm('Apakah Anda yakin ingin menghapus seluruh jadwal di layar?')) {
                 document.querySelectorAll('.drop-zone').forEach(z => z.innerHTML = '');
             }
         };
@@ -371,7 +446,7 @@
             
             const rows = document.querySelectorAll('#builderBody tr');
             const scheduleItems = [];
-            const days = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
+            const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
 
             rows.forEach(row => {
                 const jamMulai = row.querySelector('.start-time').value;
@@ -385,7 +460,7 @@
                         const guru = item.querySelector('div:nth-child(2)').textContent;
                         
                         scheduleItems.push({
-                            hari: days[idx].charAt(0).toUpperCase() + days[idx].slice(1),
+                            hari: days[idx],
                             jam_mulai: jamMulai,
                             jam_selesai: jamSelesai,
                             mapel: mapel,
@@ -398,11 +473,16 @@
             try {
                 await window.db.upsertJadwal(currentClass, currentSemester, scheduleItems);
                 alert(`✅ Jadwal untuk ${currentClass} (${currentSemester}) berhasil disimpan dan disinkronkan ke akun Guru & Siswa.`);
+                // Refresh global schedules
+                allSchedules = await window.db.getAllJadwal();
             } catch (e) {
                 alert('Gagal menyimpan jadwal.');
                 console.error(e);
             }
         }
+    </script>
+</body>
+</html>
     </script>
 </body>
 </html>
