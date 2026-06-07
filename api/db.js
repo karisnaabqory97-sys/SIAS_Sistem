@@ -271,8 +271,8 @@ export async function POST(request) {
             case 'kelas':
                 if (action === 'insert') {
                     result = await sql`
-                        INSERT INTO kelas (nama, kode, ruang, wali, siswa_count)
-                        VALUES (${data.nama}, ${data.kode}, ${data.ruang}, ${data.wali}, ${parseInt(data.siswa) || 0})
+                        INSERT INTO kelas (nama, kode, wali, siswa_count)
+                        VALUES (${data.nama}, ${data.kode}, ${data.wali}, ${parseInt(data.siswa) || 0})
                         RETURNING *
                     `;
                 } else if (action === 'update') {
@@ -280,7 +280,6 @@ export async function POST(request) {
                         UPDATE kelas SET
                             nama = ${data.nama},
                             kode = ${data.kode},
-                            ruang = ${data.ruang},
                             wali = ${data.wali},
                             siswa_count = ${parseInt(data.siswa) || 0}
                         WHERE id = ${data.id}
