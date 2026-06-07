@@ -162,8 +162,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Kelas <span class="required">*</span></label>
-                        <select class="form-control" id="inputKelas" required>
+                        <label>Kelas</label>
+                        <select class="form-control" id="inputKelas">
                             <option value="">-- Pilih Kelas --</option>
                         </select>
                     </div>
@@ -327,16 +327,112 @@
 
         // Modal Controls
         const addModal = document.getElementById('addModal');
+        const addSiswaForm = document.getElementById('addSiswaForm');
+        let currentEditId = null;
+
         document.getElementById('openAddModal').onclick = () => {
+            currentEditId = null;
             document.getElementById('modalTitle').innerText = 'Tambah Siswa Baru';
-            document.getElementById('addSiswaForm').reset();
-            document.getElementById('inputPassword').value = 'siswa' + Date.now().toString().slice(-4);
+            document.getElementById('statusGroup').style.display = 'none';
+            addSiswaForm.reset();
+            
+            // Generate simple default username/password
+            const tempId = Date.now().toString().slice(-4);
+            document.getElementById('inputUsername').value = ''; 
+            document.getElementById('inputPassword').value = 'siswa' + tempId;
+            
             addModal.style.display = 'flex';
         };
+
         document.getElementById('closeAddModal').onclick = () => addModal.style.display = 'none';
 
-        // Additional JS logic (Upload, Sync, etc.) would go here, 
-        // following the same pattern as before but cleaned up.
+        window.editSiswa = (index) => {
+            const siswa = siswaData[index];
+            currentEditId = siswa.id;
+            document.getElementById('modalTitle').innerText = 'Edit Data Siswa';
+            document.getElementById('statusGroup').style.display = 'block';
+            
+            document.getElementById('inputNisn').value = siswa.nisn;
+            document.getElementById('inputNama').value = siswa.nama;
+            document.getElementById('inputJk').value = siswa.jk;
+            document.getElementById('inputKelas').value = siswa.kelas || '';
+            document.getElementById('inputAyah').value = siswa.ayah || '';
+            document.getElementById('inputIbu').value = siswa.ibu || '';
+            document.getElementById('inputUsername').value = siswa.username || '';
+            document.getElementById('inputPassword').value = siswa.password || '';
+            document.getElementById('inputStatus').value = siswa.status || 'Aktif';
+            
+            addModal.style.display = 'flex';
+        };
+
+        window.detailSiswa = (index) => {
+            const siswa = siswaData[index];
+            const content = document.getElementById('detailContent');
+            content.innerHTML = `
+                <div style="display:grid; grid-template-columns: 1fr 2fr; gap: 10px; font-size: 14px;">
+                    <div style="color: var(--text-dim);">NISN</div><div>: ${siswa.nisn}</div>
+                    <div style="color: var(--text-dim);">Nama</div><div style="font-weight:600;">: ${siswa.nama}</div>
+                    <div style="color: var(--text-dim);">JK</div><div>: ${siswa.jk === 'L' ? 'Laki-laki' : 'Perempuan'}</div>
+                    <div style="color: var(--text-dim);">Kelas</div><div>: <span class="badge badge-purple">${siswa.kelas || '-'}</span></div>
+                    <div style="color: var(--text-dim);">Ayah</div><div>: ${siswa.ayah || '-'}</div>
+                    <div style="color: var(--text-dim);">Ibu</div><div>: ${siswa.ibu || '-'}</div>
+                    <div style="color: var(--text-dim);">Username</div><div>: ${siswa.username || '-'}</div>
+                    <div style="color: var(--text-dim);">Status</div><div>: <span class="status status-${siswa.status.toLowerCase()}">${siswa.status}</span></div>
+                </div>
+            `;
+            document.getElementById('detailModal').style.display = 'flex';
+        };
+
+        document.getElementById('closeDetailModal').onclick = () => {
+            document.getElementById('detailModal').style.display = 'none';
+        };
+
+        window.deleteSiswa = async (index) => {
+            const siswa = siswaData[index];
+            if (confirm(`Apakah Anda yakin ingin menghapus siswa ${siswa.nama}?`)) {
+                try {
+                    await window.db.deleteSiswa(siswa.id);
+                    await fetchSiswa();
+                } catch (e) {
+                    console.error(e);
+                    alert("Gagal menghapus data.");
+                }
+            }
+        };
+
+        addSiswaForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = {
+                nisn: document.getElementById('inputNisn').value,
+                nama: document.getElementById('inputNama').value,
+                jk: document.getElementById('inputJk').value,
+                kelas: document.getElementById('inputKelas').value, // Boleh kosong sesuai request
+                ayah: document.getElementById('inputAyah').value,
+                ibu: document.getElementById('inputIbu').value,
+                username: document.getElementById('inputUsername').value,
+                password: document.getElementById('inputPassword').value,
+                status: currentEditId ? document.getElementById('inputStatus').value : 'Aktif'
+            };
+
+            try {
+                if (currentEditId) {
+                    await window.db.updateSiswa(currentEditId, formData);
+                } else {
+                    formData.type = 'siswa';
+                    await window.db.insertSiswa(formData);
+                }
+                addModal.style.display = 'none';
+                await fetchSiswa();
+            } catch (e) {
+                console.error(e);
+                alert("Gagal menyimpan data.");
+            }
+        };
+
+        // Logic Sinkron, Upload, etc. (Stubs to keep it consistent)
+        document.getElementById('btnSimpan').onclick = () => fetchSiswa();
+        document.getElementById('btnUpload').onclick = () => document.getElementById('fileUpload').click();
+        document.getElementById('btnTemplate').onclick = () => window.location.href = 'template_siswa.csv';
     </script>
 </body>
 </html>
