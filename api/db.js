@@ -64,7 +64,24 @@ export async function GET(request) {
                 break;
 
             case 'mapel':
-                result = await sql`SELECT * FROM mata_pelajaran ORDER BY nama`;
+                const mapels = await sql`SELECT * FROM mata_pelajaran ORDER BY nama`;
+                result = mapels.map(m => {
+                    if (m.deskripsi && (m.deskripsi.startsWith('[') || m.deskripsi.startsWith('{'))) {
+                        try {
+                            const parsed = JSON.parse(m.deskripsi);
+                            if (Array.isArray(parsed)) {
+                                m.penugasan = parsed;
+                            } else if (parsed.penugasan) {
+                                m.penugasan = parsed.penugasan;
+                            }
+                        } catch (e) {
+                            m.penugasan = [];
+                        }
+                    } else {
+                        m.penugasan = [];
+                    }
+                    return m;
+                });
                 break;
 
             case 'informasi':
@@ -186,17 +203,19 @@ export async function POST(request) {
 
             case 'mapel':
                 if (action === 'insert') {
+                    const desc = data.penugasan ? JSON.stringify(data.penugasan) : (data.kategori || data.deskripsi || '');
                     result = await sql`
                         INSERT INTO mata_pelajaran (nama, singkatan, deskripsi)
-                        VALUES (${data.nama}, ${data.kode || data.singkatan}, ${data.kategori || data.deskripsi || ''})
+                        VALUES (${data.nama}, ${data.kode || data.singkatan}, ${desc})
                         RETURNING *
                     `;
                 } else if (action === 'update') {
+                    const desc = data.penugasan ? JSON.stringify(data.penugasan) : (data.kategori || data.deskripsi || '');
                     result = await sql`
                         UPDATE mata_pelajaran SET
                             nama = ${data.nama},
                             singkatan = ${data.kode || data.singkatan},
-                            deskripsi = ${data.kategori || data.deskripsi || ''}
+                            deskripsi = ${desc}
                         WHERE id = ${data.id}
                         RETURNING *
                     `;

@@ -80,7 +80,7 @@
 
         .repeater-row {
             display: grid;
-            grid-template-columns: 1fr 1fr auto;
+            grid-template-columns: 1fr 1fr 1fr auto;
             gap: 12px;
             margin-bottom: 12px;
             align-items: center;
@@ -151,7 +151,7 @@
                             <tr>
                                 <th>KODE</th>
                                 <th>NAMA PELAJARAN</th>
-                                <th>DAFTAR PENGAMPU & KELAS</th>
+                                <th>DAFTAR PENGAMPU, LEVEL & KELAS</th>
                                 <th width="150px">AKSI</th>
                             </tr>
                         </thead>
@@ -224,7 +224,7 @@
                     window.db.getAllKelas(),
                     window.db.getAllGuru()
                 ]);
-                kelasOptions = kelas.map(k => typeof k === 'object' ? k.nama : k);
+                kelasOptions = kelas;
                 guruOptions = guru.map(g => g.nama);
             } catch (e) { console.error("Error loading options:", e); }
         }
@@ -259,6 +259,7 @@
                 const assignments = pel.penugasan || [];
                 const assignmentHtml = assignments.map(a => `
                     <div class="assignment-tag">
+                        <span class="class-label" style="color: #6366f1;">${a.level || ''}</span>
                         <span class="class-label">${a.kelas}</span>
                         <i class="fas fa-chevron-right" style="font-size: 10px; color: var(--border);"></i>
                         <span class="teacher-label">${a.guru}</span>
@@ -281,24 +282,49 @@
             document.getElementById('totalPelajaranText').textContent = `Total ${pelajaranData.length} mata pelajaran terdaftar`;
         }
 
-        function createRepeaterRow(selectedKelas = '', selectedGuru = '') {
+        window.updateKelasOptions = (levelSelect) => {
+            const row = levelSelect.closest('.repeater-row');
+            const classSelect = row.querySelector('.row-kelas');
+            const selectedLevel = levelSelect.value;
+            
+            const currentVal = classSelect.value;
+            classSelect.innerHTML = '<option value="">-- Kelas --</option>';
+            
+            const filtered = kelasOptions.filter(k => k.kode === selectedLevel);
+            filtered.forEach(k => {
+                const opt = document.createElement('option');
+                opt.value = k.nama;
+                opt.textContent = k.nama;
+                if (k.nama === currentVal) opt.selected = true;
+                classSelect.appendChild(opt);
+            });
+        };
+
+        function createRepeaterRow(selectedLevel = '', selectedKelas = '', selectedGuru = '') {
             const container = document.getElementById('repeaterContainer');
             const row = document.createElement('div');
             row.className = 'repeater-row';
             
-            const classSelect = `<select class="form-control row-kelas" required>
-                <option value="">-- Kelas --</option>
-                ${kelasOptions.map(k => `<option value="${k}" ${k === selectedKelas ? 'selected' : ''}>${k}</option>`).join('')}
+            const levels = ['Level VII', 'Level VIII', 'Level IX'];
+            const levelSelectHtml = `<select class="form-control row-level" required onchange="updateKelasOptions(this)">
+                <option value="">-- Level --</option>
+                ${levels.map(l => `<option value="${l}" ${l === selectedLevel ? 'selected' : ''}>${l}</option>`).join('')}
             </select>`;
 
-            const guruSelect = `<select class="form-control row-guru" required>
+            const classSelectHtml = `<select class="form-control row-kelas" required>
+                <option value="">-- Kelas --</option>
+                ${kelasOptions.filter(k => !selectedLevel || k.kode === selectedLevel).map(k => `<option value="${k.nama}" ${k.nama === selectedKelas ? 'selected' : ''}>${k.nama}</option>`).join('')}
+            </select>`;
+
+            const guruSelectHtml = `<select class="form-control row-guru" required>
                 <option value="">-- Guru --</option>
                 ${guruOptions.map(g => `<option value="${g}" ${g === selectedGuru ? 'selected' : ''}>${g}</option>`).join('')}
             </select>`;
 
             row.innerHTML = `
-                ${classSelect}
-                ${guruSelect}
+                ${levelSelectHtml}
+                ${classSelectHtml}
+                ${guruSelectHtml}
                 <button type="button" class="btn-remove-row" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
             `;
             container.appendChild(row);
@@ -313,7 +339,7 @@
             
             document.getElementById('repeaterContainer').innerHTML = '';
             if (pel.penugasan && pel.penugasan.length > 0) {
-                pel.penugasan.forEach(a => createRepeaterRow(a.kelas, a.guru));
+                pel.penugasan.forEach(a => createRepeaterRow(a.level || '', a.kelas, a.guru));
             } else {
                 createRepeaterRow();
             }
@@ -351,6 +377,7 @@
                 
                 const rows = document.querySelectorAll('.repeater-row');
                 const penugasan = Array.from(rows).map(row => ({
+                    level: row.querySelector('.row-level').value,
                     kelas: row.querySelector('.row-kelas').value,
                     guru: row.querySelector('.row-guru').value
                 }));
