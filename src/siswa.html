@@ -349,6 +349,9 @@
         window.editSiswa = (index) => {
             const siswa = siswaData[index];
             currentEditId = siswa.id;
+            window.oldSiswaNama = siswa.nama; // Simpan nama lama
+            window.oldSiswaNisn = siswa.nisn; // Simpan NISN lama
+
             document.getElementById('modalTitle').innerText = 'Edit Data Siswa';
             document.getElementById('statusGroup').style.display = 'block';
             
@@ -402,11 +405,14 @@
 
         addSiswaForm.onsubmit = async (e) => {
             e.preventDefault();
+            const newName = document.getElementById('inputNama').value;
+            const newNisn = document.getElementById('inputNisn').value;
+
             const formData = {
-                nisn: document.getElementById('inputNisn').value,
-                nama: document.getElementById('inputNama').value,
+                nisn: newNisn,
+                nama: newName,
                 jk: document.getElementById('inputJk').value,
-                kelas: document.getElementById('inputKelas').value, // Boleh kosong sesuai request
+                kelas: document.getElementById('inputKelas').value,
                 ayah: document.getElementById('inputAyah').value,
                 ibu: document.getElementById('inputIbu').value,
                 username: document.getElementById('inputUsername').value,
@@ -416,7 +422,13 @@
 
             try {
                 if (currentEditId) {
+                    const oldName = window.oldSiswaNama;
+                    const oldNisn = window.oldSiswaNisn;
                     await window.db.updateSiswa(currentEditId, formData);
+                    
+                    if ((oldName && oldName !== newName) || (oldNisn && oldNisn !== newNisn)) {
+                        await syncSiswaChange(oldNisn, newNisn, newName);
+                    }
                 } else {
                     formData.type = 'siswa';
                     await window.db.insertSiswa(formData);
@@ -429,8 +441,64 @@
             }
         };
 
-        // Logic Sinkron, Upload, etc. (Stubs to keep it consistent)
-        document.getElementById('btnSimpan').onclick = () => fetchSiswa();
+        async function syncSiswaChange(oldNisn, newNisn, newName) {
+            console.log(`Syncing student change for NISN: ${oldNisn}`);
+            try {
+                // 1. Update Nilai
+                const allNilai = await window.db.getAllNilai();
+                const studentNilai = allNilai.filter(n => n.nisn === oldNisn);
+                for (const n of studentNilai) {
+                    await window.db.upsertNilai({ ...n, nisn: newNisn, nama: newName });
+                }
+
+                // 2. Update Presensi
+                const allPresensi = await window.db.getAllPresensi();
+                const studentPresensi = allPresensi.filter(p => p.nisn === oldNisn);
+                for (const p of studentPresensi) {
+                    await window.db.upsertPresensi({ ...p, nisn: newNisn, nama: newName });
+                }
+            } catch (err) {
+                console.error("Error during cascading student change:", err);
+            }
+        }
+
+        // Logic Sinkron, Upload, etc.
+        document.getElementById('btnSimpan').onclick = async () => {
+            const btn = document.getElementById('btnSimpan');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sinkronisasi...';
+            btn.disabled = true;
+
+            try {
+                const [allSiswa, allKelas] = await Promise.all([
+                    window.db.getAllSiswa(),
+                    window.db.getAllKelas()
+                ]);
+
+                const counts = allSiswa.reduce((acc, s) => {
+                    if (s.kelas) acc[s.kelas] = (acc[s.kelas] || 0) + 1;
+                    return acc;
+                }, {});
+
+                let updatedCount = 0;
+                for (const k of allKelas) {
+                    const actualCount = counts[k.nama] || 0;
+                    if (k.siswa_count !== actualCount) {
+                        await window.db.updateKelas(k.id, { ...k, siswa_count: actualCount });
+                        updatedCount++;
+                    }
+                }
+
+                alert(`Sinkronisasi selesai! ${updatedCount} data kelas diperbarui.`);
+                await fetchSiswa();
+            } catch (e) {
+                console.error(e);
+                alert("Gagal melakukan sinkronisasi: " + e.message);
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        };
         document.getElementById('btnUpload').onclick = () => document.getElementById('fileUpload').click();
         document.getElementById('btnTemplate').onclick = () => window.location.href = 'template_siswa.csv';
     </script>

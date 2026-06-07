@@ -258,10 +258,53 @@
         document.getElementById('closeAddModal').onclick = () => addModal.style.display = 'none';
         document.getElementById('closeDetailModal').onclick = () => detailModal.style.display = 'none';
 
+        document.getElementById('btnSimpan').onclick = async () => {
+            const btn = document.getElementById('btnSimpan');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sinkronisasi...';
+            btn.disabled = true;
+
+            try {
+                const [allGuru, allMapel, allKelas] = await Promise.all([
+                    window.db.getAllGuru(),
+                    window.db.getAllMapel(),
+                    window.db.getAllKelas()
+                ]);
+
+                let updatedCount = 0;
+                for (const guru of allGuru) {
+                    // Find subjects assigned to this guru
+                    const subjects = allMapel.filter(m => 
+                        (m.penugasan || []).some(p => p.guru === guru.nama)
+                    ).map(m => m.nama);
+
+                    const mapelStr = subjects.join(', ');
+
+                    // If mapel changed, update guru record
+                    if (guru.mapel !== mapelStr) {
+                        await window.db.updateGuru(guru.id, { ...guru, mapel: mapelStr });
+                        updatedCount++;
+                    }
+                }
+
+                alert(`Sinkronisasi selesai! ${updatedCount} data guru diperbarui.`);
+                await fetchGuru();
+            } catch (e) {
+                console.error(e);
+                alert("Gagal melakukan sinkronisasi: " + e.message);
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        };
+
         // CRUD Actions
         window.editGuru = (index) => {
             const guru = guruData[index];
             currentEditId = guru.id;
+            // Store old name to handle name changes in other tables
+            window.oldGuruName = guru.nama; 
+
             document.getElementById('modalTitle').innerText = 'Edit Data Guru';
             document.getElementById('statusGroup').style.display = 'block';
             
@@ -281,6 +324,7 @@
                 <div style="display:grid; grid-template-columns: 1fr 2fr; gap: 10px; font-size: 14px;">
                     <div style="color: var(--text-dim);">NUPTK</div><div>: ${guru.nuptk || '-'}</div>
                     <div style="color: var(--text-dim);">Nama</div><div style="font-weight:600;">: ${guru.nama}</div>
+                    <div style="color: var(--text-dim);">Mata Pelajaran</div><div>: ${guru.mapel || '-'}</div>
                     <div style="color: var(--text-dim);">Username</div><div>: ${guru.username}</div>
                     <div style="color: var(--text-dim);">Status</div><div>: <span class="badge badge-purple">${guru.status}</span></div>
                 </div>
@@ -302,9 +346,10 @@
 
         addGuruForm.onsubmit = async (e) => {
             e.preventDefault();
+            const newName = document.getElementById('inputNama').value;
             const formData = {
                 nuptk: document.getElementById('inputNUPTK').value,
-                nama: document.getElementById('inputNama').value,
+                nama: newName,
                 username: document.getElementById('inputUsername').value,
                 password: document.getElementById('inputPassword').value,
                 status: currentEditId ? document.getElementById('inputStatus').value : 'Aktif'
@@ -312,17 +357,60 @@
 
             try {
                 if (currentEditId) {
+                    const oldName = window.oldGuruName;
                     await window.db.updateGuru(currentEditId, formData);
+                    
+                    // If name changed, update other tables
+                    if (oldName && oldName !== newName) {
+                        await syncTeacherNameChange(oldName, newName);
+                    }
                 } else {
                     formData.type = 'guru';
+                    formData.mapel = '';
                     await window.db.insertGuru(formData);
                 }
                 addModal.style.display = 'none';
                 await fetchGuru();
             } catch (e) {
+                console.error(e);
                 alert("Gagal menyimpan data guru.");
             }
         };
+
+        async function syncTeacherNameChange(oldName, newName) {
+            console.log(`Syncing name change: ${oldName} -> ${newName}`);
+            try {
+                // 1. Update Kelas (Wali Kelas)
+                const allKelas = await window.db.getAllKelas();
+                for (const k of allKelas) {
+                    if (k.wali === oldName) {
+                        await window.db.updateKelas(k.id, { ...k, wali: newName });
+                    }
+                }
+
+                // 2. Update Mata Pelajaran (Penugasan Guru)
+                const allMapel = await window.db.getAllMapel();
+                for (const m of allMapel) {
+                    let changed = false;
+                    const newPenugasan = (m.penugasan || []).map(p => {
+                        if (p.guru === oldName) {
+                            changed = true;
+                            return { ...p, guru: newName };
+                        }
+                        return p;
+                    });
+                    if (changed) {
+                        await window.db.updateMapel(m.id, { ...m, penugasan: newPenugasan });
+                    }
+                }
+
+                // 3. Update Jadwal Pelajaran (Guru)
+                // Note: window.db.getAllJadwal() and update might be needed if supported by DB helper
+                // For now we focus on Kelas and Mapel which are the primary assignments.
+            } catch (err) {
+                console.error("Error during cascading name change:", err);
+            }
+        }
     </script>
 </body>
 </html>

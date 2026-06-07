@@ -9,54 +9,35 @@
     <title>Input Absensi Siswa | SAIS Guru</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style_guru_siswa.css">
     <style>
         :root {
             --primary: #10b981;
-            --bg-main: #0f172a;
-            --bg-sidebar: #1e293b;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: var(--bg-main); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+        main { width: 100%; max-width: 1000px; margin: 0 auto; }
 
-        .mobile-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 16px 20px; background: var(--bg-sidebar); border-bottom: 1px solid var(--border);
-            position: sticky; top: 0; z-index: 100;
-        }
-
-        .back-btn {
-            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.05); border-radius: 12px; color: white; text-decoration: none;
-        }
-
-        main { flex: 1; padding: 20px; width: 100%; max-width: 1000px; margin: 0 auto; }
-
-        .controls-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+        .controls-card { background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
         .form-group label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; }
-        .form-control { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 10px; padding: 10px; color: white; outline: none; font-size: 13px; }
+        .form-control { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 10px; padding: 10px; color: white; outline: none; font-size: 13px; }
 
         .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .search-box { position: relative; flex: 1; margin-right: 12px; }
         .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 12px; }
-        .search-box input { width: 100%; padding: 10px 12px 10px 35px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 13px; outline: none; }
+        .search-box input { width: 100%; padding: 10px 12px 10px 35px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: white; font-size: 13px; outline: none; }
 
         .btn-all-present { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 10px 16px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 
-        .attendance-table-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; }
+        .attendance-table-card { background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: 24px; overflow: hidden; }
         .table-wrapper { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
-        th { padding: 12px 16px; font-size: 11px; color: var(--text-dim); text-align: left; border-bottom: 1px solid var(--border); text-transform: uppercase; }
-        td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        th { padding: 12px 16px; font-size: 11px; color: var(--text-dim); text-align: left; border-bottom: 1px solid var(--glass-border); text-transform: uppercase; }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
 
         .status-options { display: flex; gap: 4px; }
         .status-btn {
-            width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+            width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--glass-border);
             background: rgba(255,255,255,0.03); color: var(--text-dim); font-size: 11px;
             font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;
         }
@@ -65,20 +46,31 @@
         .status-btn.active.s { background: #f59e0b; color: white; border-color: #f59e0b; }
         .status-btn.active.a { background: #ef4444; color: white; border-color: #ef4444; }
 
-        .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-sidebar); padding: 16px 20px; border-top: 1px solid var(--border); display: flex; justify-content: center; z-index: 200; }
+        .save-bar { background: var(--bg-card); padding: 16px 20px; border-top: 1px solid var(--glass-border); display: flex; justify-content: center; margin-top: 20px; border-radius: 20px; }
         .btn-save { width: 100%; max-width: 400px; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
     </style>
 </head>
-<body>
-    <div class="mobile-header">
-        <a href="dashboard_guru.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-        <div style="text-align: right;">
-            <p id="userNama" style="font-size: 13px; font-weight: 600;">Guru</p>
-            <p id="userMapel" style="font-size: 11px; color: var(--text-dim);">Mapel -</p>
-        </div>
-    </div>
+<body data-page="absensi">
+    <div id="sidebar-container"></div>
 
-    <main>
+    <div class="wrapper">
+        <div class="top-bar">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <button id="menuToggle" style="background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; display: none;">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a href="dashboard_guru.html" class="back-btn" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 12px; color: white; text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <h1 style="font-size: 18px; font-weight: 700;">Absensi Siswa</h1>
+            </div>
+            <div style="text-align: right;">
+                <p id="userNama" style="font-size: 13px; font-weight: 600;">Guru</p>
+                <p id="userMapel" style="font-size: 11px; color: var(--text-dim);">Mapel -</p>
+            </div>
+        </div>
+
+        <main>
         <div class="controls-card">
             <div class="form-grid">
                 <div class="form-group">
@@ -138,6 +130,30 @@
         <button class="btn-save" onclick="saveAttendance()">Simpan Absensi Hari Ini</button>
     </div>
 
+    <!-- Bottom Bar -->
+    <div class="bottom-bar">
+        <a href="dashboard_guru.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="absensi_guru.html" class="nav-link active">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Absen</span>
+        </a>
+        <a href="jadwal_guru.html" class="nav-link">
+            <i class="fas fa-calendar-day"></i>
+            <span>Jadwal</span>
+        </a>
+        <div class="nav-link" onclick="toggleProfile()" style="cursor: pointer;">
+            <i class="fas fa-user-circle"></i>
+            <span>Profil</span>
+        </div>
+    </div>
+
+    </div> <!-- End Wrapper -->
+
+    <script src="js/load-sidebar.js"></script>
+    <script src="js/utils_guru_siswa.js"></script>
     <script>
         let currentSiswa = [];
         let attendanceState = {}; // nisn -> status
