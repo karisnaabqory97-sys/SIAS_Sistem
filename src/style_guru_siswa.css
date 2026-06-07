@@ -100,6 +100,8 @@ main { padding: 24px; flex: 1; }
     .menu-grid {
         grid-template-columns: repeat(6, 1fr);
     }
+    .bottom-bar { display: none !important; }
+    body { padding-bottom: 0 !important; }
 }
 
 .menu-item {

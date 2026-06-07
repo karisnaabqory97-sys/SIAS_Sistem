@@ -70,18 +70,18 @@
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
             document.getElementById('userNama').textContent = currentUser.nama || 'Siswa';
             document.getElementById('userKelas').textContent = 'Kelas ' + (currentUser.kelas || '-');
             
-            renderInfo();
+            await renderInfo();
         });
 
-        function renderInfo() {
+        async function renderInfo() {
             const container = document.getElementById('infoContainer');
             try {
-                const infoData = JSON.parse(localStorage.getItem('sais_dataInformasi') || '[]');
+                const infoData = await window.db.getAllInformasi();
                 const filtered = infoData.filter(i => i.sasaran === 'Semua' || i.sasaran === 'Siswa');
 
                 if (filtered.length === 0) {

@@ -84,3 +84,19 @@ function loadUserInfo(userType) {
         document.getElementById('fullKelas').textContent = 'Kelas ' + currentUser.kelas;
     }
 }
+
+// Check if Guru is a Wali Kelas
+async function checkWaliKelas(guruNama) {
+    try {
+        const classes = await window.db.getAllKelas();
+        const myClass = classes.find(k => k.wali === guruNama);
+        if (myClass) {
+            const menuKelasSaya = document.getElementById('menuKelasSaya');
+            if (menuKelasSaya) {
+                menuKelasSaya.style.display = 'flex';
+            }
+        }
+    } catch (e) {
+        console.error("Error checking Wali Kelas status:", e);
+    }
+}

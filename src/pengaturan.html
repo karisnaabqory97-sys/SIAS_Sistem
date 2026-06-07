@@ -155,9 +155,7 @@
                     <div class="form-group">
                         <label>Tahun Ajaran Aktif</label>
                         <select id="academicYear" class="form-control" style="background: var(--bg-body);">
-                            <option value="2024/2025">2024/2025</option>
-                            <option value="2025/2026">2025/2026</option>
-                            <option value="2026/2027">2026/2027</option>
+                            <!-- Dinamis via JS -->
                         </select>
                     </div>
 
@@ -228,9 +226,34 @@
         });
 
         function loadSettings() {
+            // Dinamis Tahun Ajaran (Jangka Panjang)
+            const yearSelect = document.getElementById('academicYear');
+            const currentYear = new Date().getFullYear();
+            const savedYear = localStorage.getItem('sais_academicYear') || `${currentYear}/${currentYear + 1}`;
+            
+            yearSelect.innerHTML = '';
+            // Generate list dari 2 tahun lalu sampai 5 tahun ke depan
+            for (let i = -2; i <= 5; i++) {
+                const year = currentYear + i;
+                const label = `${year}/${year + 1}`;
+                const opt = document.createElement('option');
+                opt.value = label;
+                opt.textContent = label;
+                if (label === savedYear) opt.selected = true;
+                yearSelect.appendChild(opt);
+            }
+
+            // Pastikan tahun yang tersimpan ada di list (jika di luar range)
+            if (!Array.from(yearSelect.options).some(o => o.value === savedYear)) {
+                const opt = document.createElement('option');
+                opt.value = savedYear;
+                opt.textContent = savedYear;
+                opt.selected = true;
+                yearSelect.prepend(opt);
+            }
+
             document.getElementById('appName').value = localStorage.getItem('sais_appName') || 'SAIS';
             document.getElementById('schoolName').value = localStorage.getItem('sais_schoolName') || 'Sistem Informasi SMP';
-            document.getElementById('academicYear').value = localStorage.getItem('sais_academicYear') || '2025/2026';
             
             const savedLogo = localStorage.getItem('sais_logo');
             if (savedLogo) {

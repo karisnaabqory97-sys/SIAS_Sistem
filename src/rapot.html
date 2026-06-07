@@ -69,7 +69,7 @@
                 <button id="menuToggle"><i class="fas fa-bars"></i></button>
                 <div class="search-container">
                     <i class="fas fa-search"></i>
-                    <input type="text" class="search-input" placeholder="Cari data, menu, atau bantuan...">
+                    <input type="text" class="search-input" id="globalSearch" placeholder="Cari NISN atau Nama Siswa...">
                 </div>
             </div>
 
@@ -87,37 +87,22 @@
         <main>
             <div class="page-header">
                 <div class="header-title">
-                    <h1>Manajemen Rapot</h1>
-                    <p>Pantau dan kelola nilai rapot seluruh siswa</p>
+                    <h1>Manajemen Nilai Pelajaran</h1>
+                    <p>Pantau dan edit nilai yang telah diinput oleh Guru Mata Pelajaran.</p>
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                     <select class="filter-select" id="filterKelas">
                         <option value="">Semua Kelas</option>
                     </select>
-                    <button class="btn btn-primary" onclick="alert('Export PDF...')"><i class="fas fa-file-export"></i> Export</button>
-                </div>
-            </div>
-
-            <div class="summary-cards">
-                <div class="summary-card">
-                    <div class="icon blue"><i class="fas fa-book"></i></div>
-                    <div class="value" id="totalRapot">0</div>
-                    <div class="label">Total Rapot</div>
-                </div>
-                <div class="summary-card">
-                    <div class="icon green"><i class="fas fa-check-circle"></i></div>
-                    <div class="value" id="sudahInput">0</div>
-                    <div class="label">Sudah Diinput</div>
-                </div>
-                <div class="summary-card">
-                    <div class="icon yellow"><i class="fas fa-clock"></i></div>
-                    <div class="value" id="belumInput">0</div>
-                    <div class="label">Belum Diinput</div>
-                </div>
-                <div class="summary-card">
-                    <div class="icon red"><i class="fas fa-exclamation-triangle"></i></div>
-                    <div class="value" id="belumValidasi">0</div>
-                    <div class="label">Perlu Validasi</div>
+                    <select class="filter-select" id="filterJenis">
+                        <option value="">Semua Jenis Ujian</option>
+                        <option value="Harian 1">Harian 1</option>
+                        <option value="Harian 2">Harian 2</option>
+                        <option value="PTS Semester 1">PTS 1</option>
+                        <option value="PTS Semester 2">PTS 2</option>
+                        <option value="PAS">PAS</option>
+                        <option value="PAT">PAT</option>
+                    </select>
                 </div>
             </div>
 
@@ -131,14 +116,13 @@
                                 <th>NAMA SISWA</th>
                                 <th>KELAS</th>
                                 <th>MAPEL</th>
+                                <th>JENIS UJIAN</th>
                                 <th>NILAI</th>
-                                <th>GRADE</th>
-                                <th>STATUS</th>
                                 <th>AKSI</th>
                             </tr>
                         </thead>
                         <tbody id="rapotTableBody">
-                            <tr><td colspan="9" style="text-align: center; padding: 40px;">Memuat data rapot...</td></tr>
+                            <tr><td colspan="8" style="text-align: center; padding: 40px;">Memuat data...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -146,17 +130,28 @@
         </main>
     </div>
 
-    <!-- Modal Detail Rapot -->
-    <div class="modal-overlay" id="detailModal">
+    <!-- Modal Edit Nilai -->
+    <div class="modal-overlay" id="editModal">
         <div class="modal">
             <div class="modal-header" style="display:flex; justify-content:space-between; margin-bottom:24px;">
-                <h2 class="modal-title">Detail Rapot Siswa</h2>
-                <button class="btn-close" onclick="document.getElementById('detailModal').classList.remove('active')" style="background:transparent; border:none; color:var(--text-dim); font-size:24px; cursor:pointer;">&times;</button>
+                <h2 class="modal-title">Edit Nilai Pelajaran</h2>
+                <button class="btn-close" onclick="closeModal()" style="background:transparent; border:none; color:var(--text-dim); font-size:24px; cursor:pointer;">&times;</button>
             </div>
-            <div id="rapotPreview"></div>
-            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
-                <button class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('active')">Tutup</button>
-                <button class="btn btn-primary" onclick="window.print()">Cetak</button>
+            <div id="editForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                    <div><label style="font-size:12px; color:var(--text-dim);">Nama Siswa</label><p id="editNama" style="font-weight:600;"></p></div>
+                    <div><label style="font-size:12px; color:var(--text-dim);">NISN</label><p id="editNisn" style="font-weight:600;"></p></div>
+                    <div><label style="font-size:12px; color:var(--text-dim);">Mata Pelajaran</label><p id="editMapel" style="font-weight:600;"></p></div>
+                    <div><label style="font-size:12px; color:var(--text-dim);">Jenis Ujian</label><p id="editJenis" style="font-weight:600;"></p></div>
+                </div>
+                <div class="form-group">
+                    <label style="display:block; margin-bottom:8px;">Nilai</label>
+                    <input type="number" id="editValue" class="filter-select" style="width:100%; border:1px solid var(--border);" min="0" max="100">
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:32px;">
+                <button class="btn btn-secondary" onclick="closeModal()">Batal</button>
+                <button class="btn btn-primary" onclick="updateNilai()">Simpan Perubahan</button>
             </div>
         </div>
     </div>
@@ -164,6 +159,7 @@
     <script src="js/load-sidebar.js"></script>
     <script>
         let rapotData = [];
+        let currentEditItem = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
@@ -172,6 +168,7 @@
 
             await fetchRapot();
             await loadClasses();
+            setupListeners();
         });
 
         async function fetchRapot() {
@@ -179,7 +176,6 @@
                 const data = await window.db.getAllNilai();
                 rapotData = data || [];
                 renderTable();
-                updateSummary();
             } catch (e) { console.error(e); }
         }
 
@@ -196,15 +192,28 @@
             } catch (e) { console.error(e); }
         }
 
-        function renderTable(filterKelas = '') {
+        function setupListeners() {
+            document.getElementById('filterKelas').onchange = renderTable;
+            document.getElementById('filterJenis').onchange = renderTable;
+            document.getElementById('globalSearch').oninput = renderTable;
+        }
+
+        function renderTable() {
+            const fKelas = document.getElementById('filterKelas').value;
+            const fJenis = document.getElementById('filterJenis').value;
+            const query = document.getElementById('globalSearch').value.toLowerCase();
             const tbody = document.getElementById('rapotTableBody');
             tbody.innerHTML = '';
             
-            let filtered = rapotData;
-            if (filterKelas) filtered = filtered.filter(r => r.kelas === filterKelas);
+            let filtered = rapotData.filter(r => {
+                const matchKelas = !fKelas || r.kelas === fKelas;
+                const matchJenis = !fJenis || r.jenis_ujian === fJenis;
+                const matchQuery = !query || r.nama.toLowerCase().includes(query) || r.nisn.includes(query);
+                return matchKelas && matchJenis && matchQuery;
+            });
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">Belum ada data rapot.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">Data tidak ditemukan.</td></tr>';
                 return;
             }
 
@@ -216,46 +225,44 @@
                     <td style="font-weight:600;">${r.nama}</td>
                     <td><span class="badge badge-purple">${r.kelas}</span></td>
                     <td>${r.mapel}</td>
-                    <td>${r.nilaiAkhir || '-'}</td>
-                    <td><span class="grade-badge grade-${(r.grade || 'C').toLowerCase()}">${r.grade || '-'}</span></td>
-                    <td><span class="status-badge status-${(r.status || 'Belum').toLowerCase()}">${r.status || 'Belum'}</span></td>
-                    <td><button class="btn-action" style="padding:4px 10px; border-radius:8px; border:1px solid var(--border); background:transparent; color:white; cursor:pointer;" onclick="viewDetail(${r.id})">Lihat</button></td>
+                    <td><span class="badge" style="background:rgba(99,102,241,0.1); color:var(--primary); font-size:10px;">${r.jenis_ujian || '-'}</span></td>
+                    <td style="font-weight:700;">${r.nilai || 0}</td>
+                    <td>
+                        <button class="action-btn" onclick="openEdit(${r.id || i})" style="color:var(--primary); background:transparent; border:none; cursor:pointer;"><i class="fas fa-edit"></i> Edit</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function updateSummary() {
-            document.getElementById('totalRapot').textContent = rapotData.length;
-            document.getElementById('sudahInput').textContent = rapotData.filter(r => r.status === 'Sudah').length;
-            document.getElementById('belumInput').textContent = rapotData.filter(r => r.status === 'Belum').length;
-            document.getElementById('belumValidasi').textContent = rapotData.filter(r => (r.nilaiAkhir || 0) < 75).length;
-        }
+        window.openEdit = (id) => {
+            currentEditItem = rapotData.find((x, i) => (x.id === id || i === id));
+            if(!currentEditItem) return;
 
-        window.viewDetail = (id) => {
-            const r = rapotData.find(x => x.id === id);
-            if(!r) return;
-            document.getElementById('rapotPreview').innerHTML = `
-                <div style="text-align:center; border-bottom:2px solid var(--border); padding-bottom:20px; margin-bottom:20px;">
-                    <h3>RAPOT HASIL BELAJAR</h3>
-                    <p style="font-size:12px; color:var(--text-dim);">SMP NEGERI SAIS PROFESSIONAL</p>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; font-size:13px; margin-bottom:20px;">
-                    <div><span style="color:var(--text-dim);">Nama:</span> <strong>${r.nama}</strong></div>
-                    <div><span style="color:var(--text-dim);">NISN:</span> <strong>${r.nisn}</strong></div>
-                    <div><span style="color:var(--text-dim);">Kelas:</span> <strong>${r.kelas}</strong></div>
-                    <div><span style="color:var(--text-dim);">Mapel:</span> <strong>${r.mapel}</strong></div>
-                </div>
-                <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:16px; text-align:center;">
-                    <div style="font-size:12px; color:var(--text-dim);">Nilai Akhir</div>
-                    <div style="font-size:48px; font-weight:800; color:var(--accent);">${r.nilaiAkhir || 0}</div>
-                    <div style="font-size:18px; font-weight:600;">Grade: ${r.grade || '-'}</div>
-                </div>
-            `;
-            document.getElementById('detailModal').classList.add('active');
+            document.getElementById('editNama').textContent = currentEditItem.nama;
+            document.getElementById('editNisn').textContent = currentEditItem.nisn;
+            document.getElementById('editMapel').textContent = currentEditItem.mapel;
+            document.getElementById('editJenis').textContent = currentEditItem.jenis_ujian || '-';
+            document.getElementById('editValue').value = currentEditItem.nilai || 0;
+
+            document.getElementById('editModal').classList.add('active');
         };
 
-        document.getElementById('filterKelas').onchange = (e) => renderTable(e.target.value);
+        window.closeModal = () => document.getElementById('editModal').classList.remove('active');
+
+        window.updateNilai = async () => {
+            if(!currentEditItem) return;
+            const newValue = document.getElementById('editValue').value;
+            
+            try {
+                const updated = { ...currentEditItem, nilai: newValue };
+                await window.db.upsertNilai(updated);
+                alert('Berhasil memperbarui nilai.');
+                closeModal();
+                await fetchRapot();
+            } catch (e) { alert('Gagal memperbarui nilai.'); }
+        };
+    </script>
     </script>
 </body>
 </html>

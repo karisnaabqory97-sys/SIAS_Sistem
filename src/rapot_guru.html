@@ -88,68 +88,252 @@
 
     <main>
         <header>
-            <h1>Input Nilai Rapot</h1>
-            <p class="subtitle">Kelola nilai akademik siswa Anda.</p>
+            <h1>Nilai Pelajaran</h1>
+            <p class="subtitle">Kelola nilai akademik siswa sesuai mata pelajaran yang diampu.</p>
         </header>
 
         <div class="filter-group">
-            <select class="filter-select" id="filterKelas"><option value="">Pilih Kelas</option></select>
-            <select class="filter-select" id="filterMapel"><option value="">Pilih Mapel</option></select>
+            <select class="filter-select" id="filterKelas">
+                <option value="">-- Pilih Kelas --</option>
+            </select>
+            <select class="filter-select" id="filterJenisUjian">
+                <option value="">-- Pilih Jenis Ujian --</option>
+                <optgroup label="Ujian Harian">
+                    <option value="Harian 1">Harian ke-1</option>
+                    <option value="Harian 2">Harian ke-2</option>
+                    <option value="Harian 3">Harian ke-3</option>
+                    <option value="Harian 4">Harian ke-4</option>
+                </optgroup>
+                <optgroup label="Ujian Tengah Semester">
+                    <option value="PTS Semester 1">PTS Semester 1</option>
+                    <option value="PTS Semester 2">PTS Semester 2</option>
+                </optgroup>
+                <optgroup label="Ujian Akhir">
+                    <option value="PAS">PAS (Akhir Semester)</option>
+                    <option value="PAT">PAT (Akhir Tahun)</option>
+                </optgroup>
+            </select>
+            <select class="filter-select" id="filterMapel">
+                <option value="">-- Pilih Pelajaran --</option>
+            </select>
         </div>
 
-        <div class="progress-card">
-            <div style="display:flex; justify-content:space-between; font-size:12px;">
-                <span>Progress Penginputan</span>
-                <span id="progressText">0%</span>
+        <div id="inputSection" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="progress-card" style="margin-bottom: 0; flex: 1; margin-right: 20px;">
+                    <div style="display:flex; justify-content:space-between; font-size:12px;">
+                        <span>Progress Input Data</span>
+                        <span id="progressText">0%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                </div>
+                <button class="btn btn-primary" onclick="saveAll()" style="padding: 12px 24px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-save"></i> Simpan Data Nilai
+                </button>
             </div>
-            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+            <div class="table-card">
+                <div class="table-wrapper">
+                    <table class="responsive-table">
+                        <thead>
+                            <tr>
+                                <th width="50px">No</th>
+                                <th width="150px">NIS / NISN</th>
+                                <th>Nama Siswa</th>
+                                <th width="100px">Kelas</th>
+                                <th width="120px">Input Nilai</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nilaiTableBody">
+                            <!-- Rows will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <div class="table-card">
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nama Siswa</th>
-                            <th>Nilai</th>
-                            <th>Grade</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="nilaiTableBody">
-                        <tr><td colspan="4" style="text-align:center; padding:30px; color:var(--text-dim);">Silakan pilih kelas dan mapel.</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <div id="placeholderMsg" style="text-align: center; padding: 60px; color: var(--text-dim);">
+            <i class="fas fa-filter" style="font-size: 40px; margin-bottom: 16px; opacity: 0.3;"></i>
+            <p>Silakan pilih Kelas, Jenis Ujian, dan Mata Pelajaran untuk memulai input nilai.</p>
         </div>
     </main>
 
-    <button class="btn-save-all" onclick="saveAll()">
-        <i class="fas fa-save"></i> Simpan Semua
-    </button>
-
     <script>
+        let currentUser = {};
+        let allMapel = [];
+        let students = [];
+        let gradeState = {}; // nisn -> nilai
+
         document.addEventListener('DOMContentLoaded', async () => {
-            const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
-            document.getElementById('userNama').textContent = user.nama || 'Guru';
-            document.getElementById('userMapel').textContent = user.mapel || '-';
+            currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            document.getElementById('userNama').textContent = currentUser.nama || 'Guru';
+            document.getElementById('userMapel').textContent = currentUser.mapel || '-';
             
-            // Populate filters and load data
             await initPage();
         });
 
         async function initPage() {
-            // Logic to load classes/mapel from DB
-            const kelasList = await window.db.getAllKelas();
-            const filterKelas = document.getElementById('filterKelas');
-            kelasList.forEach(k => {
-                const opt = document.createElement('option');
-                opt.value = k.nama || k; opt.textContent = k.nama || k;
-                filterKelas.appendChild(opt);
-            });
+            try {
+                const [kelasData, mapelData] = await Promise.all([
+                    window.db.getAllKelas(),
+                    window.db.getAllMapel()
+                ]);
+
+                allMapel = mapelData;
+                const filterKelas = document.getElementById('filterKelas');
+                
+                // Only show classes where this teacher is assigned in Manajemen Pelajaran
+                const assignedClasses = new Set();
+                mapelData.forEach(m => {
+                    const penugasan = m.penugasan || [];
+                    penugasan.forEach(p => {
+                        if (p.guru === currentUser.nama) assignedClasses.add(p.kelas);
+                    });
+                });
+
+                Array.from(assignedClasses).sort().forEach(className => {
+                    const opt = document.createElement('option');
+                    opt.value = className; opt.textContent = className;
+                    filterKelas.appendChild(opt);
+                });
+
+                setupListeners();
+            } catch (e) { console.error(e); }
         }
 
-        window.saveAll = () => alert('Berhasil menyimpan semua nilai!');
+        function setupListeners() {
+            const fKelas = document.getElementById('filterKelas');
+            const fJenis = document.getElementById('filterJenisUjian');
+            const fMapel = document.getElementById('filterMapel');
+
+            fKelas.onchange = () => {
+                updateMapelFilter();
+                checkFilters();
+            };
+            fJenis.onchange = checkFilters;
+            fMapel.onchange = checkFilters;
+        }
+
+        function updateMapelFilter() {
+            const fKelas = document.getElementById('filterKelas').value;
+            const fMapel = document.getElementById('filterMapel');
+            fMapel.innerHTML = '<option value="">-- Pilih Pelajaran --</option>';
+
+            if (!fKelas) return;
+
+            const myMapels = allMapel.filter(m => {
+                const penugasan = m.penugasan || [];
+                return penugasan.some(p => p.guru === currentUser.nama && p.kelas === fKelas);
+            });
+
+            myMapels.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.nama; opt.textContent = m.nama;
+                fMapel.appendChild(opt);
+            });
+
+            // Auto select if only one
+            if (myMapels.length === 1) {
+                fMapel.selectedIndex = 1;
+            }
+        }
+
+        async function checkFilters() {
+            const kelas = document.getElementById('filterKelas').value;
+            const jenis = document.getElementById('filterJenisUjian').value;
+            const mapel = document.getElementById('filterMapel').value;
+
+            if (kelas && jenis && mapel) {
+                document.getElementById('placeholderMsg').style.display = 'none';
+                document.getElementById('inputSection').style.display = 'block';
+                await loadStudents(kelas, mapel, jenis);
+            } else {
+                document.getElementById('placeholderMsg').style.display = 'block';
+                document.getElementById('inputSection').style.display = 'none';
+            }
+        }
+
+        async function loadStudents(kelas, mapel, jenis) {
+            const tbody = document.getElementById('nilaiTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">Memuat data siswa...</td></tr>';
+
+            try {
+                const allSiswa = await window.db.getAllSiswa();
+                students = allSiswa.filter(s => s.kelas === kelas);
+                
+                // Fetch existing grades for this combination
+                const existingNilai = await window.db.getNilaiByFilter(kelas, mapel, jenis);
+                gradeState = {};
+                existingNilai.forEach(n => {
+                    gradeState[n.nisn] = n.nilai;
+                });
+
+                renderTable();
+            } catch (e) { console.error(e); }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('nilaiTableBody');
+            tbody.innerHTML = '';
+
+            students.forEach((s, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${i + 1}</td>
+                    <td>${s.nisn}</td>
+                    <td style="font-weight:600;">${s.nama}</td>
+                    <td><span class="badge badge-purple">${s.kelas}</span></td>
+                    <td>
+                        <input type="number" class="input-nilai" 
+                            value="${gradeState[s.nisn] || ''}" 
+                            oninput="updateState('${s.nisn}', this.value)"
+                            placeholder="0-100" min="0" max="100">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            updateProgress();
+        }
+
+        window.updateState = (nisn, val) => {
+            gradeState[nisn] = val;
+            updateProgress();
+        };
+
+        function updateProgress() {
+            const total = students.length;
+            const filled = Object.values(gradeState).filter(v => v !== '' && v !== null).length;
+            const percent = total > 0 ? Math.round((filled / total) * 100) : 0;
+            
+            document.getElementById('progressText').textContent = `${percent}%`;
+            document.getElementById('progressFill').style.width = `${percent}%`;
+        }
+
+        window.saveAll = async () => {
+            const confirmed = confirm("Apa Sudah yakin Data yang ada masukan benar, dan tidak ada yang terlewat?");
+            if (!confirmed) return;
+
+            const kelas = document.getElementById('filterKelas').value;
+            const mapel = document.getElementById('filterMapel').value;
+            const jenis = document.getElementById('filterJenisUjian').value;
+
+            const payload = students.map(s => ({
+                nisn: s.nisn,
+                nama: s.nama,
+                kelas: kelas,
+                mapel: mapel,
+                jenis_ujian: jenis,
+                nilai: gradeState[s.nisn] || 0
+            }));
+
+            try {
+                await window.db.upsertNilai(payload);
+                alert('✅ Berhasil menyimpan data nilai pelajaran.');
+            } catch (e) {
+                alert('❌ Gagal menyimpan data.');
+                console.error(e);
+            }
+        };
     </script>
 </body>
 </html>

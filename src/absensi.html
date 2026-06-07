@@ -152,10 +152,18 @@
 
             if (!kelas || !mapel) return;
 
-            // Update Teacher Info (Mock or Fetch from Mapel/Kelas relation)
+            // Update Teacher Info from assignment
             const banner = document.getElementById('teacherBanner');
             const foundMapel = allMapel.find(m => m.nama === mapel);
-            document.getElementById('displayTeacher').textContent = `Guru Pengampu: ${foundMapel?.pengampu || 'Guru Mata Pelajaran'}`;
+            
+            // Find teacher assigned to this specific class
+            let teacherName = 'Guru Mata Pelajaran';
+            if (foundMapel && foundMapel.penugasan) {
+                const assignment = foundMapel.penugasan.find(p => p.kelas === kelas);
+                if (assignment) teacherName = assignment.guru;
+            }
+
+            document.getElementById('displayTeacher').textContent = `Guru Pengampu: ${teacherName}`;
             document.getElementById('displayKelas').textContent = `Kelas: ${kelas}`;
             banner.classList.add('active');
 

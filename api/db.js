@@ -84,6 +84,19 @@ export async function GET(request) {
                 });
                 break;
 
+            case 'presensi':
+                const nisn = url.searchParams.get('nisn');
+                const p_kelas = url.searchParams.get('kelas');
+                const p_mapel = url.searchParams.get('mapel');
+                if (nisn) {
+                    result = await sql`SELECT * FROM presensi WHERE nisn = ${nisn} ORDER BY tanggal DESC, pertemuan DESC`;
+                } else if (p_kelas && p_mapel) {
+                    result = await sql`SELECT * FROM presensi WHERE kelas = ${p_kelas} AND mapel = ${p_mapel} ORDER BY pertemuan ASC, nama ASC`;
+                } else {
+                    result = await sql`SELECT * FROM presensi ORDER BY tanggal DESC`;
+                }
+                break;
+
             case 'informasi':
                 result = await sql`SELECT * FROM informasi WHERE is_published = TRUE ORDER BY created_at DESC`;
                 break;
@@ -98,15 +111,21 @@ export async function GET(request) {
                 break;
 
             case 'nilai':
-                const siswaId = url.searchParams.get('siswa_id');
-                if (siswaId) {
-                    result = await sql`SELECT * FROM nilai WHERE siswa_id = ${siswaId} ORDER BY semester DESC`;
+                const n_kelas = url.searchParams.get('kelas');
+                const n_mapel = url.searchParams.get('mapel');
+                const n_jenis = url.searchParams.get('jenis');
+                const n_nisn = url.searchParams.get('nisn');
+
+                if (n_nisn) {
+                    result = await sql`SELECT * FROM nilai WHERE nisn = ${n_nisn} ORDER BY created_at DESC`;
+                } else if (n_kelas && n_mapel && n_jenis) {
+                    result = await sql`SELECT * FROM nilai WHERE kelas = ${n_kelas} AND mapel = ${n_mapel} AND jenis_ujian = ${n_jenis}`;
                 } else {
                     result = await sql`SELECT * FROM nilai ORDER BY created_at DESC`;
                 }
                 break;
 
-            default:
+            case 'jadwal':
                 result = await sql`SELECT 1 as test`;
         }
 
@@ -290,6 +309,39 @@ export async function POST(request) {
                         SELECT * FROM siswa
                         WHERE (username = ${data.username} OR nisn = ${data.username}) AND password = ${data.password} AND status = 'Aktif'
                     `;
+                }
+                break;
+
+            case 'presensi':
+                if (action === 'upsert') {
+                    const records = Array.isArray(data) ? data : [data];
+                    for (const rec of records) {
+                        await sql`
+                            INSERT INTO presensi (nisn, nama, kelas, mapel, tanggal, pertemuan, status)
+                            VALUES (${rec.nisn}, ${rec.nama}, ${rec.kelas}, ${rec.mapel}, ${rec.tanggal}, ${rec.pertemuan}, ${rec.status})
+                            ON CONFLICT (nisn, mapel, pertemuan) DO UPDATE SET
+                                status = EXCLUDED.status,
+                                updated_at = NOW()
+                        `;
+                    }
+                    result = { success: true };
+                }
+                break;
+
+            case 'nilai':
+                if (action === 'upsert') {
+                    const records = Array.isArray(data) ? data : [data];
+                    for (const rec of records) {
+                        // Logic to handle granular grades (Harian, PTS, PAS, PAT)
+                        await sql`
+                            INSERT INTO nilai (nisn, nama, kelas, mapel, jenis_ujian, nilai)
+                            VALUES (${rec.nisn}, ${rec.nama}, ${rec.kelas}, ${rec.mapel}, ${rec.jenis_ujian}, ${rec.nilai})
+                            ON CONFLICT (nisn, mapel, jenis_ujian) DO UPDATE SET
+                                nilai = EXCLUDED.nilai,
+                                updated_at = NOW()
+                        `;
+                    }
+                    result = { success: true };
                 }
                 break;
 

@@ -126,38 +126,110 @@
 
     <script src="js/load-sidebar.js"></script>
     <script>
+        let allInfo = [];
+        let currentEditId = null;
+
         document.addEventListener('DOMContentLoaded', async () => {
             const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
             document.getElementById('userName').textContent = user.nama || 'Admin';
             document.getElementById('userInitial').textContent = (user.nama || 'A').charAt(0).toUpperCase();
 
             await fetchInfo();
+            setupListeners();
         });
 
         async function fetchInfo() {
             try {
                 const data = await window.db.getAllInformasi();
-                const tbody = document.getElementById('infoTableBody');
-                tbody.innerHTML = data.map(i => `
-                    <tr>
-                        <td>${i.tanggal}</td>
-                        <td>
-                            <div style="font-weight:600;">${i.judul}</div>
-                            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">${i.isi.substring(0, 50)}...</div>
-                        </td>
-                        <td><span class="badge badge-purple">${i.sasaran}</span></td>
-                        <td><span class="badge badge-success">Aktif</span></td>
-                        <td>
-                            <button class="action-btn"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn" style="color:#ef4444;"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
+                allInfo = data || [];
+                renderTable();
             } catch (e) { console.error(e); }
         }
 
-        document.getElementById('openAddModal').onclick = () => document.getElementById('infoModal').classList.add('active');
-        document.getElementById('closeModal').onclick = () => document.getElementById('infoModal').classList.remove('active');
+        function renderTable(query = '') {
+            const tbody = document.getElementById('infoTableBody');
+            const filtered = allInfo.filter(i => 
+                i.judul.toLowerCase().includes(query.toLowerCase()) || 
+                i.isi.toLowerCase().includes(query.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">Data tidak ditemukan.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map((i, index) => `
+                <tr>
+                    <td>${i.tanggal || '-'}</td>
+                    <td>
+                        <div style="font-weight:600;">${i.judul}</div>
+                        <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">${i.isi.substring(0, 80)}...</div>
+                    </td>
+                    <td><span class="badge badge-purple">${i.sasaran}</span></td>
+                    <td><span class="badge badge-success">Aktif</span></td>
+                    <td>
+                        <button class="action-btn" onclick="openEdit(${index})"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn" style="color:#ef4444;" onclick="deleteInfo('${i.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function setupListeners() {
+            document.getElementById('openAddModal').onclick = () => {
+                currentEditId = null;
+                document.getElementById('modalTitle').textContent = 'Tambah Informasi Baru';
+                document.getElementById('infoForm').reset();
+                document.getElementById('infoModal').classList.add('active');
+            };
+
+            document.getElementById('closeModal').onclick = () => document.getElementById('infoModal').classList.remove('active');
+
+            document.getElementById('infoForm').onsubmit = async (e) => {
+                e.preventDefault();
+                const data = {
+                    tanggal: document.getElementById('infoDate').value,
+                    judul: document.getElementById('infoTitle').value,
+                    isi: document.getElementById('infoContent').value,
+                    sasaran: document.getElementById('infoTarget').value,
+                    kategori: 'Pengumuman' // Default
+                };
+
+                try {
+                    if (currentEditId) {
+                        await window.db.updateInformasi(currentEditId, data);
+                    } else {
+                        await window.db.insertInformasi(data);
+                    }
+                    await fetchInfo();
+                    document.getElementById('infoModal').classList.remove('active');
+                } catch (err) { alert('Gagal menyimpan.'); }
+            };
+
+            document.querySelector('.search-input').oninput = (e) => renderTable(e.target.value);
+            
+            document.getElementById('btnSimpan').onclick = () => alert('Seluruh perubahan data sudah tersimpan di database.');
+        }
+
+        window.openEdit = (index) => {
+            const i = allInfo[index];
+            currentEditId = i.id;
+            document.getElementById('modalTitle').textContent = 'Edit Informasi';
+            document.getElementById('infoDate').value = i.tanggal;
+            document.getElementById('infoTitle').value = i.judul;
+            document.getElementById('infoContent').value = i.isi;
+            document.getElementById('infoTarget').value = i.sasaran;
+            document.getElementById('infoModal').classList.add('active');
+        };
+
+        window.deleteInfo = async (id) => {
+            if (confirm('Hapus informasi ini?')) {
+                try {
+                    await window.db.deleteInformasi(id);
+                    await fetchInfo();
+                } catch (e) { alert('Gagal menghapus.'); }
+            }
+        };
     </script>
 </body>
 </html>

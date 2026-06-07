@@ -35,23 +35,30 @@
             background: rgba(255,255,255,0.05); border-radius: 12px; color: white; text-decoration: none;
         }
 
-        main { flex: 1; padding: 20px; width: 100%; max-width: 800px; margin: 0 auto; }
+        main { flex: 1; padding: 20px; width: 100%; max-width: 1000px; margin: 0 auto; }
 
         header { margin-bottom: 24px; }
         h1 { font-size: 20px; font-weight: 700; }
         .subtitle { font-size: 13px; color: var(--text-dim); }
 
-        .class-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; margin-bottom: 20px; overflow: hidden; }
-        .class-header { padding: 16px 20px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .class-badge { background: var(--primary); color: white; padding: 4px 12px; border-radius: 8px; font-size: 14px; font-weight: 700; }
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        .filter-select {
+            background: var(--card-bg); border: 1px solid var(--border);
+            color: white; padding: 12px; border-radius: 14px; font-size: 13px; outline: none;
+        }
+
+        .table-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { text-align: left; padding: 16px 20px; font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); }
+        td { padding: 14px 20px; font-size: 13px; border-bottom: 1px solid var(--border); }
+        tr:last-child td { border-bottom: none; }
         
-        .student-list { padding: 0; list-style: none; }
-        .student-item { padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .student-item:last-child { border-bottom: none; }
-        .student-name { font-size: 14px; font-weight: 500; }
-        .student-meta { font-size: 11px; color: var(--text-dim); }
-        
-        .status-pill { font-size: 10px; padding: 2px 8px; border-radius: 4px; background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .badge-gender { padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; }
+        .badge-l { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .badge-p { background: rgba(236, 72, 153, 0.1); color: #ec4899; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
     </style>
 </head>
 <body>
@@ -65,55 +72,147 @@
 
     <main>
         <header>
-            <h1>Murid Baru & Kenaikan</h1>
-            <p class="subtitle">Daftar siswa yang masuk ke kelas Anda.</p>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h1>Murid Baru & Kenaikan</h1>
+                    <p class="subtitle">Data siswa berdasarkan penugasan mengajar Anda.</p>
+                </div>
+                <a href="dashboard_guru.html" class="btn-back-main" style="font-size: 12px; color: var(--primary); text-decoration: none; font-weight: 600;"><i class="fas fa-chevron-left"></i> Kembali</a>
+            </div>
         </header>
 
-        <div id="classContainer">
-            <!-- Populated by JS -->
-            <p style="text-align: center; padding: 40px; color: var(--text-dim);">Memuat data siswa...</p>
+        <div class="filter-grid">
+            <select class="filter-select" id="filterLevel">
+                <option value="">-- Pilih Level --</option>
+            </select>
+            <select class="filter-select" id="filterKelas">
+                <option value="">-- Pilih Kelas --</option>
+            </select>
+        </div>
+
+        <div class="table-card">
+            <div class="table-wrapper" id="tableWrapper">
+                <div class="empty-state">
+                    <i class="fas fa-filter" style="font-size: 32px; margin-bottom: 12px; opacity: 0.3;"></i>
+                    <p>Silakan pilih Level dan Kelas untuk melihat data siswa.</p>
+                </div>
+            </div>
         </div>
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+        let currentUser = {};
+        let myAssignments = [];
+        let allSiswa = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
             document.getElementById('userNama').textContent = currentUser.nama || 'Guru';
             document.getElementById('userMapel').textContent = currentUser.mapel || '-';
             
-            renderStudents();
+            await initPage();
         });
 
-        function renderStudents() {
-            const container = document.getElementById('classContainer');
-            // Mock data for teacher's incoming students
-            const data = [
-                { kelas: 'VIII-A', students: [
-                    { nama: 'Ahmad Fauzi', asal: 'VII-A' },
-                    { nama: 'Citra Lestari', asal: 'VII-A' }
-                ]}
-            ];
+        async function initPage() {
+            try {
+                // 1. Get assignments from Management Pelajaran
+                const mapels = await window.db.getAllMapel();
+                myAssignments = [];
+                mapels.forEach(m => {
+                    const penugasan = m.penugasan || [];
+                    penugasan.forEach(p => {
+                        if (p.guru === currentUser.nama) {
+                            myAssignments.push(p);
+                        }
+                    });
+                });
 
-            container.innerHTML = data.map(c => `
-                <div class="class-section">
-                    <div class="class-header">
-                        <div class="class-badge">${c.kelas}</div>
-                        <span style="font-size: 12px; color: var(--text-dim);">${c.students.length} Siswa</span>
-                    </div>
-                    <div class="student-list">
-                        ${c.students.map(s => `
-                            <div class="student-item">
-                                <div>
-                                    <div class="student-name">${s.nama}</div>
-                                    <div class="student-meta">Asal: Kelas ${s.asal}</div>
-                                </div>
-                                <span class="status-pill">Dinaikkan</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
+                // 2. Populate Level Selector
+                const levelSelect = document.getElementById('filterLevel');
+                const levels = [...new Set(myAssignments.map(a => a.level))].sort();
+                levels.forEach(l => {
+                    const opt = document.createElement('option');
+                    opt.value = l; opt.textContent = l;
+                    levelSelect.appendChild(opt);
+                });
+
+                // 3. Setup Listeners
+                levelSelect.onchange = updateKelasFilter;
+                document.getElementById('filterKelas').onchange = loadStudents;
+
+                // 4. Preload Siswa
+                allSiswa = await window.db.getAllSiswa();
+
+            } catch (e) { console.error(e); }
+        }
+
+        function updateKelasFilter() {
+            const level = document.getElementById('filterLevel').value;
+            const kelasSelect = document.getElementById('filterKelas');
+            kelasSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+
+            if (!level) return;
+
+            const classes = [...new Set(myAssignments.filter(a => a.level === level).map(a => a.kelas))].sort();
+            classes.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                kelasSelect.appendChild(opt);
+            });
+            
+            // Auto load if only one class
+            if (classes.length === 1) {
+                kelasSelect.selectedIndex = 1;
+                loadStudents();
+            }
+        }
+
+        async function loadStudents() {
+            const kelas = document.getElementById('filterKelas').value;
+            const wrapper = document.getElementById('tableWrapper');
+
+            if (!kelas) {
+                wrapper.innerHTML = `<div class="empty-state"><i class="fas fa-filter" style="font-size: 32px; margin-bottom: 12px; opacity: 0.3;"></i><p>Silakan pilih Kelas untuk melihat data siswa.</p></div>`;
+                return;
+            }
+
+            const students = allSiswa.filter(s => s.kelas === kelas);
+
+            if (students.length === 0) {
+                wrapper.innerHTML = `<div class="empty-state"><i class="fas fa-user-slash" style="font-size: 32px; margin-bottom: 12px; opacity: 0.3;"></i><p>Tidak ada data siswa untuk kelas ini.</p></div>`;
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="150px">NIS / NISN</th>
+                            <th>NAMA LENGKAP</th>
+                            <th width="100px">KELAS</th>
+                            <th width="120px">JENIS KELAMIN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            students.forEach(s => {
+                const gender = (s.jk || 'L').toUpperCase();
+                html += `
+                    <tr>
+                        <td style="font-weight: 600;">${s.nisn}</td>
+                        <td style="font-weight: 500;">${s.nama}</td>
+                        <td><span style="color: var(--primary); font-weight: 600;">${s.kelas}</span></td>
+                        <td><span class="badge-gender badge-${gender.toLowerCase()}">${gender === 'L' ? 'LAKI-LAKI' : 'PEREMPUAN'}</span></td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            wrapper.innerHTML = html;
         }
     </script>
+</body>
+</html>
 </body>
 </html>

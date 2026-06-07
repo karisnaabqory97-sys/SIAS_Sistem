@@ -66,14 +66,14 @@
         </div>
 
         <!-- Main Menu Grid -->
-        <div class="menu-grid">
+        <div class="menu-grid" id="mainMenuGrid">
             <a href="absensi_guru.html" class="menu-item">
                 <div class="menu-icon icon-emerald"><i class="fas fa-clipboard-check"></i></div>
                 <span>Absensi</span>
             </a>
             <a href="rapot_guru.html" class="menu-item">
                 <div class="menu-icon icon-blue"><i class="fas fa-file-invoice"></i></div>
-                <span>Input Nilai</span>
+                <span>Nilai Pelajaran</span>
             </a>
             <a href="jadwal_guru.html" class="menu-item">
                 <div class="menu-icon icon-green"><i class="fas fa-calendar-alt"></i></div>
@@ -82,6 +82,11 @@
             <a href="jadwal_ujian_guru.html" class="menu-item">
                 <div class="menu-icon icon-purple"><i class="fas fa-clock"></i></div>
                 <span>Jadwal Ujian</span>
+            </a>
+            <!-- Icon Kelas Saya (Conditional) -->
+            <a href="kelas_saya_guru.html" class="menu-item" id="menuKelasSaya" style="display: none;">
+                <div class="menu-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);"><i class="fas fa-chalkboard-teacher"></i></div>
+                <span>Kelas Saya</span>
             </a>
             <a href="kenaikan_guru.html" class="menu-item">
                 <div class="menu-icon icon-orange"><i class="fas fa-user-plus"></i></div>
@@ -153,6 +158,7 @@
             }
 
             loadUserInfo('guru');
+            checkWaliKelas(user.nama);
 
             // Load announcements (simplified)
             const pengumumanContainer = document.getElementById('pengumumanContainer');

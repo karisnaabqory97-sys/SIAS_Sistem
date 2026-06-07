@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <script src="neon-config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelas Saya | SAIS Guru</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg-main); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+
+        .mobile-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px; background: var(--bg-sidebar); border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .back-btn {
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.05); border-radius: 12px; color: white; text-decoration: none;
+        }
+
+        main { flex: 1; padding: 20px; width: 100%; max-width: 1000px; margin: 0 auto; }
+
+        .class-info-card {
+            background: linear-gradient(135deg, var(--primary), #4f46e5);
+            border-radius: 24px; padding: 24px; margin-bottom: 24px;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .tab-container { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 8px; }
+        .tab-btn {
+            padding: 10px 20px; border-radius: 12px; border: 1px solid var(--border);
+            background: var(--card-bg); color: var(--text-dim); cursor: pointer;
+            white-space: nowrap; font-size: 13px; font-weight: 500; transition: 0.3s;
+        }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .content-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 20px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; padding: 12px; font-size: 11px; color: var(--text-dim); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        td { padding: 14px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
+
+        .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; }
+        .badge-h { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        
+        .btn-view { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; font-size: 11px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="mobile-header">
+        <a href="dashboard_guru.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h3 id="classTitle">Kelas Saya</h3>
+        <div style="width: 40px;"></div>
+    </div>
+
+    <main>
+        <div class="class-info-card" id="classInfo">
+            <h1 id="className">Memuat...</h1>
+            <p id="classDetails" style="opacity: 0.9; font-size: 13px;">Informasi kelas Anda.</p>
+        </div>
+
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="switchTab('nilai')"><i class="fas fa-star"></i> Nilai Mapel</button>
+            <button class="tab-btn" onclick="switchTab('absen')"><i class="fas fa-clipboard-check"></i> Absensi</button>
+            <button class="tab-btn" onclick="switchTab('rapot')"><i class="fas fa-file-invoice"></i> Rapot</button>
+        </div>
+
+        <div class="content-card" id="mainContent">
+            <div id="loading" style="text-align: center; padding: 40px; color: var(--text-dim);">
+                <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 12px;"></i>
+                <p>Sinkronisasi data...</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let myClass = null;
+        let students = [];
+        let currentTab = 'nilai';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            await loadClassData(user.nama);
+        });
+
+        async function loadClassData(guruNama) {
+            try {
+                const classes = await window.db.getAllKelas();
+                myClass = classes.find(k => k.wali === guruNama);
+                
+                if (!myClass) {
+                    alert('Anda tidak terdaftar sebagai Wali Kelas.');
+                    window.location.href = 'dashboard_guru.html';
+                    return;
+                }
+
+                document.getElementById('className').textContent = 'Kelas ' + myClass.nama;
+                document.getElementById('classDetails').textContent = `Wali Kelas: ${guruNama} • Level: ${myClass.kode}`;
+
+                const allSiswa = await window.db.getAllSiswa();
+                students = allSiswa.filter(s => s.kelas === myClass.nama);
+                
+                switchTab('nilai');
+            } catch (e) { console.error(e); }
+        }
+
+        async function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('onclick').includes(tab));
+            });
+
+            const content = document.getElementById('mainContent');
+            content.innerHTML = '<p style="text-align:center; padding:40px; color:var(--text-dim);">Memuat data...</p>';
+
+            if (tab === 'nilai') renderNilai();
+            else if (tab === 'absen') renderAbsen();
+            else if (tab === 'rapot') renderRapot();
+        }
+
+        async function renderNilai() {
+            const content = document.getElementById('mainContent');
+            try {
+                const allNilai = await window.db.getAllNilai();
+                let html = '<table><thead><tr><th>Nama Siswa</th><th>Mapel</th><th>UTS</th><th>UAS</th><th>Akhir</th></tr></thead><tbody>';
+                
+                students.forEach(s => {
+                    const studentNilai = allNilai.filter(n => n.siswa_id === s.id);
+                    if (studentNilai.length > 0) {
+                        studentNilai.forEach(n => {
+                            html += `<tr><td>${s.nama}</td><td>${n.mapel || 'N/A'}</td><td>${n.nilai_uts}</td><td>${n.nilai_uas}</td><td style="font-weight:700; color:var(--primary);">${n.nilai_akhir}</td></tr>`;
+                        });
+                    } else {
+                        html += `<tr><td>${s.nama}</td><td colspan="4" style="color:var(--text-dim); font-style:italic;">Belum ada nilai</td></tr>`;
+                    }
+                });
+                
+                html += '</tbody></table>';
+                content.innerHTML = html;
+            } catch (e) { content.innerHTML = 'Gagal memuat nilai.'; }
+        }
+
+        async function renderAbsen() {
+            const content = document.getElementById('mainContent');
+            try {
+                const presensi = await window.db.getAllPresensi();
+                const filtered = presensi.filter(p => p.kelas === myClass.nama);
+                
+                let html = '<table><thead><tr><th>Nama Siswa</th><th>Mapel</th><th>Tgl</th><th>Status</th></tr></thead><tbody>';
+                
+                students.forEach(s => {
+                    const sAbsen = filtered.filter(p => p.nisn === s.nisn).slice(0, 3);
+                    if (sAbsen.length > 0) {
+                        sAbsen.forEach(p => {
+                            html += `<tr><td>${s.nama}</td><td>${p.mapel}</td><td>${p.tanggal}</td><td><span class="status-badge badge-${p.status.toLowerCase()}">${p.status}</span></td></tr>`;
+                        });
+                    } else {
+                        html += `<tr><td>${s.nama}</td><td colspan="3" style="color:var(--text-dim); font-style:italic;">Belum ada absen</td></tr>`;
+                    }
+                });
+
+                html += '</tbody></table>';
+                content.innerHTML = html;
+            } catch (e) { content.innerHTML = 'Gagal memuat absensi.'; }
+        }
+
+        function renderRapot() {
+            const content = document.getElementById('mainContent');
+            let html = '<table><thead><tr><th>Nama Siswa</th><th>Status</th><th>Aksi</th></tr></thead><tbody>';
+            
+            students.forEach(s => {
+                html += `<tr>
+                    <td><div style="font-weight:600;">${s.nama}</div><div style="font-size:11px; color:var(--text-dim);">${s.nisn}</div></td>
+                    <td><span class="status-badge badge-h" style="background:rgba(99,102,241,0.1); color:var(--primary);">Tersedia</span></td>
+                    <td><button class="btn-view" onclick="alert('Membuka Rapot ${s.nama}')">Buka</button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            content.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

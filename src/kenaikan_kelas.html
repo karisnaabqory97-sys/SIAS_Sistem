@@ -66,11 +66,10 @@
                     <h1>Kenaikan Kelas</h1>
                     <p>Kelola transisi jenjang pendidikan siswa.</p>
                 </div>
-                <div style="display: flex; gap: 12px;">
+                <div style="display: flex; gap: 12px; align-items: center;">
                     <select id="filterKelasAsal" class="kelas-select">
-                        <option value="">Semua Kelas Asal</option>
+                        <option value="">-- Pilih Kelas Asal --</option>
                     </select>
-                    <button class="btn btn-primary" onclick="alert('Mengeksekusi kenaikan...')"><i class="fas fa-check-double"></i> Eksekusi Kenaikan</button>
                 </div>
             </div>
 
@@ -111,7 +110,7 @@
                             </tr>
                         </thead>
                         <tbody id="kenaikanTableBody">
-                            <tr><td colspan="6" style="text-align: center; padding: 40px;">Memuat data...</td></tr>
+                            <tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-dim);">Silakan pilih kelas asal terlebih dahulu.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -121,6 +120,9 @@
 
     <script src="js/load-sidebar.js"></script>
     <script>
+        let allSiswa = [];
+        let allKelas = [];
+
         document.addEventListener('DOMContentLoaded', async () => {
             const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
             document.getElementById('userName').textContent = user.nama || 'Admin';
@@ -131,32 +133,126 @@
 
         async function initPage() {
             try {
-                const siswa = await window.db.getAllSiswa();
-                const kelas = await window.db.getAllKelas();
+                allSiswa = await window.db.getAllSiswa();
+                allKelas = await window.db.getAllKelas();
                 
-                document.getElementById('totalSiswa').textContent = siswa.length;
-                document.getElementById('siapNaik').textContent = siswa.filter(s => !s.kelas.includes('IX')).length;
-                document.getElementById('totalLulus').textContent = siswa.filter(s => s.kelas.includes('IX')).length;
-
-                const tbody = document.getElementById('kenaikanTableBody');
-                tbody.innerHTML = siswa.slice(0, 10).map(s => `
-                    <tr>
-                        <td>${s.nisn}</td>
-                        <td style="font-weight:600;">${s.nama}</td>
-                        <td>${s.kelas}</td>
-                        <td>
-                            <select class="kelas-select">
-                                <option value="">Pilih Tujuan...</option>
-                                ${kelas.map(k => `<option value="${k.nama || k}">${k.nama || k}</option>`).join('')}
-                                <option value="LULUS">LULUS</option>
-                            </select>
-                        </td>
-                        <td><span style="color:var(--text-dim);">⏳ Menunggu</span></td>
-                        <td><button class="btn btn-secondary" style="padding: 6px 12px; font-size: 11px;">Set</button></td>
-                    </tr>
-                `).join('');
+                updateStats();
+                populateFilters();
+                
+                document.getElementById('filterKelasAsal').onchange = (e) => renderTable(e.target.value);
             } catch (e) { console.error(e); }
         }
+
+        function updateStats() {
+            document.getElementById('totalSiswa').textContent = allSiswa.length;
+            document.getElementById('siapNaik').textContent = allSiswa.filter(s => !s.kelas.includes('IX')).length;
+            document.getElementById('totalLulus').textContent = allSiswa.filter(s => s.status === 'Lulus').length;
+            document.getElementById('sudahNaik').textContent = allSiswa.filter(s => s.updated_at && new Date(s.updated_at).getFullYear() === new Date().getFullYear()).length;
+        }
+
+        function populateFilters() {
+            const select = document.getElementById('filterKelasAsal');
+            select.innerHTML = '<option value="">-- Pilih Kelas Asal --</option>';
+            
+            allKelas.forEach(k => {
+                const opt = document.createElement('option');
+                opt.value = k.nama || k;
+                opt.textContent = k.nama || k;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderTable(selectedKelas) {
+            const tbody = document.getElementById('kenaikanTableBody');
+            if (!selectedKelas) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-dim);">Silakan pilih kelas asal terlebih dahulu.</td></tr>';
+                return;
+            }
+
+            const filtered = allSiswa.filter(s => s.kelas === selectedKelas);
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-dim);">Tidak ada siswa di kelas ini.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(s => `
+                <tr id="row-${s.id}">
+                    <td>${s.nisn}</td>
+                    <td style="font-weight:600;">${s.nama}</td>
+                    <td><span class="badge" style="background:rgba(255,255,255,0.05); color:white;">${s.kelas}</span></td>
+                    <td>
+                        <select class="kelas-select target-kelas">
+                            <option value="">Pilih Tujuan...</option>
+                            ${allKelas.map(k => `<option value="${k.nama || k}">${k.nama || k}</option>`).join('')}
+                            <option value="LULUS">LULUS</option>
+                        </select>
+                    </td>
+                    <td><span class="status-label" style="color:var(--text-dim); font-size:11px;"><i class="fas fa-clock"></i> Menunggu</span></td>
+                    <td>
+                        <button class="btn btn-primary" style="padding: 6px 16px; font-size: 11px;" onclick="processKenaikan('${s.id}', this)">
+                            <i class="fas fa-check"></i> Set
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function processKenaikan(siswaId, btn) {
+            const row = btn.closest('tr');
+            const targetSelect = row.querySelector('.target-kelas');
+            const targetKelas = targetSelect.value;
+            const statusLabel = row.querySelector('.status-label');
+
+            if (!targetKelas) {
+                alert('Silakan pilih kelas tujuan terlebih dahulu.');
+                return;
+            }
+
+            const siswa = allSiswa.find(s => s.id === siswaId);
+            const msg = targetKelas === 'LULUS' 
+                ? `Apakah Anda yakin meluluskan ${siswa.nama}?` 
+                : `Apakah Anda yakin menaikkan ${siswa.nama} ke kelas ${targetKelas}?`;
+
+            if (!confirm(msg)) return;
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                const updateData = {
+                    kelas: targetKelas === 'LULUS' ? siswa.kelas : targetKelas,
+                    status: targetKelas === 'LULUS' ? 'Lulus' : 'Aktif'
+                };
+
+                await window.db.updateSiswa(siswaId, updateData);
+
+                // Update Local State
+                const idx = allSiswa.findIndex(s => s.id === siswaId);
+                allSiswa[idx] = { ...allSiswa[idx], ...updateData, updated_at: new Date().toISOString() };
+
+                // Visual Feedback
+                statusLabel.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> Berhasil';
+                statusLabel.style.color = '#10b981';
+                
+                setTimeout(() => {
+                    row.style.opacity = '0.5';
+                    row.style.pointerEvents = 'none';
+                    // Reset action UI if needed, or just let it stay marked
+                    btn.innerHTML = '<i class="fas fa-check"></i> Set';
+                    btn.style.background = 'var(--text-dim)';
+                }, 1000);
+
+                updateStats();
+                alert(`Data ${siswa.nama} berhasil diperbarui!`);
+            } catch (err) {
+                alert('Gagal memproses kenaikan.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Set';
+                console.error(err);
+            }
+        }
     </script>
+</body>
+</html>
 </body>
 </html>

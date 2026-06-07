@@ -529,12 +529,34 @@ window.db = {
     },
 
     // ==================== NILAI ====================
-
     async getAllNilai() {
-        if (isProduction) {
+        if (CONFIG.useCloud) {
             return await apiGet('nilai');
         }
         return Storage.get('nilai_data') || [];
+    },
+
+    async getNilaiByFilter(kelas, mapel, jenis) {
+        if (CONFIG.useCloud) {
+            return await apiGet('nilai', { kelas, mapel, jenis });
+        }
+        const data = Storage.get('nilai_data') || [];
+        return data.filter(n => n.kelas === kelas && n.mapel === mapel && n.jenis_ujian === jenis);
+    },
+
+    async upsertNilai(nilaiData) {
+        const records = Array.isArray(nilaiData) ? nilaiData : [nilaiData];
+        if (CONFIG.useCloud) {
+            return await apiCall('nilai', 'upsert', records);
+        }
+        const data = Storage.get('nilai_data') || [];
+        records.forEach(rec => {
+            const idx = data.findIndex(n => n.nisn === rec.nisn && n.mapel === rec.mapel && n.jenis_ujian === rec.jenis_ujian);
+            if (idx > -1) data[idx] = { ...data[idx], ...rec, updated_at: new Date().toISOString() };
+            else data.push({ ...rec, id: Date.now() + Math.random(), created_at: new Date().toISOString() });
+        });
+        Storage.set('nilai_data', data);
+        return { success: true };
     },
 
     async getNilaiBySiswa(siswaId) {
