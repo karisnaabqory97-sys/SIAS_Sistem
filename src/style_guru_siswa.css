@@ -96,14 +96,6 @@ main { padding: 24px; flex: 1; }
     }
 }
 
-@media (min-width: 768px) {
-    .menu-grid {
-        grid-template-columns: repeat(6, 1fr);
-    }
-    .bottom-bar { display: none !important; }
-    body { padding-bottom: 0 !important; }
-}
-
 .menu-item {
     background: var(--bg-card);
     border: 1px solid var(--glass-border);
@@ -352,12 +344,11 @@ select option {
     border-radius: 14px; font-weight: 600; cursor: pointer;
 }
 
-/* Desktop Adjustments */
-@media (min-width: 1024px) {
-    body { padding-bottom: 0; }
-    .login-container { max-width: 900px; margin: 0 auto; }
+/* Desktop & Tablet Adjustments */
+@media (min-width: 768px) {
+    body { padding-bottom: 0 !important; }
     .menu-grid { grid-template-columns: repeat(6, 1fr); }
-    .bottom-bar { display: none; }
+    .bottom-bar { display: none !important; }
     .top-bar { padding: 20px 60px; }
     main { padding: 40px 60px; max-width: 1200px; margin: 0 auto; width: 100%; }
 }
