@@ -500,6 +500,72 @@
             }
         };
         document.getElementById('btnUpload').onclick = () => document.getElementById('fileUpload').click();
+
+        document.getElementById('fileUpload').onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (evt) => {
+                const text = evt.target.result;
+                const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+                if (lines.length < 2) return alert('File CSV kosong atau hanya header.');
+
+                const headers = lines[0].split(',').map(h => h.trim());
+                const requiredFields = ['NISN', 'Nama', 'Kelas'];
+                const missingFields = requiredFields.filter(r => !headers.includes(r));
+                if (missingFields.length) return alert(`Kolom wajib tidak ditemukan: ${missingFields.join(', ')}`);
+
+                const progressOverlay = document.getElementById('progressOverlay');
+                const progressFill = document.getElementById('progressFill');
+                const progressCount = document.getElementById('progressCount');
+                const progressSub = document.getElementById('progressSub');
+
+                progressOverlay.style.display = 'flex';
+                const rows = lines.slice(1);
+                let success = 0, failed = 0;
+
+                for (let i = 0; i < rows.length; i++) {
+                    const cols = rows[i].split(',').map(c => c.trim());
+                    const row = {};
+                    headers.forEach((h, idx) => row[h] = cols[idx] || '');
+
+                    const data = {
+                        nisn: row['NISN'],
+                        nama: row['Nama'],
+                        jk: row['Jenis Kelamin'] || 'L',
+                        kelas: row['Kelas'],
+                        ayah: row['Nama Ayah'] || '',
+                        pekerjaanAyah: row['Pekerjaan Ayah'] || '',
+                        ibu: row['Nama Ibu'] || '',
+                        pekerjaanIbu: row['Pekerjaan Ibu'] || '',
+                        username: row['Username'] || row['NISN'],
+                        password: row['Password'] || 'siswa' + row['NISN'].slice(-4),
+                        status: 'Aktif'
+                    };
+
+                    try {
+                        await window.db.insertSiswa(data);
+                        success++;
+                    } catch (err) {
+                        failed++;
+                        console.error(`Baris ${i+2} gagal:`, data.nisn, err.message);
+                    }
+
+                    const pct = Math.round(((i + 1) / rows.length) * 100);
+                    progressFill.style.width = pct + '%';
+                    progressCount.textContent = `${i + 1} / ${rows.length}`;
+                    progressSub.textContent = `Berhasil: ${success}, Gagal: ${failed}`;
+                }
+
+                progressSub.textContent = `Selesai! ${success} berhasil, ${failed} gagal.`;
+                await fetchSiswa();
+                document.getElementById('fileUpload').value = '';
+                setTimeout(() => progressOverlay.style.display = 'none', 2000);
+            };
+            reader.readAsText(file);
+        };
+
         document.getElementById('btnTemplate').onclick = () => window.location.href = 'template_siswa.csv';
     </script>
 </body>
