@@ -115,7 +115,21 @@ CREATE TABLE nilai (
     UNIQUE(nisn, mapel, jenis_ujian) -- Logika agar nilai bisa diperbarui (Upsert)
 );
 
--- 10. TABEL INFORMASI (Mendukung Filter Sasaran Guru/Siswa)
+-- 10. TABEL JADWAL UJIAN (Dikelola Admin, Dilihat Guru & Siswa)
+CREATE TABLE IF NOT EXISTS jadwal_ujian (
+    id SERIAL PRIMARY KEY,
+    mapel VARCHAR(100) NOT NULL,
+    jenis VARCHAR(20) NOT NULL,
+    tanggal DATE NOT NULL,
+    waktu VARCHAR(50) NOT NULL,
+    ruang VARCHAR(100) NOT NULL,
+    kelas VARCHAR(20) NOT NULL,
+    semester VARCHAR(10) DEFAULT 'Ganjil',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 11. TABEL INFORMASI (Mendukung Filter Sasaran Guru/Siswa)
 CREATE TABLE informasi (
     id SERIAL PRIMARY KEY,
     judul VARCHAR(200) NOT NULL,
@@ -141,6 +155,7 @@ ALTER TABLE kelas ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 ALTER TABLE guru ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 ALTER TABLE mata_pelajaran ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 ALTER TABLE informasi ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE jadwal_ujian ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
 -- =============================================================================
 -- DATABASE SELESAI DIKONFIGURASI

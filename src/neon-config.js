@@ -420,6 +420,43 @@ window.db = {
         };
     },
 
+    // ==================== JADWAL UJIAN ====================
+
+    async getAllUjian() {
+        if (isProduction) return await apiGet('ujian');
+        return Storage.get('ujian_data') || [];
+    },
+
+    async getUjianByKelas(kelas) {
+        if (isProduction) return await apiGet('ujian', { kelas });
+        const data = Storage.get('ujian_data') || [];
+        return data.filter(u => u.kelas === kelas);
+    },
+
+    async insertUjian(ujian) {
+        if (isProduction) return await apiCall('ujian', 'insert', ujian);
+        const data = Storage.get('ujian_data') || [];
+        if (!ujian.id) ujian.id = 'ujian_' + Date.now();
+        data.push(ujian);
+        Storage.set('ujian_data', data);
+        return ujian;
+    },
+
+    async updateUjian(id, ujian) {
+        if (isProduction) return await apiCall('ujian', 'update', { ...ujian, id });
+        const data = Storage.get('ujian_data') || [];
+        const index = data.findIndex(u => u.id === id);
+        if (index >= 0) { data[index] = { ...data[index], ...ujian }; Storage.set('ujian_data', data); return data[index]; }
+        return null;
+    },
+
+    async deleteUjian(id) {
+        if (isProduction) return await apiCall('ujian', 'delete', { id });
+        const data = Storage.get('ujian_data') || [];
+        Storage.set('ujian_data', data.filter(u => u.id !== id));
+        return true;
+    },
+
     // ==================== INFORMASI ====================
 
     async getAllInformasi() {

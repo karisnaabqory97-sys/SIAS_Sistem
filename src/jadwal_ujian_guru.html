@@ -75,34 +75,41 @@
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+        document.addEventListener('DOMContentLoaded', async () => {
+            const raw = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            const currentUser = raw.user || raw;
             document.getElementById('userNama').textContent = currentUser.nama || 'Guru';
             document.getElementById('userMapel').textContent = currentUser.mapel || '-';
             
-            renderExams();
+            await renderExams();
         });
 
-        function renderExams() {
+        async function renderExams() {
             const container = document.getElementById('examContainer');
-            const exams = [
-                { mapel: 'Matematika', jenis: 'UTS', tanggal: '2025-10-12', waktu: '08:00 - 10:00', ruang: 'Lab Komputer', kelas: 'VII-A' },
-                { mapel: 'Bahasa Indonesia', jenis: 'UAS', tanggal: '2025-12-05', waktu: '08:00 - 10:00', ruang: 'Ruang 102', kelas: 'VIII-B' }
-            ];
-
-            container.innerHTML = exams.map(u => `
-                <div class="exam-card">
-                    <div class="exam-header">
-                        <div class="exam-title">${u.mapel} (${u.kelas})</div>
-                        <span class="exam-badge badge-${u.jenis.toLowerCase()}">${u.jenis}</span>
-                    </div>
-                    <div class="exam-meta">
-                        <div class="exam-meta-item"><i class="fas fa-calendar-alt"></i> ${u.tanggal}</div>
-                        <div class="exam-meta-item"><i class="fas fa-clock"></i> ${u.waktu}</div>
-                        <div class="exam-meta-item"><i class="fas fa-door-open"></i> ${u.ruang}</div>
-                    </div>
-                </div>
-            `).join('');
+            try {
+                const exams = await window.db.getAllUjian();
+                if (!exams || exams.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--text-dim);">Belum ada jadwal ujian yang diatur oleh Admin.</p>';
+                    return;
+                }
+                container.innerHTML = exams.map(u => {
+                    const badgeClass = 'badge-' + (u.jenis || '').toLowerCase();
+                    return `<div class="exam-card">
+                        <div class="exam-header">
+                            <div class="exam-title">${u.mapel} (${u.kelas})</div>
+                            <span class="exam-badge ${badgeClass}">${u.jenis}</span>
+                        </div>
+                        <div class="exam-meta">
+                            <div class="exam-meta-item"><i class="fas fa-calendar-alt"></i> ${u.tanggal}</div>
+                            <div class="exam-meta-item"><i class="fas fa-clock"></i> ${u.waktu}</div>
+                            <div class="exam-meta-item"><i class="fas fa-door-open"></i> ${u.ruang}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<p style="text-align:center;padding:40px;color:#ef4444;">Gagal memuat jadwal ujian.</p>';
+            }
         }
     </script>
 </body>

@@ -97,6 +97,15 @@ export async function GET(request) {
                 }
                 break;
 
+            case 'ujian':
+                const u_kelas = url.searchParams.get('kelas');
+                if (u_kelas) {
+                    result = await sql`SELECT * FROM jadwal_ujian WHERE kelas = ${u_kelas} ORDER BY tanggal ASC, waktu ASC`;
+                } else {
+                    result = await sql`SELECT * FROM jadwal_ujian ORDER BY tanggal DESC, waktu ASC`;
+                }
+                break;
+
             case 'informasi':
                 result = await sql`SELECT * FROM informasi WHERE is_published = TRUE ORDER BY created_at DESC`;
                 break;
@@ -360,6 +369,48 @@ export async function POST(request) {
                         `;
                     }
                     result = { success: true };
+                }
+                break;
+
+            case 'ujian':
+                if (action === 'create_table') {
+                    await sql`
+                        CREATE TABLE IF NOT EXISTS jadwal_ujian (
+                            id SERIAL PRIMARY KEY,
+                            mapel VARCHAR(100) NOT NULL,
+                            jenis VARCHAR(20) NOT NULL,
+                            tanggal DATE NOT NULL,
+                            waktu VARCHAR(50) NOT NULL,
+                            ruang VARCHAR(100) NOT NULL,
+                            kelas VARCHAR(20) NOT NULL,
+                            semester VARCHAR(10) DEFAULT 'Ganjil',
+                            created_at TIMESTAMPTZ DEFAULT NOW(),
+                            updated_at TIMESTAMPTZ DEFAULT NOW()
+                        )
+                    `;
+                    result = { created: true };
+                } else if (action === 'insert') {
+                    result = await sql`
+                        INSERT INTO jadwal_ujian (mapel, jenis, tanggal, waktu, ruang, kelas, semester)
+                        VALUES (${data.mapel}, ${data.jenis}, ${data.tanggal}, ${data.waktu}, ${data.ruang}, ${data.kelas}, ${data.semester || 'Ganjil'})
+                        RETURNING *
+                    `;
+                } else if (action === 'update') {
+                    result = await sql`
+                        UPDATE jadwal_ujian SET
+                            mapel = ${data.mapel},
+                            jenis = ${data.jenis},
+                            tanggal = ${data.tanggal},
+                            waktu = ${data.waktu},
+                            ruang = ${data.ruang},
+                            kelas = ${data.kelas},
+                            semester = ${data.semester || 'Ganjil'}
+                        WHERE id = ${data.id}
+                        RETURNING *
+                    `;
+                } else if (action === 'delete') {
+                    await sql`DELETE FROM jadwal_ujian WHERE id = ${data.id}`;
+                    result = { deleted: true };
                 }
                 break;
 
