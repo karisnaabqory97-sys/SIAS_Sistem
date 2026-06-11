@@ -273,6 +273,8 @@
                 } catch (err) { selectEl.innerHTML = '<option value="">Gagal memuat guru</option>'; }
             }
 
+            document.getElementById('btnSimpan').onclick = () => fetchKelas();
+
             btnTambahKelas.onclick = async () => {
                 currentEditIndex = null;
                 document.querySelector('.modal-title').innerText = 'Tambah Kelas Baru';
