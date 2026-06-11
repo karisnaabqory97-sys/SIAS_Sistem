@@ -358,7 +358,9 @@
             try {
                 if (currentEditId) {
                     const oldName = window.oldGuruName;
-                    await window.db.updateGuru(currentEditId, formData);
+                    const existingGuru = guruData.find(g => g.id === currentEditId) || {};
+                    // Merge data lama + form agar field seperti mapel tidak hilang
+                    await window.db.updateGuru(currentEditId, { ...existingGuru, ...formData });
                     
                     // If name changed, update other tables
                     if (oldName && oldName !== newName) {
@@ -372,8 +374,8 @@
                 addModal.style.display = 'none';
                 await fetchGuru();
             } catch (e) {
-                console.error(e);
-                alert("Gagal menyimpan data guru.");
+                console.error(e.message || e);
+                alert("Gagal menyimpan data guru: " + (e.message || 'Unknown error'));
             }
         };
 
