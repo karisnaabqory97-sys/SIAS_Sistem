@@ -99,7 +99,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            const raw = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+            const currentUser = raw.user || raw;
             document.getElementById('userNama').textContent = currentUser.nama || 'Siswa';
             document.getElementById('userKelas').textContent = 'Kelas ' + (currentUser.kelas || '-');
             document.getElementById('scheduleSubtitle').textContent = 'Jadwal mingguan Kelas ' + (currentUser.kelas || '-');
