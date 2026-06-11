@@ -530,14 +530,14 @@ window.db = {
 
     // ==================== NILAI ====================
     async getAllNilai() {
-        if (CONFIG.useCloud) {
+        if (isProduction) {
             return await apiGet('nilai');
         }
         return Storage.get('nilai_data') || [];
     },
 
     async getNilaiByFilter(kelas, mapel, jenis) {
-        if (CONFIG.useCloud) {
+        if (isProduction) {
             return await apiGet('nilai', { kelas, mapel, jenis });
         }
         const data = Storage.get('nilai_data') || [];
@@ -546,7 +546,7 @@ window.db = {
 
     async upsertNilai(nilaiData) {
         const records = Array.isArray(nilaiData) ? nilaiData : [nilaiData];
-        if (CONFIG.useCloud) {
+        if (isProduction) {
             return await apiCall('nilai', 'upsert', records);
         }
         const data = Storage.get('nilai_data') || [];

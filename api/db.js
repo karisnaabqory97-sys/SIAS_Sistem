@@ -102,9 +102,12 @@ export async function GET(request) {
                 break;
 
             case 'jadwal':
-                const kelas = url.searchParams.get('kelas');
-                if (kelas) {
-                    result = await sql`SELECT * FROM jadwal_pelajaran WHERE kelas = ${kelas} ORDER BY hari, jam_mulai`;
+                const j_kelas = url.searchParams.get('kelas');
+                const j_guru = url.searchParams.get('guru');
+                if (j_kelas) {
+                    result = await sql`SELECT * FROM jadwal_pelajaran WHERE kelas = ${j_kelas} ORDER BY hari, jam_mulai`;
+                } else if (j_guru) {
+                    result = await sql`SELECT * FROM jadwal_pelajaran WHERE guru = ${j_guru} ORDER BY hari, jam_mulai`;
                 } else {
                     result = await sql`SELECT * FROM jadwal_pelajaran ORDER BY hari, jam_mulai`;
                 }
@@ -125,8 +128,6 @@ export async function GET(request) {
                 }
                 break;
 
-            case 'jadwal':
-                result = await sql`SELECT 1 as test`;
         }
 
         return new Response(JSON.stringify({ success: true, data: result }), {
@@ -247,16 +248,18 @@ export async function POST(request) {
             case 'informasi':
                 if (action === 'insert') {
                     result = await sql`
-                        INSERT INTO informasi (judul, konten, kategori, pengirim, is_published)
-                        VALUES (${data.judul}, ${data.konten}, ${data.kategori}, ${data.pengirim}, TRUE)
+                        INSERT INTO informasi (judul, isi, sasaran, kategori, tanggal, is_published)
+                        VALUES (${data.judul}, ${data.isi}, ${data.sasaran || 'Semua'}, ${data.kategori || 'Umum'}, ${data.tanggal || new Date().toISOString().split('T')[0]}, TRUE)
                         RETURNING *
                     `;
                 } else if (action === 'update') {
                     result = await sql`
                         UPDATE informasi SET
                             judul = ${data.judul},
-                            konten = ${data.konten},
+                            isi = ${data.isi},
+                            sasaran = ${data.sasaran},
                             kategori = ${data.kategori},
+                            tanggal = ${data.tanggal},
                             is_published = ${data.is_published || TRUE},
                             updated_at = NOW()
                         WHERE id = ${data.id}
@@ -308,6 +311,24 @@ export async function POST(request) {
                         SELECT * FROM siswa
                         WHERE (username = ${data.username} OR nisn = ${data.username}) AND password = ${data.password} AND status = 'Aktif'
                     `;
+                }
+                break;
+
+            case 'jadwal':
+                if (action === 'upsert') {
+                    const { kelas: jKelas, semester: jSemester, items } = data;
+                    if (!jKelas || !jSemester || !items) {
+                        result = { success: false, error: 'Data kelas, semester, dan items required' };
+                        break;
+                    }
+                    await sql`DELETE FROM jadwal_pelajaran WHERE kelas = ${jKelas} AND semester = ${jSemester}`;
+                    for (const item of items) {
+                        await sql`
+                            INSERT INTO jadwal_pelajaran (kelas, semester, hari, jam_mulai, jam_selesai, mapel, guru)
+                            VALUES (${jKelas}, ${jSemester}, ${item.hari}, ${item.jam_mulai}, ${item.jam_selesai}, ${item.mapel}, ${item.guru})
+                        `;
+                    }
+                    result = { success: true, count: items.length };
                 }
                 break;
 

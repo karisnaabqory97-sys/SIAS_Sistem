@@ -220,6 +220,7 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
                 const updateData = {
+                    ...siswa,
                     kelas: targetKelas === 'LULUS' ? siswa.kelas : targetKelas,
                     status: targetKelas === 'LULUS' ? 'Lulus' : 'Aktif'
                 };

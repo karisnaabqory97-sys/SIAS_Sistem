@@ -97,6 +97,10 @@
                 <label>Kelas</label>
                 <select id="attKelas" class="form-control"><option value="">Pilih Kelas</option></select>
             </div>
+            <div class="form-group">
+                <label>Mata Pelajaran</label>
+                <select id="attMapel" class="form-control"><option value="">Pilih Mapel</option></select>
+            </div>
         </div>
 
         <div class="table-header">
@@ -157,6 +161,7 @@
     <script>
         let currentSiswa = [];
         let attendanceState = {}; // nisn -> status
+        let allMapel = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             const user = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
@@ -168,17 +173,42 @@
         });
 
         async function loadFilters() {
-            const kelasList = await window.db.getAllKelas();
-            const select = document.getElementById('attKelas');
+            const [kelasList, mapelData] = await Promise.all([
+                window.db.getAllKelas(),
+                window.db.getAllMapel()
+            ]);
+            allMapel = mapelData;
+            const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+
+            const selKelas = document.getElementById('attKelas');
             kelasList.forEach(k => {
                 const opt = document.createElement('option');
                 opt.value = k.nama || k; opt.textContent = k.nama || k;
-                select.appendChild(opt);
+                selKelas.appendChild(opt);
             });
 
-            select.addEventListener('change', async (e) => {
-                if (e.target.value) await loadSiswa(e.target.value);
+            const selMapel = document.getElementById('attMapel');
+            const assignedMapels = new Set();
+            mapelData.forEach(m => {
+                const penugasan = m.penugasan || [];
+                penugasan.forEach(p => {
+                    if (p.guru === currentUser.nama) assignedMapels.add(m.nama);
+                });
             });
+            Array.from(assignedMapels).sort().forEach(nama => {
+                const opt = document.createElement('option');
+                opt.value = nama; opt.textContent = nama;
+                selMapel.appendChild(opt);
+            });
+
+            function checkAndLoad() {
+                const kelas = selKelas.value;
+                const mapel = selMapel.value;
+                if (kelas && mapel) loadSiswa(kelas);
+            }
+
+            selKelas.onchange = checkAndLoad;
+            selMapel.onchange = checkAndLoad;
 
             document.getElementById('studentSearch').addEventListener('input', (e) => renderTable(e.target.value));
         }
@@ -231,9 +261,10 @@
             const date = document.getElementById('attDate').value;
             const meeting = document.getElementById('attMeeting').value;
             const kelas = document.getElementById('attKelas').value;
-            const mapel = document.getElementById('userMapel').textContent;
+            const mapel = document.getElementById('attMapel').value;
 
             if (!kelas) return alert('Pilih kelas!');
+            if (!mapel) return alert('Pilih mata pelajaran!');
 
             const records = currentSiswa.map(s => ({
                 nisn: s.nisn,
