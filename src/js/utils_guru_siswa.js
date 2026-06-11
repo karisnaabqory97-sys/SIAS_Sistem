@@ -36,7 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Common User Info Loading Logic
 function loadUserInfo(userType) {
-    const currentUser = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+    const raw = JSON.parse(localStorage.getItem('sais_current_user') || '{}');
+    const currentUser = raw.user || raw;
     let userNama, userId, userLabel, initial, welcomeTextPrefix;
 
     if (userType === 'guru') {

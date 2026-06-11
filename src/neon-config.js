@@ -631,7 +631,7 @@ window.Session = {
     set(user, type) {
         const sessionData = {
             type: type,
-            user: user,
+            ...user,
             loginAt: new Date().toISOString()
         };
         Storage.set('current_user', sessionData);

@@ -147,18 +147,20 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Check Session
-            let user = JSON.parse(localStorage.getItem('sais_current_user') || 'null');
-            if (!user || user.type !== 'siswa') {
+            const sessionData = JSON.parse(localStorage.getItem('sais_current_user') || 'null');
+            if (!sessionData || sessionData.type !== 'siswa') {
                 window.location.href = 'index.html';
                 return;
             }
+            let user = sessionData.user || sessionData;
 
             // Refresh user data from DB to ensure sync (e.g. if class changed)
             try {
                 const latestSiswaData = await window.db.getSiswaByNisn(user.nisn);
                 if (latestSiswaData) {
                     user = { ...user, ...latestSiswaData };
-                    localStorage.setItem('sais_current_user', JSON.stringify(user));
+                    sessionData.user = user;
+                    localStorage.setItem('sais_current_user', JSON.stringify(sessionData));
                 }
             } catch (e) {
                 console.warn("Failed to refresh user data from DB:", e);

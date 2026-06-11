@@ -155,18 +155,20 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Check Session
-            let user = JSON.parse(localStorage.getItem('sais_current_user') || 'null');
-            if (!user || user.type !== 'guru') {
+            const sessionData = JSON.parse(localStorage.getItem('sais_current_user') || 'null');
+            if (!sessionData || sessionData.type !== 'guru') {
                 window.location.href = 'index.html';
                 return;
             }
+            let user = sessionData.user || sessionData;
 
             // Refresh user data from DB to ensure sync
             try {
                 const latestGuruData = await window.db.getGuruByNuptk(user.nuptk);
                 if (latestGuruData) {
                     user = { ...user, ...latestGuruData };
-                    localStorage.setItem('sais_current_user', JSON.stringify(user));
+                    sessionData.user = user;
+                    localStorage.setItem('sais_current_user', JSON.stringify(sessionData));
                 }
             } catch (e) {
                 console.warn("Failed to refresh user data from DB:", e);
