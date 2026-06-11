@@ -141,8 +141,12 @@
                     <h1>Manajemen Pelajaran</h1>
                     <p id="totalPelajaranText">Total 0 mata pelajaran terdaftar</p>
                 </div>
-                <button class="btn btn-primary" id="btnTambahPelajaran"><i class="fas fa-plus"></i> Tambah Pelajaran</button>
-            </div>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-secondary" id="btnTemplate"><i class="fas fa-download"></i> Template</button>
+                    <input type="file" id="fileUpload" accept=".csv" style="display: none;">
+                    <button class="btn btn-secondary" id="btnUpload"><i class="fas fa-upload"></i> Upload</button>
+                    <button class="btn btn-primary" id="btnTambahPelajaran"><i class="fas fa-plus"></i> Tambah Pelajaran</button>
+                </div>
 
             <div class="content-card">
                 <div style="overflow-x: auto;">
@@ -200,6 +204,29 @@
             </form>
         </div>
     </div>
+
+    <!-- Progress Upload Modal -->
+    <div class="progress-overlay" id="progressOverlay">
+        <div class="progress-box">
+            <div class="progress-title">⏳ Mengimpor Data...</div>
+            <div class="progress-sub" id="progressSub">Menyiapkan data...</div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-count" id="progressCount">0 / 0</div>
+        </div>
+    </div>
+
+    <style>
+        .progress-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 3000; }
+        .progress-overlay.active { display: flex; }
+        .progress-box { background: var(--bg-card); border-radius: 24px; padding: 32px; width: 350px; text-align: center; border: 1px solid var(--border); }
+        .progress-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .progress-sub { font-size: 13px; color: var(--text-dim); }
+        .progress-bar-wrap { background: rgba(255,255,255,0.05); border-radius: 99px; height: 10px; overflow: hidden; margin: 20px 0; }
+        .progress-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: 0.3s; }
+        .progress-count { font-size: 14px; font-weight: 600; color: var(--accent); }
+    </style>
 
     <script src="js/load-sidebar.js"></script>
     <script>
@@ -401,6 +428,96 @@
 
             document.getElementById('globalSearch').addEventListener('input', (e) => renderTable(e.target.value));
         }
+
+        // Template & Upload CSV
+        document.getElementById('btnTemplate').onclick = () => window.location.href = 'template_pelajaran.csv';
+        document.getElementById('btnUpload').onclick = () => document.getElementById('fileUpload').click();
+
+        document.getElementById('fileUpload').onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (evt) => {
+                const text = evt.target.result;
+                const lines = text.split('\n').filter(l => l.trim());
+                if (lines.length < 2) return alert('File CSV kosong atau hanya header.');
+
+                const delim = lines[0].includes(';') ? ';' : ',';
+                const rawHeaders = lines[0].split(delim).map(h => h.trim().toLowerCase().replace(/\s+/g, ''));
+
+                const idx = (key) => rawHeaders.findIndex(h => h.includes(key));
+                if (idx('kode') === -1 && idx('singkatan') === -1) return alert('Kolom Kode tidak ditemukan di CSV.');
+                if (idx('nama') === -1) return alert('Kolom Nama tidak ditemukan di CSV.');
+
+                const kodeIdx = idx('kode') !== -1 ? idx('kode') : idx('singkatan');
+                const namaIdx = idx('nama');
+                const levelIdx = idx('level');
+                const kelasIdx = idx('kelas');
+                const guruIdx = idx('guru');
+
+                const progressOverlay = document.getElementById('progressOverlay');
+                const progressFill = document.getElementById('progressFill');
+                const progressCount = document.getElementById('progressCount');
+                const progressSub = document.getElementById('progressSub');
+
+                progressOverlay.style.display = 'flex';
+                const rows = lines.slice(1);
+                let success = 0, failed = 0;
+
+                // Group rows by Kode to merge penugasan
+                const groups = {};
+                for (const line of rows) {
+                    const cols = line.split(delim).map(c => c.trim());
+                    const kode = cols[kodeIdx] || '';
+                    if (!kode) { failed++; continue; }
+
+                    if (!groups[kode]) {
+                        groups[kode] = { kode: kode, nama: cols[namaIdx] || '', penugasan: [] };
+                    } else if (cols[namaIdx] && !groups[kode].nama) {
+                        groups[kode].nama = cols[namaIdx];
+                    }
+
+                    if (levelIdx !== -1 && kelasIdx !== -1 && guruIdx !== -1) {
+                        const level = cols[levelIdx] || '';
+                        const kelas = cols[kelasIdx] || '';
+                        const guru = cols[guruIdx] || '';
+                        if (level && kelas && guru) {
+                            groups[kode].penugasan.push({ level, kelas, guru });
+                        }
+                    }
+                }
+
+                const entries = Object.values(groups);
+                for (let i = 0; i < entries.length; i++) {
+                    const entry = entries[i];
+                    const data = {
+                        kode: entry.kode.toUpperCase(),
+                        nama: entry.nama,
+                        penugasan: entry.penugasan
+                    };
+
+                    try {
+                        await window.db.insertMapel(data);
+                        success++;
+                    } catch (err) {
+                        failed++;
+                        console.error(`Mapel ${entry.kode} gagal:`, err.message);
+                    }
+
+                    const pct = Math.round(((i + 1) / entries.length) * 100);
+                    progressFill.style.width = pct + '%';
+                    progressCount.textContent = `${i + 1} / ${entries.length}`;
+                    progressSub.textContent = `Berhasil: ${success}, Gagal: ${failed}`;
+                }
+
+                progressSub.textContent = `Selesai! ${success} berhasil, ${failed} gagal.`;
+                await fetchPelajaran();
+                document.getElementById('fileUpload').value = '';
+                setTimeout(() => progressOverlay.style.display = 'none', 2000);
+            };
+            reader.readAsText(file);
+        };
     </script>
 </body>
 </html>
