@@ -508,13 +508,38 @@
             const reader = new FileReader();
             reader.onload = async (evt) => {
                 const text = evt.target.result;
-                const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+                const lines = text.split('\n').filter(l => l.trim());
                 if (lines.length < 2) return alert('File CSV kosong atau hanya header.');
 
-                const headers = lines[0].split(',').map(h => h.trim());
-                const requiredFields = ['NISN', 'Nama', 'Kelas'];
-                const missingFields = requiredFields.filter(r => !headers.includes(r));
-                if (missingFields.length) return alert(`Kolom wajib tidak ditemukan: ${missingFields.join(', ')}`);
+                // Auto-detect delimiter: semicolon if header contains semicolons, else comma
+                const delim = lines[0].includes(';') ? ';' : ',';
+                const rawHeaders = lines[0].split(delim).map(h => h.trim());
+
+                // Normalize header names: lowercase, remove spaces, common variations
+                const headerMap = {};
+                rawHeaders.forEach((h, idx) => {
+                    const key = h.toLowerCase().replace(/\s+/g, '');
+                    if (key.includes('nisn')) headerMap['nisn'] = idx;
+                    else if (key.includes('nama') && !headerMap['nama']) headerMap['nama'] = idx;
+                    else if (key.includes('jeniskelamin') || key.includes('jk') || key.includes('kelamin')) headerMap['jk'] = idx;
+                    else if (key.includes('kelas')) headerMap['kelas'] = idx;
+                    else if (key.includes('ayah') && (key.includes('nama') || key === 'ayah' || key === 'namaayah')) headerMap['ayah'] = idx;
+                    else if (key.includes('ayah') && (key.includes('pekerjaan') || key.includes('kerja'))) headerMap['pekerjaanAyah'] = idx;
+                    else if (key.includes('ibu') && (key.includes('nama') || key === 'ibu' || key === 'namaibu')) headerMap['ibu'] = idx;
+                    else if (key.includes('ibu') && (key.includes('pekerjaan') || key.includes('kerja'))) headerMap['pekerjaanIbu'] = idx;
+                    else if (key.includes('username') || key.includes('user')) headerMap['username'] = idx;
+                    else if (key.includes('password') || key.includes('pass') || key.includes('sandi')) headerMap['password'] = idx;
+                });
+
+                // Validate required fields
+                if (headerMap['nisn'] === undefined) return alert('Kolom NISN tidak ditemukan di CSV.');
+                if (headerMap['nama'] === undefined) return alert('Kolom Nama tidak ditemukan di CSV.');
+                if (headerMap['kelas'] === undefined) return alert('Kolom Kelas tidak ditemukan di CSV.');
+
+                function getRow(row, key) {
+                    const idx = headerMap[key];
+                    return idx !== undefined ? (row[idx] || '').trim() : '';
+                }
 
                 const progressOverlay = document.getElementById('progressOverlay');
                 const progressFill = document.getElementById('progressFill');
@@ -526,21 +551,22 @@
                 let success = 0, failed = 0;
 
                 for (let i = 0; i < rows.length; i++) {
-                    const cols = rows[i].split(',').map(c => c.trim());
-                    const row = {};
-                    headers.forEach((h, idx) => row[h] = cols[idx] || '');
+                    const cols = rows[i].split(delim).map(c => c.trim());
+
+                    const nisn = getRow(cols, 'nisn');
+                    if (!nisn) { failed++; continue; }
 
                     const data = {
-                        nisn: row['NISN'],
-                        nama: row['Nama'],
-                        jk: row['Jenis Kelamin'] || 'L',
-                        kelas: row['Kelas'],
-                        ayah: row['Nama Ayah'] || '',
-                        pekerjaanAyah: row['Pekerjaan Ayah'] || '',
-                        ibu: row['Nama Ibu'] || '',
-                        pekerjaanIbu: row['Pekerjaan Ibu'] || '',
-                        username: row['Username'] || row['NISN'],
-                        password: row['Password'] || 'siswa' + row['NISN'].slice(-4),
+                        nisn: nisn,
+                        nama: getRow(cols, 'nama'),
+                        jk: (getRow(cols, 'jk') || 'L').toUpperCase(),
+                        kelas: getRow(cols, 'kelas'),
+                        ayah: getRow(cols, 'ayah'),
+                        pekerjaanAyah: getRow(cols, 'pekerjaanAyah'),
+                        ibu: getRow(cols, 'ibu'),
+                        pekerjaanIbu: getRow(cols, 'pekerjaanIbu'),
+                        username: getRow(cols, 'username') || nisn,
+                        password: getRow(cols, 'password') || 'siswa' + nisn.slice(-4),
                         status: 'Aktif'
                     };
 
@@ -549,7 +575,7 @@
                         success++;
                     } catch (err) {
                         failed++;
-                        console.error(`Baris ${i+2} gagal:`, data.nisn, err.message);
+                        console.error(`Baris ${i+2} gagal:`, nisn, err.message);
                     }
 
                     const pct = Math.round(((i + 1) / rows.length) * 100);
