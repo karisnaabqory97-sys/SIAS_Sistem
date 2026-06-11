@@ -13,7 +13,8 @@ CREATE TABLE admin (
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(100) NOT NULL,
     nama VARCHAR(100),
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 3. TABEL KELAS (Mendukung Level VII, VIII, IX & Wali Kelas)
@@ -23,7 +24,8 @@ CREATE TABLE kelas (
     kode VARCHAR(20) NOT NULL, -- Kolom untuk Level/Tingkat
     wali VARCHAR(100),         -- Nama Guru sebagai Wali Kelas
     siswa_count INTEGER DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 4. TABEL GURU
@@ -35,7 +37,8 @@ CREATE TABLE guru (
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(100) NOT NULL,
     status VARCHAR(20) DEFAULT 'Aktif',
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 5. TABEL SISWA (Mendukung Kenaikan Kelas & Status Alumni)
@@ -65,7 +68,8 @@ CREATE TABLE mata_pelajaran (
     nama VARCHAR(100) NOT NULL,
     singkatan VARCHAR(10) UNIQUE NOT NULL,
     deskripsi TEXT, -- Menyimpan format JSON untuk relasi Level-Kelas-Guru
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 7. TABEL JADWAL PELAJARAN (Mendukung Deteksi Bentrok/Merah-Hijau)
@@ -120,13 +124,23 @@ CREATE TABLE informasi (
     kategori VARCHAR(50) DEFAULT 'Umum',
     tanggal DATE DEFAULT CURRENT_DATE,
     is_published BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 11. INITIAL DATA (Masukkan Akun Akses Awal)
 -- Password Default: admin123
 INSERT INTO admin (username, password, nama) 
 VALUES ('admin', 'admin123', 'Administrator Utama');
+
+-- =============================================================================
+-- MIGRASI: Tambah kolom updated_at yang hilang (untuk database existing)
+-- =============================================================================
+ALTER TABLE admin ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE kelas ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE guru ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE mata_pelajaran ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE informasi ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
 -- =============================================================================
 -- DATABASE SELESAI DIKONFIGURASI

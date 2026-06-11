@@ -210,8 +210,7 @@ export async function POST(request) {
                             mapel = ${data.mapel},
                             username = ${data.username},
                             password = ${data.password},
-                            status = ${data.status || 'Aktif'},
-                            updated_at = NOW()
+                            status = ${data.status || 'Aktif'}
                         WHERE id = ${data.id}
                         RETURNING *
                     `;
@@ -260,8 +259,7 @@ export async function POST(request) {
                             sasaran = ${data.sasaran},
                             kategori = ${data.kategori},
                             tanggal = ${data.tanggal},
-                            is_published = ${data.is_published || TRUE},
-                            updated_at = NOW()
+                            is_published = ${data.is_published || TRUE}
                         WHERE id = ${data.id}
                         RETURNING *
                     `;
