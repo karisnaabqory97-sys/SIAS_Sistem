@@ -50,7 +50,10 @@
         .progress-box { background: var(--bg-card); border-radius: 24px; padding: 32px; width: 350px; text-align: center; border: 1px solid var(--border); }
         .progress-bar-wrap { background: rgba(255,255,255,0.05); border-radius: 99px; height: 10px; overflow: hidden; margin: 20px 0; }
         .progress-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: 0.3s; }
-    </style>
+        .progress-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .progress-sub { font-size: 13px; color: var(--text-dim); }
+        .progress-count { font-size: 14px; font-weight: 600; color: var(--accent); }
+</style>
 </head>
 <body data-page="guru">
     <div id="sidebar-container"></div>
@@ -178,6 +181,18 @@
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" id="closeDetailModal">Tutup</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Progress Upload Modal -->
+    <div class="progress-overlay" id="progressOverlay">
+        <div class="progress-box">
+            <div class="progress-title">⏳ Mengimpor Data...</div>
+            <div class="progress-sub" id="progressSub">Menyiapkan data...</div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-count" id="progressCount">0 / 0</div>
         </div>
     </div>
 
@@ -413,6 +428,77 @@
                 console.error("Error during cascading name change:", err);
             }
         }
+
+        // Template & Upload CSV
+        document.getElementById('btnTemplate').onclick = () => window.location.href = 'template_guru.csv';
+        document.getElementById('btnUpload').onclick = () => document.getElementById('fileUpload').click();
+
+        document.getElementById('fileUpload').onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (evt) => {
+                const text = evt.target.result;
+                const lines = text.split('\n').filter(l => l.trim());
+                if (lines.length < 2) return alert('File CSV kosong atau hanya header.');
+
+                const delim = lines[0].includes(';') ? ';' : ',';
+                const rawHeaders = lines[0].split(delim).map(h => h.trim().toLowerCase().replace(/\s+/g, ''));
+
+                const idx = (key) => {
+                    return rawHeaders.findIndex(h => h.includes(key));
+                };
+
+                if (idx('nuptk') === -1) return alert('Kolom NUPTK tidak ditemukan di CSV.');
+                if (idx('nama') === -1) return alert('Kolom Nama tidak ditemukan di CSV.');
+
+                const progressOverlay = document.getElementById('progressOverlay');
+                const progressFill = document.getElementById('progressFill');
+                const progressCount = document.getElementById('progressCount');
+                const progressSub = document.getElementById('progressSub');
+
+                progressOverlay.style.display = 'flex';
+                const rows = lines.slice(1);
+                let success = 0, failed = 0;
+
+                for (let i = 0; i < rows.length; i++) {
+                    const cols = rows[i].split(delim).map(c => c.trim());
+                    const get = (key) => cols[idx(key)] || '';
+
+                    const nuptk = get('nuptk');
+                    if (!nuptk) { failed++; continue; }
+
+                    const data = {
+                        nuptk: nuptk,
+                        nama: get('nama'),
+                        mapel: get('mapel') || get('matapelajaran') || get('pelajaran') || '',
+                        username: get('username') || nuptk,
+                        password: get('password') || 'guru' + nuptk.slice(-4),
+                        status: 'Aktif'
+                    };
+
+                    try {
+                        await window.db.insertGuru(data);
+                        success++;
+                    } catch (err) {
+                        failed++;
+                        console.error(`Baris ${i+2} gagal:`, nuptk, err.message);
+                    }
+
+                    const pct = Math.round(((i + 1) / rows.length) * 100);
+                    progressFill.style.width = pct + '%';
+                    progressCount.textContent = `${i + 1} / ${rows.length}`;
+                    progressSub.textContent = `Berhasil: ${success}, Gagal: ${failed}`;
+                }
+
+                progressSub.textContent = `Selesai! ${success} berhasil, ${failed} gagal.`;
+                await fetchGuru();
+                document.getElementById('fileUpload').value = '';
+                setTimeout(() => progressOverlay.style.display = 'none', 2000);
+            };
+            reader.readAsText(file);
+        };
     </script>
 </body>
 </html>

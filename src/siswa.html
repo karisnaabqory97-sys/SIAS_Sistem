@@ -224,6 +224,144 @@
         </div>
     </div>
 
+    <!-- Modal Cetak Kartu Siswa -->
+    <div class="modal-overlay" id="kartuModal">
+        <div class="modal" style="max-width: 420px;">
+            <div class="modal-header">
+                <h2>Kartu Pelajar</h2>
+            </div>
+            <div id="kartuContent" style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;"></div>
+            <div class="modal-footer" style="display: flex; gap: 12px; justify-content: center;">
+                <button type="button" class="btn-cancel" onclick="document.getElementById('kartuModal').style.display='none'">Tutup</button>
+                <button type="button" class="btn btn-primary" onclick="printKartu()"><i class="fas fa-print"></i> Cetak / Download PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Kartu Pelajar Styles */
+        .kartu {
+            width: 320px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #6366f1 100%);
+            border-radius: 16px;
+            padding: 24px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(37, 99, 235, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .kartu::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+        .kartu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .kartu-sekolah {
+            font-size: 11px;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+        .kartu-sekolah h3 {
+            font-size: 14px;
+            font-weight: 700;
+            margin: 0;
+            opacity: 1;
+        }
+        .kartu-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            border: 2px solid rgba(255,255,255,0.4);
+            flex-shrink: 0;
+        }
+        .kartu-photo-placeholder {
+            width: 80px;
+            height: 100px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            border: 2px solid rgba(255,255,255,0.3);
+            margin: 0 auto 16px;
+        }
+        .kartu-body {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .kartu-nama {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .kartu-nisn {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+        .kartu-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            text-align: left;
+            font-size: 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            position: relative;
+            z-index: 1;
+        }
+        .kartu-info .label {
+            opacity: 0.7;
+        }
+        .kartu-info .value {
+            font-weight: 600;
+            text-align: right;
+        }
+        .kartu-footer {
+            text-align: center;
+            font-size: 9px;
+            opacity: 0.6;
+            margin-top: 16px;
+            position: relative;
+            z-index: 1;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 12px;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #kartuModal .modal { visibility: visible; position: absolute; left: 0; top: 0; }
+            #kartuModal .modal * { visibility: visible; }
+            #kartuModal .modal-footer { display: none !important; }
+            #kartuModal .modal-header { display: none !important; }
+            #kartuModal .modal { box-shadow: none; border: none; max-width: 100%; }
+            .kartu { box-shadow: none; }
+        }
+    </style>
+
     <script src="js/load-sidebar.js"></script>
     <script>
         let siswaData = [];
@@ -259,6 +397,47 @@
             }
         }
 
+        let kartuSiswa = null;
+
+        window.cetakKartu = (index) => {
+            const siswa = siswaData[index];
+            kartuSiswa = siswa;
+            const appName = localStorage.getItem('sais_appName') || 'SAIS';
+            const schoolName = localStorage.getItem('sais_schoolName') || 'Sistem Informasi SMP';
+
+            const content = document.getElementById('kartuContent');
+            content.innerHTML = `
+                <div class="kartu" id="kartuElement">
+                    <div class="kartu-header">
+                        <div class="kartu-sekolah">
+                            <h3>${appName}</h3>
+                            ${schoolName}
+                        </div>
+                        <div class="kartu-avatar">${siswa.nama.charAt(0).toUpperCase()}</div>
+                    </div>
+                    <div class="kartu-photo-placeholder">${siswa.nama.charAt(0).toUpperCase()}</div>
+                    <div class="kartu-body">
+                        <div class="kartu-nama">${siswa.nama}</div>
+                        <div class="kartu-nisn">NISN: ${siswa.nisn}</div>
+                        <div class="kartu-info">
+                            <span class="label">Kelas</span>
+                            <span class="value">${siswa.kelas || '-'}</span>
+                            <span class="label">Jenis Kelamin</span>
+                            <span class="value">${siswa.jk === 'L' ? 'Laki-laki' : 'Perempuan'}</span>
+                            <span class="label">Status</span>
+                            <span class="value">${siswa.status || 'Aktif'}</span>
+                        </div>
+                    </div>
+                    <div class="kartu-footer">Kartu ini adalah milik siswa yang bersangkutan</div>
+                </div>
+            `;
+            document.getElementById('kartuModal').style.display = 'flex';
+        };
+
+        window.printKartu = () => {
+            window.print();
+        };
+
         function renderTable() {
             const query = searchInput.value.toLowerCase();
             const kelasFilter = filterKelasSelect.value;
@@ -286,6 +465,7 @@
                     <td>
                         <button class="action-btn" onclick="editSiswa(${index})"><i class="fas fa-edit"></i></button>
                         <button class="action-btn" onclick="detailSiswa(${index})"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn" onclick="cetakKartu(${index})" style="color:#10b981;" title="Cetak Kartu"><i class="fas fa-id-card"></i></button>
                         <button class="action-btn" style="color:#ef4444;" onclick="deleteSiswa(${index})"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
