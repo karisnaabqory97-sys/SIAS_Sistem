@@ -273,7 +273,14 @@
                 } catch (err) { selectEl.innerHTML = '<option value="">Gagal memuat guru</option>'; }
             }
 
-            document.getElementById('btnSimpan').onclick = () => fetchKelas();
+            document.getElementById('btnSimpan').onclick = async () => {
+                try {
+                    await fetchKelas();
+                    alert('✓ Sinkron sukses');
+                } catch (e) {
+                    alert('✗ Gagal: ' + (e.message || 'Terjadi kesalahan'));
+                }
+            };
 
             btnTambahKelas.onclick = async () => {
                 currentEditIndex = null;
